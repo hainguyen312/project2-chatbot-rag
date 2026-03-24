@@ -1,0 +1,2196 @@
+{
+  "28891326-9b94-4f84-aee0-e60268a88976": {
+    "title": "Cuộc trò chuyện 16:35:37",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Tội tàng trữ chất cấm bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "Hành vi tàng trữ chất cấm, hóa chất cấm có thể bị xử phạt hành chính theo quy định tại Nghị định liên quan. Cụ thể:\n\n1. **Phạt tiền từ 10.000.000 đồng đến 20.000.000 đồng** đối với hành vi tàng trữ chất cấm, hóa chất cấm, chất độc trên tàu cá.\n2. **Phạt tiền từ 50.000.000 đồng đến 70.000.000 đồng** đối với hành vi sử dụng chất cấm, hóa chất cấm, chất độc để khai thác thủy sản mà chưa đến mức truy cứu trách nhiệm hình sự.\n\nNgoài ra, có thể áp dụng hình thức xử phạt bổ sung như tịch thu chất cấm, hóa chất, hóa chất cấm, chất độc và thủy sản khai thác. \n\nNếu có dấu hiệu tội phạm, vụ việc sẽ được chuyển cho cơ quan điều tra để xử lý theo quy định của pháp luật."
+      }
+    ],
+    "created_at": "2025-11-03T16:35:00.956248",
+    "updated_at": "2025-11-03T16:35:37.653532"
+  },
+  "4f0a8b26-2e8e-4f04-a105-93bfec99df36": {
+    "title": "Cuộc trò chuyện 16:41:43",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Đăng ký kết hôn cần những giấy tờ nào"
+      },
+      {
+        "role": "assistant",
+        "content": "Để đăng ký kết hôn tại Ủy ban nhân dân xã, phường, thị trấn, bạn cần chuẩn bị các giấy tờ sau:\n\n1. **Đơn đăng ký kết hôn** (theo mẫu quy định).\n2. **Giấy chứng minh nhân dân hoặc hộ chiếu** của cả hai bên.\n3. **Giấy xác nhận tình trạng hôn nhân** (nếu có).\n4. **Giấy tờ chứng minh chỗ ở hợp pháp** (nếu cần).\n\nNgoài ra, nếu một trong hai bên là người nước ngoài, cần có thêm giấy tờ chứng minh tình trạng hôn nhân theo quy định của pháp luật nước ngoài. \n\nCác giấy tờ này cần được chuẩn bị đầy đủ và hợp lệ để đảm bảo thủ tục đăng ký kết hôn diễn ra thuận lợi."
+      }
+    ],
+    "created_at": "2025-11-03T16:40:46.224296",
+    "updated_at": "2025-11-03T16:41:43.531866"
+  },
+  "36fa7091-3299-457a-af71-dadcac4ab682": {
+    "title": "Xử phạt hành vi chống đối công vụ",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành cônh vụ bị xử phạt như thế nào"
+      },
+      {
+        "role": "assistant",
+        "content": "Hành vi chống đối người thi hành công vụ được quy định tại Điều 257 Bộ luật Hình sự 2015 (sửa đổi, bổ sung năm 2017). Theo đó, người nào có hành vi chống đối, cản trở người thi hành công vụ sẽ bị xử lý hình sự với mức phạt tù từ 6 tháng đến 3 năm. \n\nNgoài ra, nếu hành vi chống đối gây hậu quả nghiêm trọng, mức phạt có thể tăng lên từ 2 năm đến 7 năm tù giam. \n\nNếu hành vi chống đối không đến mức truy cứu trách nhiệm hình sự, có thể bị xử phạt hành chính theo Nghị định 167/2013/NĐ-CP với mức phạt tiền từ 1.000.000 đồng đến 2.000.000 đồng.\n\nVì vậy, mức xử phạt cụ thể sẽ phụ thuộc vào tính chất và mức độ nghiêm trọng của hành vi chống đối."
+      },
+      {
+        "role": "user",
+        "content": "Không hợp tác có được tính là chống đối hay không"
+      },
+      {
+        "role": "assistant",
+        "content": "Hành vi không hợp tác với người thi hành công vụ có thể được coi là hành vi chống đối, tùy thuộc vào tính chất và mức độ của hành vi đó. Nếu việc không hợp tác dẫn đến cản trở hoặc gây khó khăn cho việc thực hiện nhiệm vụ của người thi hành công vụ, thì có thể bị xem là hành vi chống đối theo quy định tại Điều 257 Bộ luật Hình sự 2015 (sửa đổi, bổ sung năm 2017). \n\nTuy nhiên, nếu chỉ đơn thuần là không hợp tác mà không có hành vi cản trở cụ thể, thì có thể không đủ yếu tố để bị xử lý hình sự hoặc hành chính. Mức độ xử lý sẽ phụ thuộc vào từng trường hợp cụ thể."
+      },
+      {
+        "role": "user",
+        "content": "Nếu không cố ý thì sao"
+      },
+      {
+        "role": "assistant",
+        "content": "Nếu hành vi không cố ý, tức là không có ý định chống đối hoặc cản trở người thi hành công vụ, thì có thể không bị xử lý hình sự theo Điều 257 Bộ luật Hình sự 2015 (sửa đổi, bổ sung năm 2017). Tuy nhiên, việc không hợp tác hoặc có hành vi gây khó khăn cho người thi hành công vụ vẫn có thể bị xem xét tùy thuộc vào tính chất và mức độ của hành vi đó.\n\nNếu hành vi không hợp tác không dẫn đến cản trở cụ thể và không có ý định chống đối, thì có thể không đủ yếu tố để bị xử lý hình sự hoặc hành chính. Mức độ xử lý sẽ phụ thuộc vào từng trường hợp cụ thể."
+      },
+      {
+        "role": "user",
+        "content": "hành vi chống đối ngừoi thi hành công vụ sẽ bị xử phạt như thế nào"
+      },
+      {
+        "role": "assistant",
+        "content": "Hành vi chống đối người thi hành công vụ được quy định tại Điều 257 Bộ luật Hình sự 2015 (sửa đổi, bổ sung năm 2017). Theo đó, người nào có hành vi chống đối, cản trở người thi hành công vụ có thể bị xử phạt như sau:\n\n1. **Xử phạt hành chính**: Có thể bị phạt tiền từ 2.000.000 đồng đến 5.000.000 đồng.\n2. **Xử lý hình sự**: Nếu hành vi chống đối gây hậu quả nghiêm trọng, có thể bị phạt tù từ 6 tháng đến 3 năm.\n\nMức xử phạt cụ thể sẽ phụ thuộc vào tính chất, mức độ của hành vi và hậu quả gây ra."
+      },
+      {
+        "role": "user",
+        "content": "cụ thể hơn"
+      },
+      {
+        "role": "assistant",
+        "content": "Hành vi chống đối người thi hành công vụ được quy định tại Điều 257 Bộ luật Hình sự 2015 (sửa đổi, bổ sung năm 2017). Cụ thể, người có hành vi chống đối, cản trở người thi hành công vụ có thể bị xử lý như sau:\n\n1. **Xử phạt hành chính**: Phạt tiền từ 2.000.000 đồng đến 5.000.000 đồng.\n2. **Xử lý hình sự**: Nếu hành vi chống đối gây hậu quả nghiêm trọng, có thể bị phạt tù từ 6 tháng đến 3 năm.\n\nMức xử phạt cụ thể sẽ phụ thuộc vào tính chất, mức độ của hành vi và hậu quả gây ra. Nếu bạn cần thêm thông tin chi tiết về một trường hợp cụ thể, vui lòng cung cấp thêm thông tin."
+      },
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành cônh vụ bị xử phạt như thế nào"
+      },
+      {
+        "role": "assistant",
+        "content": "Hành vi chống đối người thi hành công vụ được quy định tại Điều 257 Bộ luật Hình sự 2015 (sửa đổi, bổ sung năm 2017). Cụ thể, người có hành vi chống đối, cản trở người thi hành công vụ có thể bị xử lý như sau:\n\n1. **Xử phạt hành chính**: Phạt tiền từ 2.000.000 đồng đến 5.000.000 đồng.\n2. **Xử lý hình sự**: Nếu hành vi chống đối gây hậu quả nghiêm trọng, có thể bị phạt tù từ 6 tháng đến 3 năm.\n\nMức xử phạt cụ thể sẽ phụ thuộc vào tính chất, mức độ của hành vi và hậu quả gây ra."
+      }
+    ],
+    "created_at": "2025-11-03T17:16:14.690372",
+    "updated_at": "2025-11-03T17:23:00.688109"
+  },
+  "a76f403e-b01a-4cf4-bc46-2491f6d2c879": {
+    "title": "Thủ tục đăng ký kết hôn cần biết",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Đăng ký kết hôn cần các thủ tục gì"
+      },
+      {
+        "role": "assistant",
+        "content": "Để đăng ký kết hôn tại Ủy ban nhân dân xã, phường, thị trấn, bạn cần thực hiện các thủ tục sau:\n\n1. **Chuẩn bị hồ sơ**: Hồ sơ đăng ký kết hôn thường bao gồm:\n   - Giấy tờ tùy thân (Chứng minh nhân dân hoặc Căn cước công dân) của cả hai bên.\n   - Giấy xác nhận tình trạng hôn nhân (nếu có).\n   - Giấy tờ khác theo yêu cầu của cơ quan đăng ký.\n\n2. **Nộp hồ sơ**: Đến Ủy ban nhân dân xã, phường, thị trấn nơi cư trú của một trong hai bên để nộp hồ sơ.\n\n3. **Thực hiện thủ tục**: Cơ quan có thẩm quyền sẽ kiểm tra hồ sơ và hướng dẫn bạn hoàn tất các thủ tục cần thiết.\n\n4. **Nhận Giấy chứng nhận kết hôn**: Sau khi hoàn tất thủ tục, Ủy ban nhân dân sẽ cấp Giấy chứng nhận kết hôn cho bạn.\n\nTheo quy định tại Điều 11 của Luật Hôn nhân và Gia đình, việc kết hôn phải được đăng ký và do cơ quan nhà nước có thẩm quyền thực hiện."
+      }
+    ],
+    "created_at": "2025-11-03T17:47:54.315347",
+    "updated_at": "2025-11-03T17:48:20.107132"
+  },
+  "3049638d-0a7c-44eb-b137-34dd401ad54c": {
+    "title": "Bảo mật thông tin người tố cáo",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Người tố cáo có được bảo toàn thông tin hay không?"
+      },
+      {
+        "role": "assistant",
+        "content": "Theo quy định tại Điều 25 Luật Tố cáo năm 2018, người tố cáo được bảo vệ thông tin cá nhân và danh tính. Cụ thể, thông tin về người tố cáo sẽ được giữ bí mật, trừ trường hợp người tố cáo đồng ý công khai thông tin của mình. Việc tiết lộ thông tin của người tố cáo mà không có sự đồng ý của họ sẽ bị xử lý theo quy định của pháp luật. \n\nDo đó, người tố cáo có quyền được bảo toàn thông tin cá nhân của mình."
+      }
+    ],
+    "created_at": "2025-11-04T15:53:04.548801",
+    "updated_at": "2025-11-12T15:56:40.547178"
+  },
+  "a3280319-b216-4682-b891-b32fc879ea87": {
+    "title": "Cản trở và chống đối người thi hành công vụ",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Cản trở người thi hành công vụ với chống đối người thi hành công vụ có giống nhau không và sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "Cản trở người thi hành công vụ và chống đối người thi hành công vụ là hai hành vi khác nhau:\n\n1. **Cản trở người thi hành công vụ**: Là hành vi không chấp hành yêu cầu của người thi hành công vụ, có thể là không thực hiện nhiệm vụ hoặc không cung cấp thông tin cần thiết. Hành vi này bị xử phạt hành chính với mức phạt từ 4.000.000 đồng đến 6.000.000 đồng theo quy định tại Nghị định xử phạt vi phạm hành chính.\n\n2. **Chống đối người thi hành công vụ**: Là hành vi dùng vũ lực hoặc đe dọa dùng vũ lực đối với người thi hành công vụ. Hành vi này bị xử phạt nặng hơn, với mức phạt từ 6.000.000 đồng đến 8.000.000 đồng, và có thể bị truy cứu trách nhiệm hình sự nếu gây thiệt hại nghiêm trọng.\n\nTóm lại, hai hành vi này khác nhau về tính chất và mức độ vi phạm, và sẽ bị xử phạt khác nhau theo quy định của pháp luật."
+      }
+    ],
+    "created_at": "2025-11-04T16:04:26.560048",
+    "updated_at": "2025-11-04T16:04:39.543502"
+  },
+  "dd6f0f9f-04ce-4702-8749-466b06db2b92": {
+    "title": "Xử phạt tàng trữ chất cấm",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Tội tàng trữ chất cấm bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "Tội tàng trữ chất cấm, cụ thể là chất ma túy, sẽ bị xử phạt theo quy định tại Nghị định 15/2020/NĐ-CP. Cụ thể:\n\n1. **Phạt cảnh cáo hoặc phạt tiền từ 1.000.000 đồng đến 2.000.000 đồng** đối với hành vi sử dụng trái phép chất ma túy.\n2. **Phạt tiền từ 2.000.000 đồng đến 5.000.000 đồng** đối với hành vi tàng trữ, vận chuyển trái phép hoặc chiếm đoạt chất ma túy nhưng không bị truy cứu trách nhiệm hình sự.\n3. **Phạt tiền từ 5.000.000 đồng đến 10.000.000 đồng** đối với hành vi trồng các loại cây thuốc phiện, cây cần sa, cây coca, cây khát và các loại cây khác có chứa chất ma túy.\n4. **Phạt tiền từ 10.000.000 đồng đến 20.000.000 đồng** đối với một số hành vi liên quan đến việc quản lý, sử dụng chất ma túy trong các cơ sở kinh doanh, dịch vụ.\n\nNgoài ra, các hình thức xử phạt bổ sung có thể bao gồm tịch thu tang vật, phương tiện vi phạm. \n\nNếu hành vi tàng trữ chất cấm có dấu hiệu nghiêm trọng hơn, có thể bị truy cứu trách nhiệm hình sự theo quy định tại Bộ luật Hình sự."
+      }
+    ],
+    "created_at": "2025-11-04T16:18:04.030273",
+    "updated_at": "2025-11-04T16:18:15.527424"
+  },
+  "f8c54a64-e515-465c-ba92-35d66104cd1c": {
+    "title": "Xử phạt hành vi chống đối công vụ",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt theo quy định tại Nghị định của Chính phủ về xử phạt vi phạm hành chính trong lĩnh vực an ninh trật tự và an toàn xã hội. Cụ thể, mức phạt có thể như sau:\n\n1. Phạt tiền từ 1.000.000 đồng đến 4.000.000 đồng đối với hành vi môi giới, giúp sức cho cá nhân, tổ chức vi phạm trốn tránh việc thanh tra, kiểm tra, kiểm soát của người thi hành công vụ.\n2. Phạt tiền từ 4.000.000 đồng đến 6.000.000 đồng đối với hành vi cản trở hoặc không chấp hành yêu cầu thanh tra, kiểm tra, kiểm soát của người thi hành công vụ.\n3. Phạt tiền từ 6.000.000 đồng đến 8.000.000 đồng đối với hành vi dùng vũ lực hoặc đe dọa dùng vũ lực chống người thi hành công vụ.\n\nNgoài ra, có thể áp dụng biện pháp khắc phục hậu quả như buộc xin lỗi công khai đối với hành vi lăng mạ, xúc phạm danh dự người thi hành công vụ."
+      },
+      {
+        "role": "user",
+        "content": "không hợp tác thì sao"
+      },
+      {
+        "role": "assistant",
+        "content": "Nếu không hợp tác với người thi hành công vụ, cá nhân có thể bị xử phạt theo quy định tại Nghị định về xử phạt vi phạm hành chính trong lĩnh vực an ninh trật tự và an toàn xã hội. Cụ thể, hành vi không hợp tác có thể bị phạt tiền từ 4.000.000 đồng đến 6.000.000 đồng đối với hành vi cản trở hoặc không chấp hành yêu cầu của người thi hành công vụ (Điều 10 Nghị định 167/2013/NĐ-CP). Nếu có hành vi dùng vũ lực hoặc đe dọa dùng vũ lực, mức phạt có thể từ 6.000.000 đồng đến 8.000.000 đồng."
+      },
+      {
+        "role": "user",
+        "content": "nêu vài ví dụ được không"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, nhưng bạn cần cung cấp thêm thông tin cụ thể về ví dụ nào mà bạn muốn biết. Bạn có thể hỏi về các hành vi vi phạm nào, lĩnh vực nào hoặc nội dung cụ thể nào để tôi có thể hỗ trợ bạn tốt hơn."
+      },
+      {
+        "role": "user",
+        "content": "lĩnh vực giao thông đi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hành vi không hợp tác với người thi hành công vụ trong lĩnh vực giao thông có thể bị xử phạt theo quy định tại Nghị định 100/2019/NĐ-CP về xử phạt vi phạm hành chính trong lĩnh vực giao thông đường bộ và đường sắt. Cụ thể, nếu người vi phạm không chấp hành yêu cầu của người thi hành công vụ (như cảnh sát giao thông), có thể bị phạt tiền từ 1.000.000 đồng đến 2.000.000 đồng (Điều 10 Nghị định 100/2019/NĐ-CP).\n\nVí dụ về hành vi không hợp tác có thể bao gồm:\n1. Không dừng xe khi có hiệu lệnh của cảnh sát giao thông.\n2. Không xuất trình giấy tờ khi được yêu cầu.\n3. Cản trở việc kiểm tra, xử lý vi phạm của người thi hành công vụ.\n\nNếu có hành vi chống đối hoặc dùng vũ lực, mức phạt sẽ cao hơn và có thể bị xử lý hình sự tùy theo mức độ vi phạm."
+      },
+      {
+        "role": "user",
+        "content": "Bỏ trốn thì có được tính không?"
+      },
+      {
+        "role": "assistant",
+        "content": "Hành vi bỏ trốn có thể được xem xét trong nhiều bối cảnh pháp lý khác nhau, tùy thuộc vào loại tội phạm hoặc vi phạm mà cá nhân đó đang đối mặt. Dưới đây là một số điểm chính liên quan đến vấn đề này:\n\n1. **Bỏ trốn trong lĩnh vực hình sự**: Nếu một cá nhân bị truy cứu trách nhiệm hình sự và bỏ trốn để tránh né việc thi hành án hoặc điều tra, hành vi này có thể bị coi là tăng nặng tình tiết phạm tội. Theo **Điều 17 Bộ luật Hình sự 2015**, người phạm tội có thể bị xử lý hình sự với mức hình phạt nặng hơn nếu có hành vi bỏ trốn.\n\n2. **Bỏ trốn trong lĩnh vực hành chính**: Trong trường hợp vi phạm hành chính, nếu cá nhân không có mặt để thực hiện quyết định xử phạt hoặc bỏ trốn khỏi nơi cư trú để tránh bị xử phạt, cơ quan có thẩm quyền có thể áp dụng các biện pháp cưỡng chế theo quy định của pháp luật. Cụ thể, theo **Nghị định 100/2019/NĐ-CP**, hành vi không hợp tác với người thi hành công vụ có thể bị xử phạt hành chính.\n\n3. **Hậu quả pháp lý**: Hành vi bỏ trốn có thể dẫn đến việc cá nhân bị xử lý theo quy định của pháp luật, bao gồm việc bị truy nã, xử phạt nặng hơn hoặc bị áp dụng các biện pháp cưỡng chế.\n\nTóm lại, hành vi bỏ trốn không chỉ ảnh hưởng đến việc xử lý vi phạm mà còn có thể dẫn đến các hậu quả pháp lý nghiêm trọng hơn."
+      },
+      {
+        "role": "user",
+        "content": "Cảm ơn nha"
+      },
+      {
+        "role": "assistant",
+        "content": "Không có gì đâu 😊! Hỗ trợ bạn tra cứu pháp luật là nhiệm vụ của mình. Nếu bạn cần tìm hiểu thêm điều luật khác, cứ hỏi mình nhé!"
+      }
+    ],
+    "created_at": "2025-11-04T17:51:30.438847",
+    "updated_at": "2025-11-07T12:28:02.080219"
+  },
+  "9091885a-7fa3-413b-8aa1-3dacc86b60f7": {
+    "title": "Giới thiệu trợ lý AI",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Bạn là ai?"
+      },
+      {
+        "role": "assistant",
+        "content": "Mình là một **trợ lý pháp lý AI** được thiết kế để hỗ trợ bạn trong việc tìm hiểu và tra cứu các quy định pháp luật Việt Nam. Mình có thể tóm tắt điều luật, giải thích nội dung văn bản, hoặc cung cấp căn cứ pháp lý cho câu hỏi của bạn."
+      },
+      {
+        "role": "user",
+        "content": "dgjhgj,bdjk"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, mình không thể hiểu được truy vấn của bạn. Bạn có thể cung cấp thêm thông tin hoặc đặt câu hỏi cụ thể hơn được không?"
+      },
+      {
+        "role": "user",
+        "content": "!!!!"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, nhưng mình không thể hiểu được yêu cầu của bạn từ thông tin hiện tại. Bạn có thể cung cấp thêm chi tiết hoặc đặt câu hỏi cụ thể hơn được không?"
+      },
+      {
+        "role": "user",
+        "content": "quá tệ"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, nhưng mình không thể hiểu rõ yêu cầu của bạn. Bạn có thể cung cấp thêm thông tin hoặc đặt câu hỏi cụ thể hơn được không?"
+      },
+      {
+        "role": "user",
+        "content": "nhận tiền miễn phí"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, mình không thể xử lý nội dung này"
+      },
+      {
+        "role": "user",
+        "content": "thật tệ"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, nhưng tôi không thể giúp bạn với yêu cầu này."
+      },
+      {
+        "role": "user",
+        "content": "Có thể cho tôi biết bạn là ai không"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, nhưng tôi không thể cung cấp thông tin về bản thân mình. Tôi ở đây để hỗ trợ bạn với các câu hỏi pháp lý hoặc thông tin liên quan đến luật pháp Việt Nam. Nếu bạn có câu hỏi cụ thể nào, hãy cho tôi biết!"
+      },
+      {
+        "role": "user",
+        "content": "vedghjbckvbewis"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, mình không thể xử lý nội dung này"
+      },
+      {
+        "role": "user",
+        "content": "ghjbjcdsbvjh"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, yêu cầu của bạn có dấu hiệu spam, mình không thể xử lý nội dung này, bạn hãy nói rõ yêu cầu của bạn lại nhé"
+      },
+      {
+        "role": "user",
+        "content": "vdgjhdfvbjdfvj"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, yêu cầu của bạn có dấu hiệu spam, mình không thể xử lý nội dung này, bạn hãy nói rõ yêu cầu của bạn lại nhé"
+      },
+      {
+        "role": "user",
+        "content": "Hihi"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, yêu cầu của bạn có dấu hiệu spam, mình không thể xử lý nội dung này, bạn hãy nói rõ yêu cầu của bạn lại nhé"
+      },
+      {
+        "role": "user",
+        "content": "hihi"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, yêu cầu của bạn có dấu hiệu spam, mình không thể xử lý nội dung này, bạn hãy nói rõ yêu cầu của bạn lại nhé"
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, yêu cầu của bạn có dấu hiệu spam, mình không thể xử lý nội dung này, bạn hãy nói rõ yêu cầu của bạn lại nhé"
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hi! 👋 Mình là trợ lý pháp lý hỗ trợ tìm kiếm và giải thích luật. Bạn có thể hỏi mình về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."
+      },
+      {
+        "role": "user",
+        "content": "Hành vi chống đối ngừoi thi hành công vụ sẽ bị xử phạt như thế nào"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, yêu cầu của bạn có dấu hiệu spam, mình không thể xử lý nội dung này, bạn hãy nói rõ yêu cầu của bạn lại nhé"
+      },
+      {
+        "role": "user",
+        "content": "Hành vi chống đối ngừoi thi hành công vụ sẽ bị xử phạt như thế nào"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, yêu cầu của bạn có dấu hiệu spam, mình không thể xử lý nội dung này, bạn hãy nói rõ yêu cầu của bạn lại nhé"
+      },
+      {
+        "role": "user",
+        "content": "Hành vi chống đối ngừoi thi hành công vụ sẽ bị xử phạt như thế nào"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, yêu cầu của bạn có dấu hiệu spam, mình không thể xử lý nội dung này, bạn hãy nói rõ yêu cầu của bạn lại nhé"
+      },
+      {
+        "role": "user",
+        "content": "Hành vi chống đối ngừoi thi hành công vụ sẽ bị xử phạt như thế nào"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, yêu cầu của bạn có dấu hiệu spam, mình không thể xử lý nội dung này, bạn hãy nói rõ yêu cầu của bạn lại nhé"
+      },
+      {
+        "role": "user",
+        "content": "Hành vi chống đối ngừoi thi hành công vụ sẽ bị xử phạt như thế nào"
+      },
+      {
+        "role": "assistant",
+        "content": "Hành vi chống đối người thi hành công vụ được quy định tại Điều 330 Bộ luật Hình sự 2015 (sửa đổi, bổ sung năm 2017). Theo đó, người nào có hành vi chống đối, cản trở người thi hành công vụ sẽ bị xử phạt tùy theo tính chất và mức độ vi phạm. Cụ thể:\n\n1. **Phạt tiền** từ 10.000.000 đồng đến 20.000.000 đồng hoặc **cải tạo không giam giữ** đến 3 năm nếu gây cản trở đến hoạt động bình thường của cơ quan nhà nước.\n2. **Phạt tù** từ 6 tháng đến 3 năm nếu hành vi chống đối có tổ chức, hoặc gây hậu quả nghiêm trọng.\n\nNgoài ra, nếu hành vi chống đối dẫn đến hậu quả nghiêm trọng hơn, có thể bị truy cứu trách nhiệm hình sự theo các điều khoản khác của Bộ luật Hình sự.\n\nBạn có thể tham khảo thêm chi tiết tại Điều 330 Bộ luật Hình sự 2015."
+      },
+      {
+        "role": "user",
+        "content": "Đỗ Thanh Bìng"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, yêu cầu của bạn có dấu hiệu spam, mình không thể xử lý nội dung này, bạn hãy nói rõ yêu cầu của bạn lại nhé"
+      },
+      {
+        "role": "user",
+        "content": "hihi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hi! 👋 Mình là trợ lý pháp lý hỗ trợ tìm kiếm và giải thích luật. Bạn có thể hỏi mình về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."
+      },
+      {
+        "role": "user",
+        "content": "Đỗ Thanh Bình"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, yêu cầu của bạn có dấu hiệu spam, mình không thể xử lý nội dung này, bạn hãy nói rõ yêu cầu của bạn lại nhé"
+      },
+      {
+        "role": "user",
+        "content": "Thủ tục đăng ký kết hôn cần có những giấy tờ gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "Để đăng ký kết hôn tại Ủy ban nhân dân xã, phường, thị trấn, bạn cần chuẩn bị các giấy tờ sau:\n\n1. **Giấy tờ tùy thân**: Chứng minh nhân dân hoặc thẻ căn cước công dân của cả hai bên.\n2. **Giấy xác nhận tình trạng hôn nhân**: Nếu đã từng kết hôn, cần có giấy chứng nhận ly hôn hoặc giấy chứng tử (nếu vợ/chồng đã mất).\n3. **Giấy tờ chứng minh nơi cư trú**: Sổ hộ khẩu hoặc giấy tạm trú.\n4. **Đơn đăng ký kết hôn**: Theo mẫu quy định của cơ quan có thẩm quyền.\n\nTheo Điều 10 của Luật Hôn nhân và Gia đình, việc kết hôn phải được đăng ký tại cơ quan nhà nước có thẩm quyền."
+      },
+      {
+        "role": "user",
+        "content": "Thủ tục đăng ký kết hôn cần có những giấy tờ gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "Để đăng ký kết hôn tại Ủy ban nhân dân xã, phường, thị trấn, bạn cần chuẩn bị các giấy tờ sau:\n\n1. **Giấy tờ tùy thân**: Chứng minh nhân dân hoặc thẻ căn cước công dân của cả hai bên.\n2. **Giấy xác nhận tình trạng hôn nhân**: Nếu đã từng kết hôn, cần có giấy chứng nhận ly hôn hoặc giấy chứng tử (nếu vợ/chồng đã mất).\n3. **Giấy tờ chứng minh nơi cư trú**: Sổ hộ khẩu hoặc giấy tạm trú.\n4. **Đơn đăng ký kết hôn**: Theo mẫu quy định của cơ quan có thẩm quyền.\n\nTheo Điều 10 của Luật Hôn nhân và Gia đình, việc kết hôn phải được đăng ký tại cơ quan nhà nước có thẩm quyền."
+      },
+      {
+        "role": "user",
+        "content": "Thủ tục đăng ký kết hôn cần có những giấy tờ gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "Để đăng ký kết hôn tại Ủy ban nhân dân xã, phường, thị trấn, bạn cần chuẩn bị các giấy tờ sau:\n\n1. **Giấy tờ tùy thân**: Chứng minh nhân dân hoặc thẻ căn cước công dân của cả hai bên.\n2. **Giấy xác nhận tình trạng hôn nhân**: Nếu đã từng kết hôn, cần có giấy chứng nhận ly hôn hoặc giấy chứng tử (nếu vợ/chồng đã mất).\n3. **Giấy tờ chứng minh nơi cư trú**: Sổ hộ khẩu hoặc giấy tạm trú.\n4. **Đơn đăng ký kết hôn**: Theo mẫu quy định của cơ quan có thẩm quyền.\n\nTheo Điều 10 của Luật Hôn nhân và Gia đình, việc kết hôn phải được đăng ký tại cơ quan nhà nước có thẩm quyền."
+      },
+      {
+        "role": "user",
+        "content": "Thủ tục đăng ký kết hôn cần có những giấy tờ gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "Để đăng ký kết hôn tại Ủy ban nhân dân xã, phường, thị trấn, bạn cần chuẩn bị các giấy tờ sau:\n\n1. **Giấy tờ tùy thân**: Chứng minh nhân dân hoặc thẻ căn cước công dân của cả hai bên.\n2. **Giấy xác nhận tình trạng hôn nhân**: Nếu đã từng kết hôn, cần có giấy chứng nhận ly hôn hoặc giấy chứng tử (nếu vợ/chồng đã mất).\n3. **Giấy tờ chứng minh nơi cư trú**: Sổ hộ khẩu hoặc giấy tạm trú.\n4. **Đơn đăng ký kết hôn**: Theo mẫu quy định của cơ quan có thẩm quyền.\n\nTheo Điều 10 của Luật Hôn nhân và Gia đình, việc kết hôn phải được đăng ký tại cơ quan nhà nước có thẩm quyền."
+      },
+      {
+        "role": "user",
+        "content": "abjhdhewgdkad"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, yêu cầu của bạn có dấu hiệu spam, mình không thể xử lý nội dung này, bạn hãy nói rõ yêu cầu của bạn lại nhé"
+      },
+      {
+        "role": "user",
+        "content": "Đỗ Thanh Bình mệt quớ"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, yêu cầu của bạn có dấu hiệu spam, mình không thể xử lý nội dung này, bạn hãy nói rõ yêu cầu của bạn lại nhé"
+      },
+      {
+        "role": "user",
+        "content": "ủa"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, yêu cầu của bạn có dấu hiệu spam, mình không thể xử lý nội dung này, bạn hãy nói rõ yêu cầu của bạn lại nhé"
+      },
+      {
+        "role": "user",
+        "content": "check spam chặt quá"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "rất tệ"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, nhưng tôi không thể hỗ trợ bạn với yêu cầu này. Nếu bạn có câu hỏi cụ thể về pháp luật hoặc cần thông tin liên quan đến một vấn đề pháp lý nào đó, hãy cho tôi biết để tôi có thể giúp đỡ bạn tốt hơn. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "Thật tệ"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể hỗ trợ bạn với yêu cầu này. Nếu bạn có câu hỏi cụ thể về pháp luật hoặc cần thông tin liên quan đến một vấn đề pháp lý nào đó, hãy cho tôi biết để tôi có thể giúp đỡ bạn tốt hơn. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "Thủ tục đăng ký kết hôn cần có những giấy tờ gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "Để đăng ký kết hôn tại Ủy ban nhân dân xã, phường, thị trấn, bạn cần chuẩn bị các giấy tờ sau:\n\n1. **Giấy tờ tùy thân**: \n   - Chứng minh nhân dân hoặc hộ chiếu của cả hai bên.\n\n2. **Giấy xác nhận tình trạng hôn nhân**: \n   - Giấy xác nhận tình trạng hôn nhân (nếu có) hoặc giấy tờ chứng minh tình trạng hôn nhân hiện tại (đối với người đã từng kết hôn).\n\n3. **Giấy tờ khác (nếu cần)**: \n   - Giấy tờ chứng minh về việc ly hôn hoặc chứng tử (nếu có).\n\nTheo Điều 10 của Luật Hôn nhân và Gia đình, việc đăng ký kết hôn phải được thực hiện tại cơ quan nhà nước có thẩm quyền."
+      },
+      {
+        "role": "user",
+        "content": "hihi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hi! 👋 Mình là trợ lý pháp lý hỗ trợ tìm kiếm và giải thích luật. Bạn có thể hỏi mình về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."
+      },
+      {
+        "role": "user",
+        "content": "Tôi có nhiều thắc mắc"
+      },
+      {
+        "role": "assistant",
+        "content": "Bạn có thể cho tôi biết cụ thể thắc mắc của bạn là gì để tôi có thể hỗ trợ tốt hơn không?"
+      },
+      {
+        "role": "user",
+        "content": "Nêu lại 5 lượt hội thoại gần đây nhất"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, nhưng tôi không thể cung cấp lại lịch sử hội thoại gần đây nhất. Tuy nhiên, bạn có thể đặt câu hỏi hoặc yêu cầu thông tin cụ thể về các vấn đề pháp lý mà bạn đang quan tâm, và tôi sẽ hỗ trợ bạn."
+      },
+      {
+        "role": "user",
+        "content": "hihi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hi! 👋 Mình là trợ lý pháp lý hỗ trợ tìm kiếm và giải thích luật. Bạn có thể hỏi mình về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."
+      },
+      {
+        "role": "user",
+        "content": "hihi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hi! 👋 Mình là trợ lý pháp lý hỗ trợ tìm kiếm và giải thích luật. Bạn có thể hỏi mình về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."
+      },
+      {
+        "role": "user",
+        "content": "Nêu lại 5 lượt hội thoại gần đây nhất"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, nhưng tôi không thể cung cấp lại lịch sử hội thoại gần đây nhất. Tuy nhiên, bạn có thể đặt câu hỏi hoặc yêu cầu thông tin cụ thể về các vấn đề pháp lý mà bạn đang quan tâm, và tôi sẽ hỗ trợ bạn."
+      },
+      {
+        "role": "user",
+        "content": "Nêu lại 5 lượt hội thoại gần đây nhất"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, nhưng tôi không thể cung cấp lại lịch sử hội thoại gần đây nhất. Tuy nhiên, bạn có thể đặt câu hỏi hoặc yêu cầu thông tin cụ thể về các vấn đề pháp lý mà bạn đang quan tâm, và tôi sẽ hỗ trợ bạn."
+      },
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hi! 👋 Mình là trợ lý pháp lý hỗ trợ tìm kiếm và giải thích luật. Bạn có thể hỏi mình về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."
+      },
+      {
+        "role": "user",
+        "content": "hihi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hi! 👋 Mình là trợ lý pháp lý hỗ trợ tìm kiếm và giải thích luật. Bạn có thể hỏi mình về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."
+      },
+      {
+        "role": "user",
+        "content": "advjbds"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "thật tệ"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, nhưng tôi không thể cung cấp thông tin về truy vấn hiện tại của bạn. Nếu bạn có câu hỏi cụ thể về các vấn đề pháp lý hoặc cần thông tin về điều luật nào đó, hãy cho tôi biết, và tôi sẽ hỗ trợ bạn."
+      },
+      {
+        "role": "user",
+        "content": "Thủ tục đăng ký kết hôn cần các giấy tờ gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Để đăng ký kết hôn, bạn cần chuẩn bị các giấy tờ sau:**\n\n1. **Giấy tờ tùy thân**:\n   - Chứng minh nhân dân hoặc hộ chiếu (bản chính và bản sao).\n\n2. **Giấy xác nhận tình trạng hôn nhân**:\n   - Đối với công dân Việt Nam: Giấy xác nhận tình trạng hôn nhân do Ủy ban nhân dân cấp xã nơi cư trú cấp.\n   - Đối với người nước ngoài: Giấy xác nhận tình trạng hôn nhân do cơ quan có thẩm quyền của nước ngoài cấp, có dịch thuật công chứng sang tiếng Việt.\n\n3. **Giấy tờ chứng minh về nơi cư trú**:\n   - Sổ hộ khẩu hoặc giấy tạm trú (nếu có).\n\n4. **Đơn đăng ký kết hôn**:\n   - Theo mẫu quy định của cơ quan có thẩm quyền.\n\n5. **Giấy tờ khác (nếu có)**:\n   - Nếu một trong hai bên đã từng kết hôn, cần có Giấy chứng nhận ly hôn hoặc Giấy chứng tử của vợ/chồng trước (bản chính và bản sao).\n\n**Lưu ý**: Tùy thuộc vào từng trường hợp cụ thể, có thể cần thêm giấy tờ khác. Bạn nên liên hệ với cơ quan đăng ký kết hôn tại địa phương để được hướng dẫn chi tiết."
+      },
+      {
+        "role": "user",
+        "content": "Thời gian làm việc của cơ quan "
+      },
+      {
+        "role": "assistant",
+        "content": "**Câu hỏi: Thời gian làm việc của cơ quan là gì?**\n\n**Trả lời:** Thời gian làm việc của cơ quan nhà nước tại Việt Nam thường được quy định theo các quy định của pháp luật và có thể khác nhau tùy theo từng loại hình cơ quan. \n\n1. **Thời gian làm việc chung**: Thông thường, thời gian làm việc của các cơ quan nhà nước là từ **08h00 đến 17h00** từ thứ Hai đến thứ Sáu, và có thể làm việc buổi sáng thứ Bảy tùy theo quy định của từng cơ quan.\n\n2. **Thời gian làm việc tại cửa khẩu**: Theo quy định tại **Điều 10 Nghị định 34/2016/NĐ-CP**, thời gian làm việc tại cửa khẩu thực hiện theo điều ước quốc tế mà Việt Nam là thành viên. Chính phủ hai bên sẽ thống nhất quyết định thay đổi thời gian làm việc tại cửa khẩu thông qua đường ngoại giao.\n\n3. **Thời gian làm việc của nhà giáo**: Đối với nhà giáo, thời gian làm việc có thể là **46 tuần/năm** theo chế độ tuần làm việc 40 giờ, trong đó có thời gian giảng dạy, học tập, bồi dưỡng, và thực tập.\n\nNếu bạn cần thông tin cụ thể hơn về một loại hình cơ quan nào đó, hãy cho tôi biết!"
+      },
+      {
+        "role": "user",
+        "content": "đúng yêu cầu của tôi cơ mà"
+      },
+      {
+        "role": "assistant",
+        "content": "Để đăng ký kết hôn, bạn cần chuẩn bị các giấy tờ sau:\n\n1. **Giấy tờ tùy thân**:\n   - Chứng minh nhân dân hoặc hộ chiếu (bản chính và bản sao).\n\n2. **Giấy xác nhận tình trạng hôn nhân**:\n   - Đối với công dân Việt Nam: Giấy xác nhận tình trạng hôn nhân do Ủy ban nhân dân cấp xã nơi cư trú cấp.\n   - Đối với người nước ngoài: Giấy xác nhận tình trạng hôn nhân do cơ quan có thẩm quyền của nước ngoài cấp, có dịch thuật công chứng sang tiếng Việt.\n\n3. **Giấy tờ chứng minh về nơi cư trú**:\n   - Sổ hộ khẩu hoặc giấy tạm trú (nếu có).\n\n4. **Đơn đăng ký kết hôn**:\n   - Theo mẫu quy định của cơ quan có thẩm quyền.\n\n5. **Giấy tờ khác (nếu có)**:\n   - Nếu một trong hai bên đã từng kết hôn, cần có Giấy chứng nhận ly hôn hoặc Giấy chứng tử của vợ/chồng trước (bản chính và bản sao).\n\n**Lưu ý**: Tùy thuộc vào từng trường hợp cụ thể, có thể cần thêm giấy tờ khác. Bạn nên liên hệ với cơ quan đăng ký kết hôn tại địa phương để được hướng dẫn chi tiết."
+      },
+      {
+        "role": "user",
+        "content": "giờ làm của cơ quan tôi cần"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "Giải nghĩa lá bài The emperor trong tarot"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "Giải nghĩa lá bài The Justice trong tarot"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "hihi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hi! 👋 Mình là trợ lý pháp lý hỗ trợ tìm kiếm và giải thích luật. Bạn có thể hỏi mình về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."
+      },
+      {
+        "role": "user",
+        "content": "sfcghxjbk"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "Không hợp tác với cơ quan chức năng có được tính là chống đối hay không?"
+      },
+      {
+        "role": "assistant",
+        "content": "Không hợp tác với cơ quan chức năng có thể được coi là hành vi chống đối, tùy thuộc vào ngữ cảnh và mức độ vi phạm. Theo quy định tại **Điều 318 Bộ luật Hình sự 2015**, hành vi không hợp tác có thể dẫn đến việc bị xử lý hình sự nếu nó gây cản trở cho hoạt động của cơ quan nhà nước hoặc vi phạm các quy định pháp luật khác.\n\nCụ thể, nếu hành vi không hợp tác liên quan đến việc từ chối cung cấp thông tin, tài liệu khi có yêu cầu hợp pháp từ cơ quan chức năng, thì có thể bị xử phạt hành chính hoặc hình sự tùy theo mức độ vi phạm. \n\nDo đó, việc không hợp tác có thể được xem là chống đối nếu nó vi phạm các quy định pháp luật và gây cản trở cho hoạt động của cơ quan nhà nước."
+      },
+      {
+        "role": "user",
+        "content": "Không hợp tác với cơ quan chức năng có được tính là chống đối hay không?"
+      },
+      {
+        "role": "assistant",
+        "content": "Có, việc không hợp tác với cơ quan chức năng có thể được coi là hành vi chống đối. Theo **Điều 318 Bộ luật Hình sự 2015**, hành vi không hợp tác có thể dẫn đến việc bị xử lý hình sự nếu nó gây cản trở cho hoạt động của cơ quan nhà nước hoặc vi phạm các quy định pháp luật khác. \n\nCụ thể, nếu cá nhân hoặc tổ chức từ chối cung cấp thông tin, tài liệu khi có yêu cầu hợp pháp từ cơ quan chức năng, thì có thể bị xử phạt hành chính hoặc hình sự tùy theo mức độ vi phạm. Do đó, việc không hợp tác có thể được xem là chống đối nếu nó vi phạm các quy định pháp luật và gây cản trở cho hoạt động của cơ quan nhà nước."
+      }
+    ],
+    "created_at": "2025-11-04T18:57:23.550646",
+    "updated_at": "2025-11-07T21:41:38.150773"
+  },
+  "db41e983-7e63-4907-8548-dbef50a004ac": {
+    "title": "Gian lận buôn bán có phải phạm tội",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Gian lận buôn bán có phải tội không?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Gian lận buôn bán** là hành vi vi phạm pháp luật và có thể bị xử lý theo quy định của pháp luật Việt Nam. Cụ thể, theo **Điều 8 Nghị định 98/2020/NĐ-CP**, các hành vi gian lận trong khai báo thuế, như không khai hoặc khai sai về tên hàng, số lượng, trị giá hàng hóa xuất nhập khẩu, có thể dẫn đến việc xử phạt hành chính hoặc thậm chí truy cứu trách nhiệm hình sự nếu mức độ vi phạm nghiêm trọng.\n\nNgoài ra, nếu hành vi gian lận buôn bán gây thiệt hại lớn hoặc có dấu hiệu của tội phạm, có thể bị xử lý theo **Bộ luật Hình sự 2015** (sửa đổi, bổ sung 2017) tại **Điều 188** về tội \"Buôn lậu\" hoặc **Điều 190** về tội \"Gian lận thương mại\".\n\nTóm lại, **gian lận buôn bán là tội phạm** và có thể bị xử lý theo quy định của pháp luật Việt Nam."
+      }
+    ],
+    "created_at": "2025-11-07T12:59:44.368243",
+    "updated_at": "2025-11-12T16:05:22.069259"
+  },
+  "2cc56121-912c-4c81-96f0-9c5ca774bd24": {
+    "title": "Test pre-retrieval",
+    "messages": [
+      {
+        "role": "user",
+        "content": "hihi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hi! 👋 Mình là trợ lý pháp lý hỗ trợ tìm kiếm và giải thích luật. Bạn có thể hỏi mình về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."
+      },
+      {
+        "role": "user",
+        "content": "Bạn là ai?"
+      },
+      {
+        "role": "assistant",
+        "content": "Mình là một **trợ lý pháp lý AI** được thiết kế để hỗ trợ bạn trong việc tìm hiểu và tra cứu các quy định pháp luật Việt Nam. Mình có thể tóm tắt điều luật, giải thích nội dung văn bản, hoặc cung cấp căn cứ pháp lý cho câu hỏi của bạn."
+      },
+      {
+        "role": "user",
+        "content": "ghfdvhjcbkzd"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "tệ thế"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "Thủ tục đăng ký kết hôn cần gồm những giấy tờ gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Để đăng ký kết hôn, bạn cần chuẩn bị các giấy tờ sau:**\n\n1. **Đơn đăng ký kết hôn** (theo mẫu quy định).\n2. **Giấy chứng minh nhân dân hoặc thẻ căn cước công dân** của cả hai bên.\n3. **Giấy xác nhận tình trạng hôn nhân** (nếu có) của cả hai bên, chứng minh rằng họ không có vướng mắc về hôn nhân trước đó.\n4. **Giấy tờ chứng minh về nơi cư trú** (nếu cần thiết).\n5. **Giấy tờ khác** theo yêu cầu của cơ quan có thẩm quyền (nếu có).\n\nCác giấy tờ này cần được nộp tại **cơ quan đăng ký hộ tịch** nơi một trong hai bên cư trú. Nếu một trong hai bên là người nước ngoài, cần có thêm giấy tờ chứng minh tình trạng hôn nhân của họ theo quy định của pháp luật nước ngoài và được dịch sang tiếng Việt có công chứng. \n\nCăn cứ pháp lý: Điều 10 và Điều 11 của **Luật Hôn nhân và Gia đình 2014** quy định về điều kiện và thủ tục đăng ký kết hôn."
+      },
+      {
+        "role": "user",
+        "content": "hihi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hi! 👋 Mình là trợ lý pháp lý hỗ trợ tìm kiếm và giải thích luật. Bạn có thể hỏi mình về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."
+      },
+      {
+        "role": "user",
+        "content": "vewydfghbj"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "Thủ tục thừa kế là như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu"
+      },
+      {
+        "role": "user",
+        "content": "Tôi rất không hài lòng với bản dùng thử này"
+      },
+      {
+        "role": "assistant",
+        "content": "Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu"
+      },
+      {
+        "role": "user",
+        "content": "hihi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hi! 👋 Mình là trợ lý pháp lý hỗ trợ tìm kiếm và giải thích luật. Bạn có thể hỏi mình về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."
+      },
+      {
+        "role": "user",
+        "content": "fcvhdgbjz"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "Tôi rất không hài lòng"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ: neutral --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu"
+      },
+      {
+        "role": "user",
+        "content": "Tôi rất không hài lòng nhé"
+      },
+      {
+        "role": "assistant",
+        "content": "Bạn có muốn chuyển tiếp cho cán bộ để xử lý yêu cầu hiệu quả hơn không?"
+      },
+      {
+        "role": "user",
+        "content": "Tôi rất bực bội vì tôi phát hiện bị phạt nguội vượt đèn đỏ, tra cứu cho tôi quy định xử phạt"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ: neutral_info, sad --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu\n \nYêu cầu người dùng: Tôi muốn biết quy định về xử phạt vi phạm giao thông liên quan đến việc vượt đèn đỏ, cụ thể là phạt nguội. "
+      },
+      {
+        "role": "user",
+        "content": "Tệ thế"
+      },
+      {
+        "role": "assistant",
+        "content": "Bạn có muốn chuyển tiếp cho cán bộ để xử lý yêu cầu hiệu quả hơn không?"
+      },
+      {
+        "role": "user",
+        "content": "Quá tệ, tôi rất không hài lòng"
+      },
+      {
+        "role": "assistant",
+        "content": "Mình rất tiếc khi đem lại trải nghiệm không tốt cho bạn. Bạn có muốn mình chuyển tiếp vấn đề của bạn cho cán bộ trực tiếp xử lý không?"
+      },
+      {
+        "role": "user",
+        "content": "có"
+      },
+      {
+        "role": "assistant",
+        "content": "Nếu bạn cần thêm thông tin gì mình sẵn sàng giúp bạn giải đáp nha!"
+      },
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt theo quy định của pháp luật.** \n\nCụ thể, theo Điều 330 Bộ luật Hình sự năm 2015 (sửa đổi, bổ sung năm 2017), người nào có hành vi chống đối người thi hành công vụ có thể bị xử phạt từ **6 tháng đến 3 năm tù** nếu gây hậu quả nghiêm trọng. Nếu hành vi này không gây hậu quả nghiêm trọng, người vi phạm có thể bị xử phạt hành chính với mức phạt tiền từ **2.000.000 đồng đến 5.000.000 đồng** theo Nghị định 167/2013/NĐ-CP.\n\nNgoài ra, nếu hành vi chống đối dẫn đến việc làm hư hỏng tài sản của cơ quan nhà nước hoặc gây rối trật tự công cộng, mức xử phạt có thể tăng lên tùy theo mức độ vi phạm."
+      }
+    ],
+    "created_at": "2025-11-07T21:55:21.659228",
+    "updated_at": "2025-11-21T21:32:10.239647"
+  },
+  "f1cc6ced-85fd-46f3-a993-00f6a0581f7e": {
+    "title": "Khách hàng không hài lòng",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Tôi rất không hài lòng"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ: neutral --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu"
+      },
+      {
+        "role": "user",
+        "content": "Tôi rất không hài lòng"
+      },
+      {
+        "role": "assistant",
+        "content": "Đã chuyển human"
+      },
+      {
+        "role": "user",
+        "content": "Tôi rất bực bội với kết qủa này"
+      },
+      {
+        "role": "assistant",
+        "content": "Đã chuyển human"
+      },
+      {
+        "role": "user",
+        "content": "Tôi rất hài lòng với câu trả lời trên"
+      },
+      {
+        "role": "assistant",
+        "content": "Đã chuyển human"
+      },
+      {
+        "role": "user",
+        "content": "Okay cảm ơn nhé"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "cảm ơn nhé"
+      },
+      {
+        "role": "assistant",
+        "content": "Không có gì đâu 😊! Hỗ trợ bạn tra cứu pháp luật là nhiệm vụ của mình. Nếu bạn cần tìm hiểu thêm điều luật khác, cứ hỏi mình nhé!"
+      },
+      {
+        "role": "user",
+        "content": "Tôi rất hài lòng với câu trả lời của bạn"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ: neutral --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu"
+      },
+      {
+        "role": "user",
+        "content": "Tôi rất hài lòng với câu trả lời của bạn"
+      },
+      {
+        "role": "assistant",
+        "content": "Nếu bạn cần thêm thông tin gì mình sẵn sàng giúp bạn giải đáp nha!"
+      },
+      {
+        "role": "user",
+        "content": "Tôi rất buồn khi phát hiện mình bị lỗi phạt nguội vì vượt đèn đỏ xe máy, cho tôi biết quy định xử phạt là bao nhiêu"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ: neutral --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu\n Yêu cầu người dùng: Xin cho tôi biết quy định xử phạt đối với hành vi vượt đèn đỏ khi điều khiển xe máy, cụ thể là mức phạt nguội là bao nhiêu? "
+      },
+      {
+        "role": "user",
+        "content": "Tôi rất buồn khi phát hiện mình bị lỗi phạt nguội vì vượt đèn đỏ xe máy, cho tôi biết quy định xử phạt là bao nhiêu"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ: sad, neutral_info --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu\n Yêu cầu người dùng: Xin cho tôi biết mức phạt đối với hành vi vượt đèn đỏ khi điều khiển xe máy, cụ thể là quy định xử phạt nguội là bao nhiêu? "
+      },
+      {
+        "role": "user",
+        "content": "Trời ơi sao mấy thông tin không hữu ích gì vậy trời, bạn quá kém, bạn không giúp được gì cho thắc mắc của tôi"
+      },
+      {
+        "role": "assistant",
+        "content": "Bạn có muốn chuyển tiếp cho cán bộ để xử lý yêu cầu hiệu quả hơn không?"
+      },
+      {
+        "role": "user",
+        "content": "Đỗ Thanh Bình"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "Tôi rất hài lòng với giải đáp của bạn"
+      },
+      {
+        "role": "assistant",
+        "content": "Nếu bạn cần thêm thông tin gì mình sẵn sàng giúp bạn giải đáp nha!"
+      },
+      {
+        "role": "user",
+        "content": "Gấp gấp, ngày mai tôi đi đăng ký kết hôn rồi, cho tôi biết cần chuẩn bị giấy tờ gì đi"
+      },
+      {
+        "role": "assistant",
+        "content": "Nếu bạn cần thêm thông tin gì mình sẵn sàng giúp bạn giải đáp nha!"
+      },
+      {
+        "role": "user",
+        "content": "Gấp gấp, ngày mai tôi đi đăng ký kết hôn rồi, cho tôi biết cần chuẩn bị giấy tờ gì đi"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ: neutral --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu\n Yêu cầu người dùng: Tôi cần biết các giấy tờ cần chuẩn bị để đăng ký kết hôn vào ngày mai. "
+      },
+      {
+        "role": "user",
+        "content": "Gấp gấp, ngày mai tôi đi đăng ký kết hôn rồi, cho tôi biết cần chuẩn bị giấy tờ gì đi"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ: neutral --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu\n Yêu cầu người dùng: Tôi cần biết các giấy tờ cần chuẩn bị để đăng ký kết hôn vào ngày mai. "
+      },
+      {
+        "role": "user",
+        "content": "Gấp gấp, ngày mai tôi đi đăng ký kết hôn rồi, cho tôi biết cần chuẩn bị giấy tờ gì đi"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ: ['urgent', 'neutral_info'] --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu\n Yêu cầu người dùng: Tôi cần biết các giấy tờ cần chuẩn bị để đăng ký kết hôn vào ngày mai. "
+      },
+      {
+        "role": "user",
+        "content": "Gấp gấp, ngày mai tôi đi đăng ký kết hôn rồi, cho tôi biết cần chuẩn bị giấy tờ gì đi"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ: urgent, neutral_info --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu\n Yêu cầu người dùng: Tôi cần biết các giấy tờ cần chuẩn bị để đăng ký kết hôn vào ngày mai. "
+      },
+      {
+        "role": "user",
+        "content": "dvghwvjbkefrj"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "okokokok"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ:  --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu\n Yêu cầu người dùng: okokokok "
+      },
+      {
+        "role": "user",
+        "content": "okokokokokokok"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ:  --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu\n Yêu cầu người dùng: okokokok "
+      },
+      {
+        "role": "user",
+        "content": "Mua ngay tại www.abc.com"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "okokokokokokok"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ:  --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu\n Yêu cầu người dùng: okokokokokokok "
+      },
+      {
+        "role": "user",
+        "content": "zzzzzzzzzz"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "askdjhasd jkahsd"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "Xin chào, bạn khỏe không?"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin chào bạn 👋! Mình là trợ lý pháp lý AI — có thể giúp bạn tra cứu các quy định, nghị định, thông tư và các văn bản pháp luật Việt Nam. Bạn muốn tìm hiểu về lĩnh vực nào hôm nay?"
+      },
+      {
+        "role": "user",
+        "content": "Truy cập http://spamlink.com để nhận quà"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "????!!!!!!????"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "Xin tư vấn giúp tôi về thủ tục ly hôn"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ: neutral_info --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu\n Yêu cầu người dùng: Xin vui lòng cung cấp thông tin chi tiết về thủ tục ly hôn theo quy định của pháp luật Việt Nam mà tôi cần tìm hiểu. "
+      },
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ: neutral_info --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu\n Yêu cầu người dùng: Hành vi chống đối người thi hành công vụ theo quy định của pháp luật Việt Nam sẽ bị xử phạt như thế nào? "
+      },
+      {
+        "role": "user",
+        "content": "Haha, rất đúng những gì tôi cần tìm, cảm ơn nhé"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ:  --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu\n Yêu cầu người dùng: Haha, rất đúng những gì tôi cần tìm, cảm ơn nhé "
+      },
+      {
+        "role": "user",
+        "content": "Haha, rất đúng những gì tôi cần tìm, cảm ơn nhé"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ:  --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu\n Yêu cầu người dùng: Haha, rất đúng những gì tôi cần tìm, cảm ơn nhé "
+      },
+      {
+        "role": "user",
+        "content": "Haha, rất đúng những gì tôi cần tìm, cảm ơn nhé\n\n"
+      },
+      {
+        "role": "assistant",
+        "content": "Nếu bạn cần thêm thông tin gì mình sẵn sàng giúp bạn giải đáp nha!"
+      },
+      {
+        "role": "user",
+        "content": "Hello"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello 👋! Mình là trợ lý pháp lý AI hỗ trợ tra cứu văn bản luật Việt Nam. Bạn có thể hỏi mình về quy định, mức xử phạt, điều kiện pháp lý hoặc hướng dẫn thủ tục nhé."
+      },
+      {
+        "role": "user",
+        "content": "okay ạ"
+      },
+      {
+        "role": "assistant",
+        "content": "Nếu bạn cần thêm thông tin gì mình sẵn sàng giúp bạn giải đáp nha!"
+      },
+      {
+        "role": "user",
+        "content": "dvkjhbf"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "ấn link này nhé"
+      },
+      {
+        "role": "assistant",
+        "content": "Nếu bạn cần thêm thông tin gì mình sẵn sàng giúp bạn giải đáp nha!"
+      },
+      {
+        "role": "user",
+        "content": "tôi vừa mới bị phạt nguội vượt đèn đỏ xe máy, thật bực bội, tra cứu giúp tôi quy định xử phạt đi"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "tôi vừa mới bị phạt nguội vượt đèn đỏ xe máy, thật bực bội, tra cứu giúp tôi quy định xử phạt đi"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "tôi vừa mới bị phạt nguội vượt đèn đỏ xe máy, thật bực bội, tra cứu giúp tôi quy định xử phạt đi"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "tôi vừa mới bị phạt nguội vượt đèn đỏ xe máy, thật bực bội, tra cứu giúp tôi quy định xử phạt đi"
+      },
+      {
+        "role": "assistant",
+        "content": "Thái độ: neutral_info, dissatisfied --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu\n Yêu cầu người dùng: Tôi muốn tra cứu quy định xử phạt đối với hành vi vượt đèn đỏ xe máy, vì tôi vừa bị phạt nguội và cảm thấy bực bội. "
+      }
+    ],
+    "created_at": "2025-11-10T19:41:59.719772",
+    "updated_at": "2025-11-11T15:00:20.167005"
+  },
+  "d59fc072-6690-4493-b561-1d4787dad1c3": {
+    "title": "Tra cứu quy định phạt vượt đèn đỏ",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Tôi vừa mới phát hiện mình bị dính lỗi phạt nguội do vượt đèn đỏ bằng xe máy, bực bội quá, giúp tôi tra cứu quy định xử phạt trường hợp này đi"
+      },
+      {
+        "role": "assistant",
+        "content": "**Có** quy định xử phạt đối với hành vi vượt đèn đỏ khi điều khiển xe máy. Cụ thể, theo **Điều 5 Nghị định 100/2019/NĐ-CP**, mức phạt tiền đối với hành vi này là từ **1.000.000 đồng đến 2.000.000 đồng**. Ngoài ra, người vi phạm còn có thể bị tước quyền sử dụng Giấy phép lái xe từ **1 đến 3 tháng**.\n\nNếu bạn đã nhận được thông báo phạt nguội, hãy kiểm tra kỹ thông tin và thực hiện các bước cần thiết để xử lý theo quy định. Nếu cần thêm thông tin hoặc hỗ trợ, bạn có thể liên hệ với cơ quan chức năng hoặc tìm hiểu thêm về quy trình khiếu nại nếu bạn cho rằng mình không vi phạm."
+      },
+      {
+        "role": "user",
+        "content": "Buồn quá, tôi phải đóng tiền phạt ở đâu"
+      },
+      {
+        "role": "assistant",
+        "content": "**Bạn có thể đóng tiền phạt tại các cơ quan chức năng có thẩm quyền** như Cảnh sát giao thông hoặc các cơ quan quản lý giao thông tại địa phương nơi bạn cư trú. \n\nKhi nhận được thông báo phạt nguội, bạn sẽ có thông tin cụ thể về địa điểm và phương thức thanh toán. Thông thường, bạn có thể thanh toán trực tiếp tại trụ sở hoặc qua các hình thức thanh toán điện tử nếu có.\n\nNếu bạn cần thêm thông tin chi tiết về quy trình hoặc địa điểm cụ thể, hãy liên hệ với cơ quan chức năng gần nhất để được hỗ trợ. Hãy nhớ giữ bình tĩnh và thực hiện đúng quy định để tránh những rắc rối không cần thiết trong tương lai."
+      },
+      {
+        "role": "user",
+        "content": "à tô nhầm, vượt đè đỏ ô tô"
+      },
+      {
+        "role": "assistant",
+        "content": "Nếu bạn cần thêm thông tin gì mình sẵn sàng giúp bạn giải đáp nha!"
+      },
+      {
+        "role": "user",
+        "content": "tôi nhầm, vượt đèn đỏ ô tô, tra cứu quy định xử phạt đi"
+      },
+      {
+        "role": "assistant",
+        "content": "**Có** quy định xử phạt đối với hành vi vượt đèn đỏ khi điều khiển ô tô. Cụ thể, theo **Điều 5 Nghị định 100/2019/NĐ-CP**, mức phạt tiền đối với hành vi này là từ **10.000.000 đồng đến 15.000.000 đồng**. Ngoài ra, người vi phạm còn có thể bị tước quyền sử dụng Giấy phép lái xe từ **1 đến 3 tháng**.\n\nNếu bạn đã nhận được thông báo phạt nguội, hãy kiểm tra kỹ thông tin và thực hiện các bước cần thiết để xử lý theo quy định. Nếu cần thêm thông tin hoặc hỗ trợ, bạn có thể liên hệ với cơ quan chức năng hoặc tìm hiểu thêm về quy trình khiếu nại nếu bạn cho rằng mình không vi phạm."
+      }
+    ],
+    "created_at": "2025-11-12T22:15:38.355887",
+    "updated_at": "2025-11-12T22:23:43.028614"
+  },
+  "8edf6754-cbeb-48fb-8952-96fd6b362184": {
+    "title": "Chào hỏi đơn giản",
+    "messages": [
+      {
+        "role": "user",
+        "content": "hello"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello 👋! Mình là trợ lý pháp lý AI hỗ trợ tra cứu văn bản luật Việt Nam. Bạn có thể hỏi mình về quy định, mức xử phạt, điều kiện pháp lý hoặc hướng dẫn thủ tục nhé."
+      },
+      {
+        "role": "user",
+        "content": "Bạn là gì"
+      },
+      {
+        "role": "assistant",
+        "content": "Nếu bạn cần thêm thông tin gì mình sẵn sàng giúp bạn giải đáp nha!"
+      },
+      {
+        "role": "user",
+        "content": "Bạn là ai?"
+      },
+      {
+        "role": "assistant",
+        "content": "Mình là một **trợ lý pháp lý AI** được thiết kế để hỗ trợ bạn trong việc tìm hiểu và tra cứu các quy định pháp luật Việt Nam. Mình có thể tóm tắt điều luật, giải thích nội dung văn bản, hoặc cung cấp căn cứ pháp lý cho câu hỏi của bạn."
+      },
+      {
+        "role": "user",
+        "content": "cshjcvbk vdjh"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "tệ quá, thật thất vọng"
+      },
+      {
+        "role": "assistant",
+        "content": "Mình rất tiếc khi đem lại trải nghiệm không tốt cho bạn. Bạn có muốn mình chuyển tiếp vấn đề của bạn cho cán bộ trực tiếp xử lý không?"
+      },
+      {
+        "role": "user",
+        "content": "Tôi khá lo lắng vì sáng mai tôi sẽ đi đăng ký kết hôn, có thủ tục hoặc giấy tờ cần thiết gì cần chú ý vậy"
+      },
+      {
+        "role": "assistant",
+        "content": "**Có**, bạn cần chuẩn bị một số giấy tờ và thủ tục cần thiết khi đi đăng ký kết hôn. Dưới đây là những thông tin quan trọng bạn cần chú ý:\n\n1. **Giấy tờ cần thiết**:\n   - **Giấy chứng minh nhân dân hoặc hộ chiếu**: Bản chính và bản sao.\n   - **Giấy xác nhận tình trạng hôn nhân**: Nếu bạn đã từng kết hôn, cần có giấy tờ chứng minh đã ly hôn hoặc vợ/chồng đã qua đời.\n   - **Giấy tờ chứng minh nơi cư trú**: Như sổ hộ khẩu hoặc giấy tạm trú.\n\n2. **Thủ tục**:\n   - Đến cơ quan có thẩm quyền đăng ký kết hôn (thường là UBND cấp xã, phường nơi cư trú).\n   - Điền vào mẫu đơn đăng ký kết hôn theo quy định.\n   - Nộp hồ sơ và chờ cơ quan chức năng xử lý.\n\n3. **Lưu ý**:\n   - Đảm bảo thông tin trong giấy tờ là chính xác, tránh việc tẩy xóa hay sửa chữa, vì điều này có thể bị xử phạt theo quy định tại Điều 1 Nghị định 82/2020/NĐ-CP.\n   - Nếu bạn đăng ký kết hôn với người nước ngoài, có thể cần thêm giấy tờ như giấy xác nhận tình trạng hôn nhân từ cơ quan nước ngoài.\n\nChúc bạn mọi điều tốt đẹp trong ngày đăng ký kết hôn! Nếu có thêm câu hỏi nào, đừng ngần ngại hỏi nhé!"
+      }
+    ],
+    "created_at": "2025-11-18T01:06:36.121961",
+    "updated_at": "2025-11-18T11:16:08.678762"
+  },
+  "cc235559-cc0c-4681-a122-24a02eb6cf31": {
+    "title": "Chào hỏi giữa hai người",
+    "messages": [
+      {
+        "role": "user",
+        "content": "hello"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello 👋! Mình là trợ lý pháp lý AI hỗ trợ tra cứu văn bản luật Việt Nam. Bạn có thể hỏi mình về quy định, mức xử phạt, điều kiện pháp lý hoặc hướng dẫn thủ tục nhé."
+      },
+      {
+        "role": "user",
+        "content": "hjbbjvhfbv bhjdb"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "tệ quá, tôi rất không hài lòng"
+      },
+      {
+        "role": "assistant",
+        "content": "Mình rất tiếc khi đem lại trải nghiệm không tốt cho bạn. Bạn có muốn mình chuyển tiếp vấn đề của bạn cho cán bộ trực tiếp xử lý không?"
+      },
+      {
+        "role": "user",
+        "content": "Ngày mai tôi chuẩn bị đi đăng ký kết hôn, tôi không rõ lắm về các quy định về thủ tục hoặc giấy tờ cần thiết,hãy cho tôi biết"
+      },
+      {
+        "role": "assistant",
+        "content": "**Có**. Để đăng ký kết hôn tại Việt Nam, bạn cần chuẩn bị các giấy tờ sau:\n\n1. **Giấy tờ tùy thân**:\n   - Chứng minh nhân dân hoặc thẻ căn cước công dân của cả hai bên.\n   - Nếu một trong hai bên là người nước ngoài, cần có hộ chiếu và giấy tờ chứng minh tình trạng hôn nhân (như Giấy xác nhận tình trạng hôn nhân).\n\n2. **Giấy tờ chứng minh tình trạng hôn nhân**:\n   - Giấy xác nhận tình trạng hôn nhân (nếu chưa kết hôn) hoặc Giấy chứng nhận ly hôn (nếu đã ly hôn) hoặc Giấy chứng tử (nếu đã mất vợ/chồng).\n\n3. **Đơn đăng ký kết hôn**:\n   - Bạn có thể lấy mẫu đơn tại cơ quan đăng ký kết hôn hoặc tải từ trang web của cơ quan nhà nước có thẩm quyền.\n\n4. **Giấy tờ khác (nếu có)**:\n   - Nếu bạn đã từng kết hôn, cần có Giấy chứng nhận ly hôn hoặc Giấy chứng tử của vợ/chồng cũ.\n\n**Thủ tục**:\n- Đến cơ quan đăng ký kết hôn (thường là UBND cấp xã, phường) nơi bạn cư trú.\n- Nộp hồ sơ và chờ được giải quyết. Thời gian giải quyết thường là từ 3 đến 5 ngày làm việc.\n\nLưu ý: Cả hai bên cần có mặt để ký vào đơn đăng ký kết hôn."
+      },
+      {
+        "role": "user",
+        "content": "cảm ơn nhé"
+      },
+      {
+        "role": "assistant",
+        "content": "Không có gì đâu 😊! Hỗ trợ bạn tra cứu pháp luật là nhiệm vụ của mình. Nếu bạn cần tìm hiểu thêm điều luật khác, cứ hỏi mình nhé!"
+      }
+    ],
+    "created_at": "2025-11-21T21:38:35.692119",
+    "updated_at": "2025-11-21T21:45:28.839268"
+  },
+  "0eaca0d7-187b-4455-b02c-739ff133c343": {
+    "title": "Xử phạt hành vi nói xấu trên mạng xã hội",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi nói xấu người khác trên mạng xã hội có bị xử phạt gì k?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Có**, hành vi nói xấu người khác trên mạng xã hội có thể bị xử phạt theo quy định của pháp luật Việt Nam.\n\nCụ thể, theo **Điều 102 Nghị định 15/2020/NĐ-CP**, hành vi cung cấp thông tin sai sự thật, xúc phạm danh dự, nhân phẩm của cá nhân có thể bị phạt tiền từ **10.000.000 đồng đến 20.000.000 đồng**. Nếu hành vi này gây hậu quả nghiêm trọng hơn, có thể bị xử lý hình sự theo **Điều 155 Bộ luật Hình sự 2015** về tội \"Làm nhục người khác\".\n\nNgoài ra, người vi phạm cũng có thể bị yêu cầu gỡ bỏ thông tin sai sự thật và xin lỗi công khai đối với người bị xúc phạm."
+      },
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt.** \n\nCụ thể, theo **Điều 257 Bộ luật Hình sự 2015**, người nào có hành vi chống đối người thi hành công vụ có thể bị phạt tiền từ **10.000.000 đồng đến 30.000.000 đồng** hoặc phạt cải tạo không giam giữ đến **3 năm** hoặc phạt tù từ **6 tháng đến 3 năm**. \n\nHành vi chống đối có thể bao gồm việc cản trở, đe dọa, hoặc có hành vi bạo lực đối với người thi hành công vụ. Nếu hành vi này gây hậu quả nghiêm trọng hơn, mức phạt có thể tăng lên tùy thuộc vào tính chất và mức độ vi phạm.\n\nNgoài ra, theo **Nghị định 167/2013/NĐ-CP**, hành vi chống đối người thi hành công vụ cũng có thể bị xử phạt hành chính từ **2.000.000 đồng đến 5.000.000 đồng**. \n\nNgười vi phạm có thể bị truy cứu trách nhiệm hình sự hoặc xử phạt hành chính tùy thuộc vào mức độ nghiêm trọng của hành vi."
+      }
+    ],
+    "created_at": "2025-11-21T21:48:57.162242",
+    "updated_at": "2025-11-27T15:08:55.944180"
+  },
+  "484c1fb7-5272-49aa-8ad1-0fa95e14236d": {
+    "title": "Ý nghĩa lá bài tarot The Moon",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Ý nghĩa lá bài tarot \"The moon\"?"
+      },
+      {
+        "role": "assistant",
+        "content": "Nếu bạn cần thêm thông tin gì mình sẵn sàng giúp bạn giải đáp nha!"
+      },
+      {
+        "role": "user",
+        "content": "Làm thế nào để có người yêu?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Không có quy định pháp luật nào liên quan đến việc tìm kiếm người yêu.** \n\nTuy nhiên, để có người yêu, bạn có thể tham khảo một số cách tiếp cận như:\n\n1. **Mở rộng mối quan hệ**: Tham gia các hoạt động xã hội, câu lạc bộ, hoặc sự kiện để gặp gỡ nhiều người mới.\n2. **Sử dụng ứng dụng hẹn hò**: Các ứng dụng hẹn hò trực tuyến có thể giúp bạn tìm kiếm người phù hợp với sở thích và tiêu chí của mình.\n3. **Tự tin và chân thành**: Hãy thể hiện bản thân một cách tự tin và chân thành trong giao tiếp với người khác.\n4. **Tham gia các hoạt động chung**: Tham gia các hoạt động mà bạn yêu thích, điều này không chỉ giúp bạn thư giãn mà còn có cơ hội gặp gỡ những người có cùng sở thích.\n\nNếu bạn cần thêm thông tin hoặc có câu hỏi cụ thể hơn, hãy cho tôi biết!"
+      },
+      {
+        "role": "user",
+        "content": "Làm thế nào để có người yêu?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Không có quy định pháp luật nào liên quan đến việc tìm kiếm người yêu.** \n\nĐể có người yêu, bạn có thể tham khảo một số cách tiếp cận như sau:\n\n1. **Mở rộng mối quan hệ**: Tham gia các hoạt động xã hội, câu lạc bộ, hoặc sự kiện để gặp gỡ nhiều người mới.\n2. **Sử dụng ứng dụng hẹn hò**: Các ứng dụng hẹn hò trực tuyến có thể giúp bạn tìm kiếm người phù hợp với sở thích và tiêu chí của mình.\n3. **Tự tin và chân thành**: Hãy thể hiện bản thân một cách tự tin và chân thành trong giao tiếp với người khác.\n4. **Tham gia các hoạt động chung**: Tham gia các hoạt động mà bạn yêu thích, điều này không chỉ giúp bạn thư giãn mà còn có cơ hội gặp gỡ những người có cùng sở thích.\n\nNếu bạn cần thêm thông tin hoặc có câu hỏi cụ thể hơn, hãy cho tôi biết!"
+      },
+      {
+        "role": "user",
+        "content": "Làm thế nào để có người yêu?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Không có quy định pháp luật nào liên quan đến việc tìm kiếm người yêu.** Tuy nhiên, để có người yêu, bạn có thể tham khảo một số cách tiếp cận như sau:\n\n1. **Mở rộng mối quan hệ**: Tham gia các hoạt động xã hội, câu lạc bộ, hoặc sự kiện để gặp gỡ nhiều người mới.\n2. **Sử dụng ứng dụng hẹn hò**: Các ứng dụng hẹn hò trực tuyến có thể giúp bạn tìm kiếm người phù hợp với sở thích và tiêu chí của mình.\n3. **Tự tin và chân thành**: Hãy thể hiện bản thân một cách tự tin và chân thành trong giao tiếp với người khác.\n4. **Tham gia các hoạt động chung**: Tham gia các hoạt động mà bạn yêu thích, điều này không chỉ giúp bạn thư giãn mà còn có cơ hội gặp gỡ những người có cùng sở thích.\n\nNếu bạn cần thêm thông tin hoặc có câu hỏi cụ thể hơn, hãy cho tôi biết!"
+      },
+      {
+        "role": "user",
+        "content": "Làm thế nào để có người yêu?"
+      },
+      {
+        "role": "assistant",
+        "content": "Có vẻ yêu cầu của bạn chưa rõ ràng hoặc không nằm trong phạm vi mình xử lý nên mình không thể hỗ trợ bạn được. Nếu có các vấn đề liên quan đến pháp lý cần giải đáp, bạn có thể hỏi mình nhé!"
+      },
+      {
+        "role": "user",
+        "content": "Ý nghĩa lá bài tarot \"The moon\" là gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "Có vẻ yêu cầu của bạn chưa rõ ràng hoặc không nằm trong phạm vi mình xử lý nên mình không thể hỗ trợ bạn được. Mình là trợ lý pháp lý hỗ trợ tìm kiếm và giải thích luật. Bạn có thể hỏi mình về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."
+      },
+      {
+        "role": "user",
+        "content": "Nói xấu nhau trên mạng xã hội có bị xử phạt gì không, mức độ nào thì sẽ bị xử phạt?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Có**, việc nói xấu nhau trên mạng xã hội có thể bị xử phạt theo quy định của pháp luật Việt Nam. \n\nCụ thể, hành vi này có thể bị xử phạt hành chính theo Nghị định 15/2020/NĐ-CP về xử phạt vi phạm hành chính trong lĩnh vực bưu chính, viễn thông, tần số vô tuyến điện, công nghệ thông tin và giao dịch điện tử. \n\n- **Mức phạt**: Phạt tiền từ **10.000.000 đồng đến 20.000.000 đồng** đối với hành vi cung cấp thông tin sai sự thật, xúc phạm danh dự, nhân phẩm của tổ chức, cá nhân.\n\nNgoài ra, nếu hành vi nói xấu có dấu hiệu của tội phạm như vu khống, bôi nhọ danh dự người khác, có thể bị truy cứu trách nhiệm hình sự theo Điều 156 (Tội vu khống) của Bộ luật Hình sự 2015, với mức phạt tù từ **6 tháng đến 3 năm**.\n\nDo đó, người dùng mạng xã hội cần thận trọng trong việc phát ngôn để tránh vi phạm pháp luật."
+      },
+      {
+        "role": "user",
+        "content": "hello"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello 👋! Mình là trợ lý pháp lý AI hỗ trợ tra cứu văn bản luật Việt Nam. Bạn có thể hỏi mình về quy định, mức xử phạt, điều kiện pháp lý hoặc hướng dẫn thủ tục nhé."
+      },
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt.** \n\nCụ thể, theo Điều 330 Bộ luật Hình sự 2015 (sửa đổi, bổ sung năm 2017), người nào có hành vi chống đối người thi hành công vụ có thể bị xử lý hình sự với mức phạt tù từ **6 tháng đến 3 năm**. \n\nNgoài ra, nếu hành vi chống đối gây hậu quả nghiêm trọng, mức phạt có thể tăng lên đến **7 năm tù**. \n\nTrong trường hợp vi phạm hành chính, theo Nghị định 167/2013/NĐ-CP, hành vi chống đối người thi hành công vụ có thể bị phạt tiền từ **2.000.000 đồng đến 5.000.000 đồng**.\n\nDo đó, người dân cần tuân thủ pháp luật và hợp tác với cơ quan chức năng trong quá trình thi hành công vụ để tránh bị xử lý."
+      },
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt.** \n\nCụ thể, theo **Điều 330 Bộ luật Hình sự 2015** (sửa đổi, bổ sung năm 2017), người nào có hành vi chống đối người thi hành công vụ có thể bị xử lý hình sự với mức phạt tù từ **6 tháng đến 3 năm**. Nếu hành vi chống đối gây hậu quả nghiêm trọng, mức phạt có thể tăng lên đến **7 năm tù**.\n\nNgoài ra, theo **Nghị định 167/2013/NĐ-CP**, hành vi chống đối người thi hành công vụ có thể bị xử phạt hành chính với mức phạt tiền từ **2.000.000 đồng đến 5.000.000 đồng**.\n\nDo đó, việc tuân thủ pháp luật và hợp tác với cơ quan chức năng trong quá trình thi hành công vụ là rất quan trọng để tránh bị xử lý."
+      }
+    ],
+    "created_at": "2025-11-21T21:50:05.422817",
+    "updated_at": "2025-11-27T15:06:59.938509"
+  },
+  "46c1793f-7252-4421-953b-a06485014eed": {
+    "title": "Xử phạt hành vi chống đối công vụ",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt hành chính hoặc truy cứu trách nhiệm hình sự.** \n\nCụ thể, theo Điều 39.13 Nghị định 105/2021/NĐ-CP, tổ chức, cá nhân có hành vi chống đối hoặc cản trở người thực hiện nhiệm vụ xử phạt vi phạm hành chính về xây dựng sẽ bị xử phạt theo quy định của Nghị định của Chính phủ về xử phạt vi phạm hành chính trong lĩnh vực an ninh trật tự và an toàn xã hội.\n\nNgoài ra, theo Điều 37.5 và 37.6 của Bộ luật Tố tụng Dân sự và Tố tụng Hành chính, người có hành vi đe dọa, hành hung hoặc cản trở đại diện của cơ quan, tổ chức tham gia tố tụng cũng sẽ bị xử phạt hành chính hoặc truy cứu trách nhiệm hình sự tùy theo tính chất, mức độ vi phạm.\n\nDo đó, mức xử phạt cụ thể sẽ phụ thuộc vào tính chất và mức độ của hành vi vi phạm."
+      }
+    ],
+    "created_at": "2025-11-27T20:13:00.160098",
+    "updated_at": "2025-11-27T20:13:34.904648"
+  },
+  "1996bad0-3655-4a14-8774-7eb38eb5f6d7": {
+    "title": "Hybrid_Rerank_Top10",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Có** hành vi chống đối người thi hành công vụ sẽ bị xử phạt hành chính hoặc truy cứu trách nhiệm hình sự tùy theo tính chất và mức độ vi phạm.\n\nTheo **Điều 21 Nghị định số 144/2021/NĐ-CP**, mức phạt cụ thể như sau:\n\n1. **Phạt tiền từ 1.000.000 đồng đến 4.000.000 đồng** đối với hành vi môi giới, giúp sức cho cá nhân, tổ chức vi phạm trốn tránh việc thanh tra, kiểm tra, kiểm soát của người thi hành công vụ.\n\n2. **Phạt tiền từ 4.000.000 đồng đến 6.000.000 đồng** đối với các hành vi:\n   - Cản trở hoặc không chấp hành yêu cầu thanh tra, kiểm tra, kiểm soát của người thi hành công vụ.\n   - Có lời nói, hành động đe dọa, lăng mạ, xúc phạm danh dự, nhân phẩm người thi hành công vụ.\n   - Tổ chức, xúi giục, giúp sức, lôi kéo hoặc kích động người khác không chấp hành yêu cầu của người thi hành công vụ.\n\n3. **Phạt tiền từ 6.000.000 đồng đến 8.000.000 đồng** đối với các hành vi:\n   - Dùng vũ lực, đe dọa dùng vũ lực chống người thi hành công vụ.\n   - Gây thiệt hại về tài sản, phương tiện của cơ quan nhà nước, của người thi hành công vụ.\n   - Đưa hối lộ cho người thi hành công vụ.\n\nNgoài ra, nếu hành vi vi phạm có tính chất nghiêm trọng, có thể bị truy cứu trách nhiệm hình sự theo quy định của pháp luật."
+      }
+    ],
+    "created_at": "2025-11-28T16:00:55.821306",
+    "updated_at": "2025-11-28T18:43:09.841920"
+  },
+  "2b809fce-1e34-48f4-b56e-2afc52311d40": {
+    "title": "Hybrid_search_Top10",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt hành chính hoặc truy cứu trách nhiệm hình sự tùy theo tính chất và mức độ vi phạm.**\n\nTheo quy định tại **Điều 21 Nghị định số 144/2021/NĐ-CP**, các hành vi cản trở hoặc chống đối người thi hành công vụ sẽ bị xử phạt như sau:\n\n1. **Phạt tiền từ 1.000.000 đồng đến 4.000.000 đồng** đối với hành vi môi giới, giúp sức cho cá nhân, tổ chức vi phạm trốn tránh việc thanh tra, kiểm tra, kiểm soát của người thi hành công vụ.\n\n2. **Phạt tiền từ 4.000.000 đồng đến 6.000.000 đồng** đối với các hành vi:\n   - Cản trở hoặc không chấp hành yêu cầu thanh tra, kiểm tra, kiểm soát của người thi hành công vụ.\n   - Có lời nói, hành động đe dọa, lăng mạ, xúc phạm danh dự, nhân phẩm người thi hành công vụ.\n   - Tổ chức, xúi giục, giúp sức, lôi kéo hoặc kích động người khác không chấp hành yêu cầu thanh tra, kiểm tra.\n\n3. **Phạt tiền từ 6.000.000 đồng đến 8.000.000 đồng** đối với các hành vi:\n   - Dùng vũ lực, đe dọa dùng vũ lực chống người thi hành công vụ.\n   - Gây thiệt hại về tài sản, phương tiện của cơ quan nhà nước, của người thi hành công vụ.\n   - Đưa tiền, tài sản, lợi ích vật chất khác hoặc lợi ích phi vật chất hối lộ cho người thi hành công vụ.\n\nNgoài ra, nếu hành vi chống đối có tính chất nghiêm trọng, có thể bị truy cứu trách nhiệm hình sự theo quy định của **Bộ luật Hình sự**. Cụ thể, hành vi xúc phạm, xâm hại đến sự tôn nghiêm, uy tín của Tòa án hoặc người thi hành công vụ có thể bị xử lý hình sự tùy theo tính chất, mức độ vi phạm (Điều 492 Bộ luật số 92/2015/QH13).\n\n**Căn cứ pháp lý:**\n- Nghị định số 144/2021/NĐ-CP, Điều 21.\n- Bộ luật số 92/2015/QH13, Điều 492."
+      }
+    ],
+    "created_at": "2025-11-28T18:29:30.420728",
+    "updated_at": "2025-11-28T18:42:45.297978"
+  },
+  "eb3d6032-30f9-490d-b8ce-1cb9219c2487": {
+    "title": "Semantic_search_Top10",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt hành chính.** \n\nCụ thể, theo **Điều 21 Nghị định số 144/2021/NĐ-CP**, các mức phạt đối với hành vi cản trở hoặc chống lại người thi hành công vụ được quy định như sau:\n\n1. **Phạt tiền từ 1.000.000 đồng đến 4.000.000 đồng** đối với hành vi môi giới, giúp sức cho cá nhân, tổ chức vi phạm trốn tránh việc thanh tra, kiểm tra, kiểm soát của người thi hành công vụ.\n\n2. **Phạt tiền từ 4.000.000 đồng đến 6.000.000 đồng** đối với các hành vi:\n   - Cản trở hoặc không chấp hành yêu cầu thanh tra, kiểm tra, kiểm soát của người thi hành công vụ.\n   - Có lời nói, hành động đe dọa, lăng mạ, xúc phạm danh dự, nhân phẩm người thi hành công vụ.\n   - Tổ chức, xúi giục, giúp sức, lôi kéo hoặc kích động người khác không chấp hành yêu cầu của người thi hành công vụ.\n\n3. **Phạt tiền từ 6.000.000 đồng đến 8.000.000 đồng** đối với các hành vi:\n   - Dùng vũ lực, đe dọa dùng vũ lực chống người thi hành công vụ.\n   - Gây thiệt hại về tài sản, phương tiện của cơ quan nhà nước, của người thi hành công vụ.\n   - Đưa tiền, tài sản, lợi ích vật chất khác hoặc lợi ích phi vật chất hối lộ cho người thi hành công vụ.\n\nNgoài ra, có thể áp dụng biện pháp khắc phục hậu quả như buộc xin lỗi công khai đối với hành vi xúc phạm danh dự, nhân phẩm người thi hành công vụ.\n\nCăn cứ theo **Điều 21 Nghị định số 144/2021/NĐ-CP**, có hiệu lực thi hành kể từ ngày 01/01/2022."
+      }
+    ],
+    "created_at": "2025-11-28T18:37:05.402038",
+    "updated_at": "2025-11-28T18:42:30.051689"
+  },
+  "c2ebf274-0175-42be-aabb-2640e988d5a4": {
+    "title": "Semantic_search_Top5",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt hành chính.** \n\nCụ thể, theo **Điều 39.13 Nghị định số 105/2021/NĐ-CP**, tổ chức, cá nhân có hành vi chống đối hoặc cản trở người thực hiện nhiệm vụ xử phạt vi phạm hành chính về xây dựng sẽ bị xử phạt hành chính theo quy định tại Nghị định của Chính phủ về xử phạt vi phạm hành chính trong lĩnh vực an ninh trật tự và an toàn xã hội.\n\nMức phạt cụ thể sẽ phụ thuộc vào tính chất và mức độ của hành vi chống đối. Theo **Điều 6 Nghị định số 16/2022/NĐ-CP**, có hiệu lực từ ngày 28/01/2022, các hành vi này sẽ bị xử lý nghiêm khắc nhằm bảo đảm trật tự, an toàn xã hội.\n\nNgoài ra, nếu hành vi chống đối dẫn đến hậu quả nghiêm trọng, có thể bị truy cứu trách nhiệm hình sự theo quy định của Bộ luật Hình sự."
+      }
+    ],
+    "created_at": "2025-11-28T18:39:31.240050",
+    "updated_at": "2025-11-28T18:43:19.699930"
+  },
+  "8d2fae3b-01a2-4119-abd2-2974bddafa94": {
+    "title": "Hybrid_search_Top5",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt hành chính.** \n\nCụ thể, theo **Điều 21 Nghị định số 144/2021/NĐ-CP**, hành vi cản trở, chống lại việc thanh tra, kiểm tra, kiểm soát của người thi hành công vụ được quy định như sau:\n\n1. **Phạt tiền từ 1.000.000 đồng đến 4.000.000 đồng** đối với hành vi môi giới, giúp sức cho cá nhân, tổ chức vi phạm trốn tránh việc thanh tra, kiểm tra, kiểm soát của người thi hành công vụ.\n\n2. **Phạt tiền từ 4.000.000 đồng đến 6.000.000 đồng** đối với các hành vi:\n   - Cản trở hoặc không chấp hành yêu cầu thanh tra, kiểm tra, kiểm soát hoặc nhiệm vụ khác của người thi hành công vụ.\n   - Có lời nói, hành động đe dọa, lăng mạ, xúc phạm danh dự, nhân phẩm người thi hành công vụ.\n   - Tổ chức, xúi giục, giúp sức, lôi kéo hoặc kích động người khác không chấp hành yêu cầu thanh tra, kiểm tra, kiểm soát của người thi hành công vụ.\n\n3. **Phạt tiền từ 6.000.000 đồng đến 8.000.000 đồng** đối với các hành vi:\n   - Dùng vũ lực, đe dọa dùng vũ lực chống người thi hành công vụ.\n   - Gây thiệt hại về tài sản, phương tiện của cơ quan nhà nước, của người thi hành công vụ.\n   - Đưa tiền, tài sản, lợi ích vật chất khác hoặc lợi ích phi vật chất hối lộ cho người thi hành công vụ.\n\n4. **Biện pháp khắc phục hậu quả:** Buộc xin lỗi công khai đối với hành vi lăng mạ, xúc phạm người thi hành công vụ.\n\nCác quy định này nhằm bảo vệ quyền lợi và sự an toàn của người thi hành công vụ trong quá trình thực hiện nhiệm vụ."
+      }
+    ],
+    "created_at": "2025-11-28T18:40:51.437636",
+    "updated_at": "2025-11-28T18:43:26.849656"
+  },
+  "bfaa0270-28ea-493b-adc7-2e098ddbaa68": {
+    "title": "Hybrid_rerank_Top5",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt hành chính hoặc truy cứu trách nhiệm hình sự tùy theo tính chất và mức độ vi phạm.**\n\n1. **Xử phạt hành chính**: \n   - Theo **Điều 21 Nghị định số 144/2021/NĐ-CP**, hành vi cản trở hoặc không chấp hành yêu cầu của người thi hành công vụ có thể bị phạt tiền từ **4.000.000 đồng đến 6.000.000 đồng**. \n   - Hành vi dùng vũ lực hoặc đe dọa dùng vũ lực chống người thi hành công vụ có thể bị phạt từ **6.000.000 đồng đến 8.000.000 đồng**.\n\n2. **Truy cứu trách nhiệm hình sự**: \n   - Theo **Điều 323 Luật Tố tụng hành chính**, nếu hành vi đe dọa, hành hung hoặc lợi dụng sự lệ thuộc nhằm cản trở người thi hành công vụ có tính chất nghiêm trọng, có thể bị truy cứu trách nhiệm hình sự.\n\nTóm lại, mức xử phạt cụ thể sẽ phụ thuộc vào hành vi cụ thể và mức độ vi phạm của cá nhân hoặc tổ chức."
+      }
+    ],
+    "created_at": "2025-11-28T18:44:00.752036",
+    "updated_at": "2025-11-28T18:45:40.077730"
+  },
+  "a7546958-e80f-4a8c-bc6e-b7f3d7fd2038": {
+    "title": "Cách tìm người yêu",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Làm thế nào để có người yêu?\n\n"
+      },
+      {
+        "role": "assistant",
+        "content": "Có vẻ yêu cầu của bạn chưa rõ ràng hoặc không nằm trong phạm vi mình xử lý nên mình không thể hỗ trợ bạn được. Mình là trợ lý pháp lý hỗ trợ tìm kiếm và giải thích luật. Bạn có thể hỏi mình về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."
+      }
+    ],
+    "created_at": "2025-11-28T21:59:08.742710",
+    "updated_at": "2025-11-28T21:59:21.214292"
+  },
+  "bc25706f-bc52-439b-9a59-04b518da8645": {
+    "title": "Xử lý hành vi chống đối người thi hành công",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành nhiệm vụ sẽ bị xử lý như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành nhiệm vụ sẽ bị xử lý theo quy định của pháp luật.** \n\nCụ thể, hành vi chống đối hoặc cản trở người thực hiện nhiệm vụ sẽ bị xử phạt hành chính theo Nghị định của Chính phủ về xử phạt vi phạm hành chính trong lĩnh vực an ninh trật tự và an toàn xã hội. Mức phạt cụ thể sẽ phụ thuộc vào tính chất và mức độ vi phạm.\n\nTheo **Điều 39.13 Nghị định 105/2022/NĐ-CP**, tổ chức, cá nhân có hành vi chống đối hoặc cản trở người thực hiện nhiệm vụ xử phạt vi phạm hành chính về xây dựng sẽ bị xử phạt hành chính. \n\nNgoài ra, nếu hành vi chống đối có tính chất nghiêm trọng, có thể bị truy cứu trách nhiệm hình sự theo quy định của Bộ luật Hình sự. \n\nCăn cứ pháp lý:\n- **Nghị định 105/2022/NĐ-CP** về xử phạt vi phạm hành chính trong lĩnh vực xây dựng.\n- **Bộ luật Hình sự số 100/2015/QH13** (có hiệu lực từ 01/01/2018) quy định về các tội xâm phạm quyền lợi hợp pháp của người thi hành công vụ."
+      },
+      {
+        "role": "user",
+        "content": "cụ thể mức phạt đi"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành nhiệm vụ có thể bị xử lý theo quy định của pháp luật.** \n\nCụ thể, mức phạt đối với hành vi này được quy định tại **Nghị định 144/2021/NĐ-CP** về xử phạt vi phạm hành chính trong lĩnh vực an ninh trật tự và an toàn xã hội. Mức phạt tiền có thể từ **500.000 đồng đến 2.000.000 đồng** đối với hành vi cản trở người thi hành công vụ. Nếu hành vi có tính chất nghiêm trọng hơn, có thể bị truy cứu trách nhiệm hình sự theo **Điều 330 Bộ luật Hình sự số 100/2015/QH13**, với mức phạt tù từ **6 tháng đến 3 năm**.\n\nCăn cứ pháp lý:\n- **Nghị định 144/2021/NĐ-CP** về xử phạt vi phạm hành chính trong lĩnh vực an ninh trật tự và an toàn xã hội.\n- **Bộ luật Hình sự số 100/2015/QH13** quy định về tội chống người thi hành công vụ.\n\nMức phạt cụ thể sẽ phụ thuộc vào tính chất và mức độ vi phạm của hành vi."
+      }
+    ],
+    "created_at": "2025-12-05T16:53:28.073174",
+    "updated_at": "2025-12-09T15:43:27.259092"
+  },
+  "2da78aa3-215e-47bd-8e0b-46cb23db4491": {
+    "title": "Xử lý hành vi chống đối công vụ",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành nhiệm vụ sẽ bị xử lý như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành nhiệm vụ sẽ bị xử lý theo quy định của pháp luật.** \n\nCụ thể, hành vi này có thể bị xử phạt hành chính hoặc truy cứu trách nhiệm hình sự tùy thuộc vào tính chất và mức độ vi phạm. \n\n1. **Xử phạt hành chính:** \n   - Theo **Nghị định số 105/2021/NĐ-CP**, tổ chức, cá nhân có hành vi chống đối hoặc cản trở người thực hiện nhiệm vụ xử phạt vi phạm hành chính về xây dựng sẽ bị xử phạt hành chính theo quy định tại Nghị định về xử phạt vi phạm hành chính trong lĩnh vực an ninh trật tự và an toàn xã hội.\n   - Mức phạt cụ thể có thể từ **2.000.000 đồng đến 75.000.000 đồng** tùy theo hành vi cụ thể (cản trở, chống đối, hoặc trốn tránh nghĩa vụ).\n\n2. **Truy cứu trách nhiệm hình sự:** \n   - Nếu hành vi chống đối gây thiệt hại nghiêm trọng hoặc có tính chất đặc biệt nghiêm trọng, có thể bị truy cứu trách nhiệm hình sự theo **Bộ luật Hình sự**. \n\nCăn cứ pháp lý:\n- **Điều 39.13 Nghị định số 105/2021/NĐ-CP**.\n- **Điều 492 Bộ luật số 92/2015/QH13** (về xúc phạm, xâm hại đến người thi hành công vụ).\n- **Điều 16 Bộ luật Hình sự số 100/2015/QH13** (về các tội xâm phạm nghĩa vụ, trách nhiệm của quân nhân).\n\nDo đó, hành vi chống đối người thi hành nhiệm vụ có thể bị xử lý nghiêm khắc theo quy định của pháp luật."
+      }
+    ],
+    "created_at": "2025-12-09T17:24:12.484022",
+    "updated_at": "2025-12-09T17:25:12.049914"
+  },
+  "e8904dce-b57f-4693-82ec-1eaf1decfe6d": {
+    "title": "Xử phạt hành vi chống đối công vụ",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt hành chính hoặc truy cứu trách nhiệm hình sự tùy theo tính chất và mức độ vi phạm.**\n\nTheo quy định tại **Điều 21 Nghị định số 144/2021/NĐ-CP**, các mức phạt cụ thể như sau:\n\n1. **Phạt tiền từ 1.000.000 đồng đến 4.000.000 đồng** đối với hành vi môi giới, giúp sức cho cá nhân, tổ chức vi phạm trốn tránh việc thanh tra, kiểm tra, kiểm soát của người thi hành công vụ.\n\n2. **Phạt tiền từ 4.000.000 đồng đến 6.000.000 đồng** đối với các hành vi:\n   - Cản trở hoặc không chấp hành yêu cầu thanh tra, kiểm tra, kiểm soát của người thi hành công vụ.\n   - Có lời nói, hành động đe dọa, lăng mạ, xúc phạm danh dự, nhân phẩm người thi hành công vụ.\n   - Tổ chức, xúi giục, giúp sức, lôi kéo hoặc kích động người khác không chấp hành yêu cầu của người thi hành công vụ.\n\n3. **Phạt tiền từ 6.000.000 đồng đến 8.000.000 đồng** đối với các hành vi:\n   - Dùng vũ lực hoặc đe dọa dùng vũ lực chống người thi hành công vụ.\n   - Gây thiệt hại về tài sản của cơ quan nhà nước hoặc người thi hành công vụ.\n   - Đưa hối lộ cho người thi hành công vụ.\n\nNgoài ra, theo **Điều 37.6 Luật Tố tụng hành chính**, người có hành vi đe dọa, hành hung hoặc lợi dụng sự lệ thuộc nhằm cản trở đại diện của cơ quan, tổ chức tham gia tố tụng có thể bị xử phạt vi phạm hành chính hoặc bị truy cứu trách nhiệm hình sự tùy theo mức độ vi phạm.\n\nCác quy định này nhằm bảo vệ quyền lợi của người thi hành công vụ và đảm bảo trật tự, an toàn xã hội."
+      }
+    ],
+    "created_at": "2025-12-09T17:26:07.087282",
+    "updated_at": "2025-12-09T17:27:02.183022"
+  },
+  "c3f1eea1-54ac-4d9d-aab4-4975b6546c56": {
+    "title": "Xử phạt hành vi chống đối công vụ",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt hành chính hoặc truy cứu trách nhiệm hình sự tùy theo tính chất và mức độ vi phạm.**\n\n1. **Xử phạt hành chính**: \n   - Theo **Điều 21 Nghị định số 144/2021/NĐ-CP**, phạt tiền từ **1.000.000 đồng đến 4.000.000 đồng** đối với hành vi cản trở hoặc không chấp hành yêu cầu của người thi hành công vụ.\n   - Phạt tiền từ **4.000.000 đồng đến 6.000.000 đồng** đối với hành vi có lời nói, hành động đe dọa, lăng mạ người thi hành công vụ.\n   - Phạt tiền từ **6.000.000 đồng đến 8.000.000 đồng** đối với hành vi dùng vũ lực hoặc đe dọa dùng vũ lực chống người thi hành công vụ.\n\n2. **Truy cứu trách nhiệm hình sự**: \n   - Nếu hành vi chống đối có tính chất nghiêm trọng, có thể bị truy cứu trách nhiệm hình sự theo **Điều 356 Bộ luật Hình sự 2015**, với mức phạt tù từ **1 năm đến 15 năm** tùy thuộc vào mức độ thiệt hại và tính chất của hành vi.\n\nTóm lại, hành vi chống đối người thi hành công vụ có thể bị xử phạt hành chính hoặc truy cứu trách nhiệm hình sự, tùy thuộc vào mức độ vi phạm."
+      },
+      {
+        "role": "user",
+        "content": "Trình tự cấp giấy phép xây dựng đối với nhà ở được thực hiện ra sao?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Trình tự cấp giấy phép xây dựng đối với nhà ở được thực hiện như sau:**\n\n1. **Chuẩn bị hồ sơ**: Chủ đầu tư cần chuẩn bị một bộ hồ sơ đề nghị cấp giấy phép xây dựng, bao gồm:\n   - Đơn đề nghị cấp giấy phép xây dựng theo mẫu quy định.\n   - Bản sao hoặc bản chính các tài liệu liên quan như quyết định phê duyệt dự án, thiết kế kỹ thuật, và các giấy tờ chứng minh quyền sử dụng đất.\n\n2. **Nộp hồ sơ**: Hồ sơ được nộp trực tiếp hoặc qua đường bưu điện đến cơ quan có thẩm quyền cấp giấy phép xây dựng.\n\n3. **Tiếp nhận và kiểm tra hồ sơ**: \n   - Nếu hồ sơ đầy đủ, cơ quan có thẩm quyền sẽ tiến hành thẩm định. Nếu hồ sơ chưa đầy đủ, cơ quan sẽ thông báo yêu cầu bổ sung trong thời hạn 02 ngày làm việc.\n\n4. **Lấy ý kiến các cơ quan liên quan**: Trong thời hạn 02 ngày làm việc kể từ khi nhận hồ sơ đầy đủ, cơ quan cấp phép sẽ gửi hồ sơ đến các cơ quan, đơn vị liên quan để lấy ý kiến.\n\n5. **Giải quyết hồ sơ**: \n   - Thời gian giải quyết hồ sơ là **10 ngày làm việc** kể từ ngày nhận đủ hồ sơ hợp lệ. \n   - Nếu không cấp giấy phép, cơ quan phải có văn bản trả lời nêu rõ lý do.\n\n6. **Cấp giấy phép**: Nếu hồ sơ được phê duyệt, giấy phép xây dựng sẽ được cấp theo mẫu quy định.\n\n**Căn cứ pháp lý**: \n- **Điều 50 Thông tư số 29/2023/TT-BGTVT**, có hiệu lực từ ngày 01/12/2023. \n\nQuá trình này đảm bảo rằng việc cấp giấy phép xây dựng được thực hiện theo đúng quy định của pháp luật, bảo vệ quyền lợi của các bên liên quan và đảm bảo an toàn cho công trình xây dựng."
+      },
+      {
+        "role": "user",
+        "content": "Hành vi tiết lộ thông tin cá nhân của người khác trái phép sẽ bị xử lý thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi tiết lộ thông tin cá nhân của người khác trái phép sẽ bị xử lý vi phạm hành chính hoặc truy cứu trách nhiệm hình sự tùy theo tính chất và mức độ vi phạm.**\n\n1. **Xử phạt hành chính**:\n   - Theo **Điều 101 Nghị định số 15/2020/NĐ-CP**, phạt tiền từ **20.000.000 đồng đến 30.000.000 đồng** đối với hành vi tiết lộ thông tin thuộc danh mục bí mật đời tư của cá nhân mà chưa đến mức truy cứu trách nhiệm hình sự.\n   - Phạt tiền từ **40.000.000 đồng đến 60.000.000 đồng** đối với hành vi cung cấp hoặc chia sẻ thông tin cá nhân đã thu thập cho bên thứ ba khi chưa có sự đồng ý của chủ thể thông tin cá nhân (theo **Điều 39.13.NĐ.76.84**).\n\n2. **Truy cứu trách nhiệm hình sự**:\n   - Nếu hành vi tiết lộ thông tin cá nhân gây thiệt hại nghiêm trọng hoặc xâm phạm quyền lợi hợp pháp của cá nhân, có thể bị truy cứu trách nhiệm hình sự theo **Điều 289 Bộ luật Hình sự 2015**, với mức phạt tù từ **6 tháng đến 3 năm**.\n\n**Căn cứ pháp lý**:\n- **Nghị định số 15/2020/NĐ-CP** về xử phạt vi phạm hành chính trong lĩnh vực bảo vệ thông tin cá nhân.\n- **Bộ luật Hình sự 2015** về tội xâm phạm quyền riêng tư của cá nhân. \n\nTóm lại, hành vi tiết lộ thông tin cá nhân trái phép có thể bị xử phạt hành chính hoặc truy cứu trách nhiệm hình sự, tùy thuộc vào mức độ vi phạm."
+      },
+      {
+        "role": "user",
+        "content": "Tổ chức muốn nhận tài trợ nước ngoài phải đáp ứng điều kiện gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "Nếu bạn cần thêm thông tin gì mình sẵn sàng giúp bạn giải đáp nha!"
+      },
+      {
+        "role": "user",
+        "content": "Tổ chức muốn nhận tài trợ nước ngoài phải đáp ứng điều kiện gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "Nếu bạn cần thêm thông tin gì mình sẵn sàng giúp bạn giải đáp nha!"
+      },
+      {
+        "role": "user",
+        "content": "Nguyên tắc xử lý tranh chấp giữa các bên trong hợp đồng dân sự là gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Nguyên tắc xử lý tranh chấp giữa các bên trong hợp đồng dân sự là hòa giải, thương lượng trước tiên.** Nếu không đạt được thỏa thuận, tranh chấp sẽ được giải quyết thông qua trọng tài hoặc tòa án.\n\nCụ thể:\n\n1. **Hòa giải, thương lượng**: Các bên có trách nhiệm thương lượng để giải quyết tranh chấp. Đây là bước đầu tiên và được khuyến khích thực hiện.\n\n2. **Trọng tài hoặc Tòa án**: Nếu các bên không thể tự giải quyết, tranh chấp sẽ được đưa ra giải quyết tại trọng tài hoặc tòa án theo quy định của pháp luật.\n\n**Căn cứ pháp lý**:\n- **Điều 19 Bộ luật Dân sự 2015** quy định về nguyên tắc giải quyết tranh chấp trong hợp đồng dân sự.\n- **Điều 36 Luật số 29/2013/QH13** về giải quyết tranh chấp hợp đồng khoa học và công nghệ, có hiệu lực từ ngày 01/01/2014.\n\nTóm lại, việc xử lý tranh chấp hợp đồng dân sự ưu tiên hòa giải, thương lượng, sau đó mới đến trọng tài hoặc tòa án."
+      },
+      {
+        "role": "user",
+        "content": "Quy định về bảo vệ di sản văn hóa trong trường hợp có nguy cơ xâm hại là gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Quy định về bảo vệ di sản văn hóa trong trường hợp có nguy cơ xâm hại được quy định tại Luật Di sản văn hóa 2001 và các văn bản hướng dẫn thi hành.**\n\n1. **Nguyên tắc bảo vệ di sản văn hóa**: Theo **Điều 4 Luật Di sản văn hóa 2001**, Nhà nước có trách nhiệm bảo vệ di sản văn hóa, bao gồm việc ngăn chặn và xử lý các hành vi xâm hại đến di sản văn hóa.\n\n2. **Biện pháp bảo vệ**: \n   - **Điều 10 Luật Di sản văn hóa 2001** quy định rằng khi có nguy cơ xâm hại, các cơ quan nhà nước có thẩm quyền phải thực hiện các biện pháp cần thiết để bảo vệ di sản, bao gồm việc cấm hoặc hạn chế các hoạt động có thể gây hại.\n   - **Điều 12 Luật này** cũng quy định về việc lập hồ sơ và thực hiện các biện pháp khẩn cấp để bảo vệ di sản văn hóa khi phát hiện có nguy cơ xâm hại.\n\n3. **Xử lý vi phạm**: \n   - Theo **Điều 39.13 Nghị định số 15/2020/NĐ-CP**, các hành vi vi phạm quy định về bảo vệ di sản văn hóa sẽ bị xử phạt hành chính, với mức phạt từ **1.000.000 đồng đến 50.000.000 đồng** tùy theo tính chất và mức độ vi phạm.\n\n4. **Trách nhiệm của tổ chức, cá nhân**: Các tổ chức, cá nhân có trách nhiệm bảo vệ di sản văn hóa và phải thông báo kịp thời cho cơ quan nhà nước khi phát hiện có nguy cơ xâm hại.\n\n**Căn cứ pháp lý**:\n- **Luật Di sản văn hóa 2001**.\n- **Nghị định số 15/2020/NĐ-CP** về xử phạt vi phạm hành chính trong lĩnh vực văn hóa. \n\nTóm lại, việc bảo vệ di sản văn hóa trong trường hợp có nguy cơ xâm hại được quy định rõ ràng, với các biện pháp và trách nhiệm cụ thể để đảm bảo an toàn cho di sản văn hóa."
+      }
+    ],
+    "created_at": "2025-12-09T17:28:12.191282",
+    "updated_at": "2025-12-09T17:48:45.514210"
+  },
+  "bfd22f8b-a213-49ca-8513-533387b0a4d8": {
+    "title": "Xử phạt hành vi chống đối công vụ",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt hành chính hoặc truy cứu trách nhiệm hình sự tùy theo tính chất và mức độ vi phạm.**\n\n1. **Xử phạt hành chính**:\n   - Theo **Điều 21 Nghị định số 144/2021/NĐ-CP**, phạt tiền từ **1.000.000 đồng đến 4.000.000 đồng** đối với hành vi môi giới, giúp sức cho cá nhân, tổ chức vi phạm trốn tránh việc thanh tra, kiểm tra, kiểm soát của người thi hành công vụ.\n   - Phạt tiền từ **4.000.000 đồng đến 6.000.000 đồng** đối với các hành vi như cản trở hoặc không chấp hành yêu cầu của người thi hành công vụ, có lời nói, hành động đe dọa, lăng mạ người thi hành công vụ.\n   - Phạt tiền từ **6.000.000 đồng đến 8.000.000 đồng** đối với hành vi dùng vũ lực hoặc đe dọa dùng vũ lực chống người thi hành công vụ, gây thiệt hại về tài sản của cơ quan nhà nước.\n\n2. **Truy cứu trách nhiệm hình sự**:\n   - Theo **Điều 356 Bộ luật Hình sự**, người nào lợi dụng chức vụ, quyền hạn làm trái công vụ gây thiệt hại có thể bị phạt tù từ **01 năm đến 15 năm** tùy theo mức độ thiệt hại.\n\nCăn cứ pháp lý:\n- **Nghị định số 144/2021/NĐ-CP** (Điều 21)\n- **Bộ luật Hình sự số 100/2015/QH13** (Điều 356)"
+      }
+    ],
+    "created_at": "2025-12-09T17:53:34.430631",
+    "updated_at": "2025-12-09T17:54:15.953047"
+  },
+  "20a153f9-402f-450e-8a83-d259e59340f5": {
+    "title": "Xử phạt hành vi chống đối công vụ",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt hành chính hoặc truy cứu trách nhiệm hình sự tùy theo tính chất và mức độ vi phạm.**\n\nTheo quy định tại **Điều 21 Nghị định số 144/2021/NĐ-CP**, các hành vi cản trở hoặc chống lại việc thanh tra, kiểm tra, kiểm soát của người thi hành công vụ sẽ bị xử phạt như sau:\n\n1. **Phạt tiền từ 1.000.000 đồng đến 4.000.000 đồng** đối với hành vi môi giới, giúp sức cho cá nhân, tổ chức vi phạm trốn tránh việc thanh tra, kiểm tra, kiểm soát của người thi hành công vụ.\n\n2. **Phạt tiền từ 4.000.000 đồng đến 6.000.000 đồng** đối với các hành vi:\n   - Cản trở hoặc không chấp hành yêu cầu thanh tra, kiểm tra, kiểm soát hoặc nhiệm vụ khác của người thi hành công vụ.\n   - Có lời nói, hành động đe dọa, lăng mạ, xúc phạm danh dự, nhân phẩm người thi hành công vụ.\n   - Tổ chức, xúi giục, giúp sức, lôi kéo hoặc kích động người khác không chấp hành yêu cầu thanh tra, kiểm tra, kiểm soát của người thi hành công vụ.\n\n3. **Phạt tiền từ 6.000.000 đồng đến 8.000.000 đồng** đối với các hành vi:\n   - Dùng vũ lực, đe dọa dùng vũ lực chống người thi hành công vụ.\n   - Gây thiệt hại về tài sản, phương tiện của cơ quan nhà nước, của người thi hành công vụ.\n   - Đưa tiền, tài sản, lợi ích vật chất khác hoặc lợi ích phi vật chất hối lộ cho người thi hành công vụ.\n\nNgoài ra, nếu hành vi vi phạm có tính chất nghiêm trọng, có thể bị truy cứu trách nhiệm hình sự theo quy định của Bộ luật Hình sự. \n\nCăn cứ theo **Điều 494 Bộ luật số 92/2015/QH13**, người có hành vi đe dọa, hành hung hoặc lợi dụng sự lệ thuộc nhằm cản trở đại diện của cơ quan, tổ chức hoặc cá nhân tham gia tố tụng theo yêu cầu của Tòa án có thể bị xử phạt hành chính hoặc bị truy cứu trách nhiệm hình sự tùy theo tính chất, mức độ vi phạm."
+      }
+    ],
+    "created_at": "2025-12-09T17:58:47.257892",
+    "updated_at": "2025-12-09T17:59:35.840742"
+  },
+  "6add6bb7-e2c9-4e4c-934d-cf9c9851435f": {
+    "title": "Xử phạt hành vi chống đối người thi hành công",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt hành chính hoặc truy cứu trách nhiệm hình sự tùy theo tính chất và mức độ vi phạm.**\n\n1. **Xử phạt hành chính:**\n   - Theo **Điều 21 Nghị định số 144/2021/NĐ-CP**, cá nhân có hành vi cản trở hoặc không chấp hành yêu cầu của người thi hành công vụ sẽ bị phạt tiền từ **4.000.000 đồng đến 6.000.000 đồng**.\n   - Nếu hành vi dùng vũ lực hoặc đe dọa dùng vũ lực chống lại người thi hành công vụ, mức phạt có thể từ **6.000.000 đồng đến 8.000.000 đồng**.\n\n2. **Truy cứu trách nhiệm hình sự:**\n   - Theo **Điều 356 Bộ luật Hình sự**, người nào có hành vi lợi dụng chức vụ, quyền hạn trong khi thi hành công vụ gây thiệt hại có thể bị phạt tù từ **1 năm đến 5 năm** hoặc phạt cải tạo không giam giữ đến **3 năm** tùy theo mức độ thiệt hại.\n\n3. **Biện pháp khắc phục hậu quả:**\n   - Đối với hành vi xúc phạm danh dự, nhân phẩm của người thi hành công vụ, có thể bị buộc xin lỗi công khai theo quy định tại **Điều 21 Nghị định số 144/2021/NĐ-CP**.\n\nCăn cứ pháp lý:\n- **Điều 21 Nghị định số 144/2021/NĐ-CP**\n- **Điều 356 Bộ luật Hình sự**"
+      }
+    ],
+    "created_at": "2025-12-09T18:00:42.522054",
+    "updated_at": "2025-12-09T18:01:23.531972"
+  },
+  "05d901c9-d9be-4568-a74d-49e89d98ed8d": {
+    "title": "Xử phạt hành vi chống đối công vụ",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt theo quy định của pháp luật.** \n\nCụ thể, hành vi này có thể bị xử phạt hành chính hoặc truy cứu trách nhiệm hình sự tùy theo tính chất và mức độ vi phạm. \n\n1. **Xử phạt hành chính**:\n   - Theo **Điều 21 Nghị định số 144/2021/NĐ-CP**, phạt tiền từ **1.000.000 đồng đến 4.000.000 đồng** đối với hành vi môi giới, giúp sức cho cá nhân, tổ chức vi phạm trốn tránh việc thanh tra, kiểm tra, kiểm soát của người thi hành công vụ.\n   - Phạt tiền từ **4.000.000 đồng đến 6.000.000 đồng** đối với các hành vi như cản trở hoặc không chấp hành yêu cầu của người thi hành công vụ, có lời nói, hành động đe dọa, lăng mạ người thi hành công vụ.\n   - Phạt tiền từ **6.000.000 đồng đến 8.000.000 đồng** đối với hành vi dùng vũ lực hoặc đe dọa dùng vũ lực chống người thi hành công vụ, gây thiệt hại về tài sản của cơ quan nhà nước.\n\n2. **Truy cứu trách nhiệm hình sự**:\n   - Nếu hành vi chống đối nghiêm trọng, có thể bị truy cứu trách nhiệm hình sự theo **Điều 356 Bộ luật Hình sự**, với mức phạt tù từ **1 năm đến 15 năm** tùy theo mức độ thiệt hại và tính chất của hành vi.\n\nCác căn cứ pháp lý liên quan bao gồm:\n- **Điều 21 Nghị định số 144/2021/NĐ-CP**.\n- **Điều 356 Bộ luật Hình sự số 100/2015/QH13**."
+      }
+    ],
+    "created_at": "2025-12-09T18:01:47.193831",
+    "updated_at": "2025-12-09T18:02:28.349565"
+  },
+  "4f14159c-a19a-4c15-a42f-aae2b5d2588f": {
+    "title": "Xử phạt hành vi chống đối công vụ",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt theo quy định của pháp luật.** \n\n1. **Xử phạt hành chính:** \n   - Theo **Điều 21 Nghị định số 144/2021/NĐ-CP**, cá nhân có hành vi cản trở hoặc không chấp hành yêu cầu của người thi hành công vụ sẽ bị phạt tiền từ **4.000.000 đồng đến 6.000.000 đồng**. \n   - Nếu hành vi dùng vũ lực hoặc đe dọa dùng vũ lực, mức phạt sẽ từ **6.000.000 đồng đến 8.000.000 đồng**.\n\n2. **Truy cứu trách nhiệm hình sự:**\n   - Theo **Điều 330 Bộ luật Hình sự 2015**, người nào dùng vũ lực hoặc đe dọa dùng vũ lực cản trở người thi hành công vụ sẽ bị phạt cải tạo không giam giữ đến **03 năm** hoặc phạt tù từ **06 tháng đến 03 năm**. \n   - Nếu phạm tội trong các trường hợp nghiêm trọng hơn (như có tổ chức, gây thiệt hại lớn), mức phạt có thể lên đến **07 năm tù**.\n\n3. **Biện pháp khắc phục:** \n   - Đối với hành vi xúc phạm người thi hành công vụ, có thể bị buộc xin lỗi công khai theo quy định tại **Điều 21 Nghị định số 144/2021/NĐ-CP**.\n\nCăn cứ pháp lý:\n- **Điều 21 Nghị định số 144/2021/NĐ-CP**\n- **Điều 330 Bộ luật Hình sự 2015**"
+      },
+      {
+        "role": "user",
+        "content": "Trình tự cấp giấy phép xây dựng đối với nhà ở được thực hiện ra sao?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Trình tự cấp giấy phép xây dựng đối với nhà ở được thực hiện như sau:**\n\n1. **Chuẩn bị hồ sơ:** \n   - Chủ đầu tư cần chuẩn bị một bộ hồ sơ đề nghị cấp giấy phép xây dựng, bao gồm:\n     - Đơn đề nghị cấp giấy phép xây dựng.\n     - Bản sao Giấy chứng nhận quyền sử dụng đất hoặc tài liệu chứng minh quyền sử dụng đất.\n     - Hồ sơ thiết kế xây dựng đã được phê duyệt.\n     - Các tài liệu khác theo quy định của pháp luật.\n\n2. **Nộp hồ sơ:** \n   - Hồ sơ được nộp trực tiếp hoặc gửi qua đường bưu điện đến cơ quan có thẩm quyền cấp giấy phép xây dựng.\n\n3. **Tiếp nhận và kiểm tra hồ sơ:** \n   - Cơ quan có thẩm quyền sẽ tiếp nhận hồ sơ và kiểm tra tính đầy đủ, hợp lệ của hồ sơ trong thời hạn quy định.\n\n4. **Lấy ý kiến của cơ quan liên quan:** \n   - Trong thời gian 02 ngày làm việc kể từ khi nhận hồ sơ đầy đủ, cơ quan có thẩm quyền sẽ gửi hồ sơ đến các cơ quan, đơn vị liên quan để lấy ý kiến.\n\n5. **Cấp giấy phép xây dựng:** \n   - Trong vòng **10 ngày làm việc** kể từ ngày nhận đủ hồ sơ hợp lệ, cơ quan có thẩm quyền sẽ cấp giấy phép xây dựng. Nếu không cấp, cơ quan phải có văn bản trả lời nêu rõ lý do.\n\n6. **Thực hiện xây dựng:** \n   - Sau khi có giấy phép, chủ đầu tư có thể tiến hành xây dựng theo đúng nội dung giấy phép đã được cấp.\n\n**Căn cứ pháp lý:**\n- **Điều 50 Thông tư số 29/2023/TT-BGTVT**, có hiệu lực thi hành kể từ ngày 01/12/2023."
+      },
+      {
+        "role": "user",
+        "content": "Hành vi tiết lộ thông tin cá nhân của người khác trái phép sẽ bị xử lý thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi tiết lộ thông tin cá nhân của người khác trái phép sẽ bị xử lý theo quy định của pháp luật.**\n\n1. **Xử phạt hành chính:**\n   - Theo **Điều 84 Nghị định số 15/2020/NĐ-CP**, phạt tiền từ **10.000.000 đồng đến 20.000.000 đồng** đối với hành vi thu thập thông tin cá nhân khi chưa có sự đồng ý của chủ thể thông tin cá nhân hoặc cung cấp thông tin cá nhân cho bên thứ ba khi chủ thể đã yêu cầu ngừng cung cấp.\n   - Phạt tiền từ **40.000.000 đồng đến 60.000.000 đồng** đối với hành vi sử dụng không đúng mục đích thông tin cá nhân đã thỏa thuận hoặc cung cấp, chia sẻ, phát tán thông tin cá nhân cho bên thứ ba khi chưa có sự đồng ý của chủ thể.\n\n2. **Biện pháp khắc phục hậu quả:**\n   - Buộc hủy bỏ thông tin cá nhân do thực hiện hành vi vi phạm theo quy định tại **Điều 84 Nghị định số 15/2020/NĐ-CP**.\n\n3. **Truy cứu trách nhiệm hình sự:**\n   - Nếu hành vi tiết lộ thông tin cá nhân thuộc danh mục bí mật đời tư hoặc bí mật nhà nước, có thể bị truy cứu trách nhiệm hình sự theo quy định tại **Điều 155 Bộ luật Hình sự 2015** về tội xâm phạm bí mật đời tư.\n\n**Căn cứ pháp lý:**\n- **Điều 84 Nghị định số 15/2020/NĐ-CP**\n- **Điều 155 Bộ luật Hình sự 2015**"
+      },
+      {
+        "role": "user",
+        "content": "Nguyên tắc xử lý tranh chấp giữa các bên trong hợp đồng dân sự là gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Nguyên tắc xử lý tranh chấp giữa các bên trong hợp đồng dân sự là thương lượng, hòa giải, trọng tài hoặc tòa án.** \n\n1. **Thương lượng:** Các bên có trách nhiệm thương lượng để giải quyết tranh chấp. Đây là phương thức đầu tiên và được khuyến khích trong mọi trường hợp.\n\n2. **Hòa giải:** Nếu thương lượng không thành công, các bên có thể tiến hành hòa giải. Hòa giải là một phương thức giải quyết tranh chấp không chính thức, giúp các bên tìm ra giải pháp chung.\n\n3. **Trọng tài:** Nếu hòa giải không đạt được kết quả, các bên có thể lựa chọn giải quyết tranh chấp thông qua trọng tài. Trọng tài là phương thức giải quyết tranh chấp chính thức, có tính ràng buộc.\n\n4. **Tòa án:** Cuối cùng, nếu các phương thức trên không thành công, các bên có quyền khởi kiện tại tòa án có thẩm quyền để yêu cầu giải quyết tranh chấp.\n\nCăn cứ pháp lý:\n- **Điều 28.5 Nghị định số 19/2019/NĐ-CP** về xử lý tranh chấp trong hợp đồng.\n- **Điều 12.4 Nghị định số 77/2019/NĐ-CP** về giải quyết tranh chấp trong hợp tác xã.\n- **Điều 19.5 Luật số 29/2013/QH13** về giải quyết tranh chấp hợp đồng khoa học và công nghệ."
+      },
+      {
+        "role": "user",
+        "content": "Nhà nước hỗ trợ như thế nào đối với vùng đặc biệt khó khăn trong phát triển kinh tế?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Nhà nước hỗ trợ vùng đặc biệt khó khăn trong phát triển kinh tế thông qua nhiều chính sách cụ thể.**\n\n1. **Hỗ trợ phát triển sản xuất và sinh kế:**\n   - Đối với các hộ dân tộc thiểu số có khó khăn đặc thù, nhà nước hỗ trợ:\n     - **Giống, chuồng trại, vật tư đầu vào** để chuyển đổi cơ cấu cây trồng, vật nuôi có giá trị kinh tế cao, vắc xin tiêm phòng cho gia súc, gia cầm: **Tối đa 10 triệu đồng/hộ/năm.**\n     - **Nâng cao kiến thức, trình độ năng lực sản xuất** thông qua tổ chức lớp tập huấn: Mức chi theo quy định.\n     - **Xây dựng mô hình, tổ hợp tác liên kết** theo chuỗi sản xuất tiêu thụ sản phẩm: **Tối đa 500 triệu đồng/mô hình/tổ hợp tác.**\n\n2. **Hỗ trợ đầu tư và tín dụng:**\n   - Tổ chức, hộ gia đình, cá nhân được cấp có thẩm quyền giao hoặc cho thuê đất sẽ được hỗ trợ đầu tư cho các dự án sản xuất kinh doanh có hiệu quả, bao gồm:\n     - **Ưu đãi đầu tư** theo Luật đầu tư công.\n     - **Vay vốn từ Quỹ quốc gia về việc làm** và các nguồn tín dụng khác.\n\n3. **Chính sách khuyến khích doanh nghiệp:**\n   - Nhà nước khuyến khích các doanh nghiệp nhỏ và vừa, doanh nghiệp tại địa bàn miền núi, biên giới, hải đảo, vùng sâu, vùng xa tham gia hoạt động ngoại thương.\n\n4. **Hỗ trợ xây dựng cơ sở hạ tầng:**\n   - Nhà nước hỗ trợ sửa chữa các công trình cơ sở hạ tầng theo quy định tại Tiểu Dự án 1, Dự án 9 Chương trình ban hành kèm theo Quyết định số 1719/QĐ-TTg.\n\n**Căn cứ pháp lý:**\n- **Điều 26.3 Thông tư số 29/2023/TT-BTC**\n- **Điều 24.9 Quyết định số 11/2011/QĐ-TTg**\n- **Điều 34.3 Luật số 05/2017/QH14**\n- **Điều 24.9 Nghị định số 57/2018/NĐ-CP**"
+      },
+      {
+        "role": "user",
+        "content": "Xử lý như thế nào khi phát hiện hàng hóa giả mạo nhãn hiệu?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi phát hiện hàng hóa giả mạo nhãn hiệu sẽ được xử lý theo quy định của pháp luật.**\n\n1. **Xử lý hành chính:**\n   - Theo **Điều 39.13 Nghị định số 98/2020/NĐ-CP**, hành vi sản xuất, buôn bán hàng hóa giả mạo nhãn hiệu sẽ bị phạt tiền từ **5.000.000 đồng đến 500.000.000 đồng** tùy thuộc vào giá trị hàng hóa vi phạm.\n   - Ngoài ra, có thể áp dụng biện pháp khắc phục hậu quả như buộc tiêu hủy hàng hóa giả mạo.\n\n2. **Truy cứu trách nhiệm hình sự:**\n   - Nếu hành vi vi phạm có tính chất nghiêm trọng, có thể bị truy cứu trách nhiệm hình sự theo **Điều 213 Bộ luật Hình sự 2015**, với mức phạt tù từ **6 tháng đến 3 năm** hoặc phạt tiền từ **100 triệu đồng đến 1 tỷ đồng**.\n\n3. **Biện pháp ngăn chặn:**\n   - Cơ quan chức năng có quyền tạm giữ hàng hóa vi phạm để phục vụ công tác điều tra, xử lý theo quy định tại **Điều 26.2 Thông tư số 13/2015/TT-BTC**.\n\n4. **Thông báo công khai:**\n   - Trong trường hợp vi phạm nghiêm trọng, cơ quan kiểm tra chất lượng sản phẩm, hàng hóa sẽ thông báo công khai trên phương tiện thông tin đại chúng về tên, địa chỉ của tổ chức, cá nhân vi phạm và mức độ không phù hợp của hàng hóa theo quy định tại **Điều 19.1 Luật số 05/2007/QH12**.\n\n**Căn cứ pháp lý:**\n- **Điều 39.13 Nghị định số 98/2020/NĐ-CP**\n- **Điều 213 Bộ luật Hình sự 2015**\n- **Điều 26.2 Thông tư số 13/2015/TT-BTC**\n- **Điều 19.1 Luật số 05/2007/QH12**"
+      }
+    ],
+    "created_at": "2025-12-09T18:02:50.579815",
+    "updated_at": "2025-12-09T18:26:40.753857"
+  },
+  "bb1a0068-a46f-426e-9995-f01fefce9a8b": {
+    "title": "Xử lý hàng giả nhãn hiệu",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Xử lý như thế nào khi phát hiện hàng hóa giả mạo nhãn hiệu?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Khi phát hiện hàng hóa giả mạo nhãn hiệu, cần thực hiện các bước xử lý theo quy định của pháp luật.**\n\n1. **Xử phạt hành chính**: \n   - Đối với hành vi **sản xuất hàng giả mạo nhãn hàng hóa**, mức phạt tiền có thể từ **2.000.000 đồng đến 50.000.000 đồng** tùy thuộc vào giá trị hàng giả và lợi nhuận thu được. Cụ thể:\n     - Phạt từ **2.000.000 đồng đến 5.000.000 đồng** nếu hàng giả có giá trị dưới **3.000.000 đồng** hoặc thu lợi bất hợp pháp dưới **5.000.000 đồng**.\n     - Phạt từ **40.000.000 đồng đến 50.000.000 đồng** nếu hàng giả có giá trị từ **30.000.000 đồng trở lên** hoặc thu lợi bất hợp pháp từ **50.000.000 đồng trở lên** mà không bị truy cứu trách nhiệm hình sự (Điều 39.13.NĐ.83.12).\n   - Đối với hành vi **buôn bán hàng giả mạo nhãn hàng hóa**, mức phạt cũng tương tự, bắt đầu từ **1.000.000 đồng đến 50.000.000 đồng** (Điều 39.13.NĐ.83.11).\n\n2. **Hình thức xử phạt bổ sung**:\n   - Tịch thu tang vật vi phạm và phương tiện sản xuất hàng giả.\n   - Tước quyền sử dụng giấy phép, chứng chỉ hành nghề từ **03 tháng đến 06 tháng** trong trường hợp vi phạm nhiều lần hoặc tái phạm (Điều 39.13.NĐ.83.12).\n\n3. **Biện pháp khắc phục hậu quả**:\n   - Buộc loại bỏ yếu tố vi phạm trên nhãn, bao bì hàng giả hoặc buộc tiêu hủy hàng giả.\n   - Buộc nộp lại số lợi bất hợp pháp có được từ hành vi vi phạm (Điều 39.13.NĐ.83.12).\n\n4. **Thông báo cho cơ quan có thẩm quyền**: Nếu phát hiện hàng hóa có dấu hiệu xâm phạm quyền sở hữu trí tuệ, cần thông báo cho cơ quan hải quan hoặc cơ quan quản lý nhà nước có thẩm quyền để xử lý theo quy định (Điều 26.2.TT.7.14).\n\n**Căn cứ pháp lý**:\n- Điều 39.13.NĐ.83.12 và Điều 39.13.NĐ.83.11.\n- Điều 26.2.TT.7.14."
+      }
+    ],
+    "created_at": "2025-12-09T19:00:56.682679",
+    "updated_at": "2025-12-09T19:02:33.405036"
+  },
+  "09dbe441-cee0-45dc-bffd-f13560d6d432": {
+    "title": "Xử lý hàng giả nhãn hiệu",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Xử lý như thế nào khi phát hiện hàng hóa giả mạo nhãn hiệu?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Đối với hàng hóa giả mạo nhãn hiệu, có thể xử lý theo các quy định sau:**\n\n1. **Xử phạt hành chính:** \n   - **Phạt tiền từ 4.000.000 đồng đến 250.000.000 đồng** tùy thuộc vào giá trị hàng hóa vi phạm. Cụ thể:\n     - Phạt từ **4.000.000 đồng đến 8.000.000 đồng** nếu giá trị hàng hóa vi phạm đến **5.000.000 đồng**.\n     - Phạt từ **8.000.000 đồng đến 12.000.000 đồng** nếu giá trị từ **5.000.000 đồng đến 10.000.000 đồng**.\n     - Phạt từ **12.000.000 đồng đến 20.000.000 đồng** nếu giá trị từ **10.000.000 đồng đến 20.000.000 đồng**.\n     - Phạt từ **20.000.000 đồng đến 35.000.000 đồng** nếu giá trị từ **20.000.000 đồng đến 40.000.000 đồng**.\n     - Các mức phạt tiếp theo tăng dần theo giá trị hàng hóa vi phạm, với mức phạt tối đa là **250.000.000 đồng** cho hàng hóa có giá trị trên **300.000.000 đồng** (Điều 39.13 Nghị định 6/2012).\n\n2. **Hình thức xử phạt bổ sung:**\n   - **Tịch thu tang vật, phương tiện vi phạm** đối với hành vi vi phạm quy định từ Khoản 1 đến Khoản 11.\n   - **Đình chỉ hoạt động kinh doanh hàng hóa, dịch vụ vi phạm** từ **01 tháng đến 03 tháng** (Điều 39.13 Nghị định 6/2012).\n\n3. **Biện pháp khắc phục hậu quả:**\n   - **Buộc tiêu hủy hoặc phân phối hàng hóa giả mạo** nhãn hiệu hoặc chỉ dẫn địa lý.\n   - **Buộc tái xuất hàng hóa giả mạo** sau khi đã loại bỏ yếu tố vi phạm.\n   - **Buộc nộp lại số lợi bất hợp pháp** có được từ hành vi vi phạm (Điều 39.13 Nghị định 6/2012).\n\n4. **Xử lý hàng hóa có dấu hiệu xâm phạm quyền sở hữu trí tuệ:**\n   - Cơ quan hải quan có trách nhiệm thông báo cho chủ thể quyền sở hữu trí tuệ và thực hiện các biện pháp ngăn chặn, kiểm tra, xác minh hàng hóa có dấu hiệu xâm phạm quyền sở hữu trí tuệ (Điều 14 Thông tư 13/2015/TT-BTC).\n\n**Căn cứ pháp lý:**\n- Điều 39.13 Nghị định 6/2012.\n- Điều 14 Thông tư 13/2015/TT-BTC."
+      },
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt nghiêm khắc theo quy định của pháp luật.**\n\n1. **Xử lý hình sự:**\n   - Theo **Điều 330 Bộ luật Hình sự 2015**, người nào dùng vũ lực, đe dọa dùng vũ lực hoặc dùng thủ đoạn khác cản trở người thi hành công vụ sẽ bị phạt cải tạo không giam giữ đến **03 năm** hoặc phạt tù từ **06 tháng đến 03 năm**.\n   - Nếu phạm tội thuộc một trong các trường hợp như có tổ chức, phạm tội 02 lần trở lên, gây thiệt hại về tài sản từ **50.000.000 đồng** trở lên, thì mức phạt tù có thể từ **02 năm đến 07 năm**.\n\n2. **Xử lý hành chính:**\n   - Theo **Điều 21 Nghị định số 144/2021/NĐ-CP**, hành vi cản trở hoặc không chấp hành yêu cầu của người thi hành công vụ có thể bị phạt tiền từ **4.000.000 đồng đến 6.000.000 đồng**.\n   - Nếu dùng vũ lực hoặc đe dọa dùng vũ lực chống người thi hành công vụ, mức phạt có thể từ **6.000.000 đồng đến 8.000.000 đồng**.\n\n3. **Biện pháp khắc phục hậu quả:**\n   - Có thể bị buộc xin lỗi công khai đối với hành vi lăng mạ, xúc phạm danh dự, nhân phẩm người thi hành công vụ (Điều 21 Nghị định số 144/2021/NĐ-CP).\n\n**Căn cứ pháp lý:**\n- Điều 330 Bộ luật Hình sự 2015.\n- Điều 21 Nghị định số 144/2021/NĐ-CP."
+      },
+      {
+        "role": "user",
+        "content": "Hoạt động quảng cáo sai sự thật trên mạng bị xử lý ra sao?\""
+      },
+      {
+        "role": "assistant",
+        "content": "**Hoạt động quảng cáo sai sự thật trên mạng sẽ bị xử lý theo quy định của pháp luật.**\n\n1. **Xử lý hành chính:**\n   - Tổ chức, cá nhân có hành vi quảng cáo sai sự thật sẽ bị xử phạt vi phạm hành chính tùy theo tính chất và mức độ vi phạm. Cụ thể, mức phạt có thể từ **1.000.000 đồng đến 100.000.000 đồng** tùy thuộc vào hành vi vi phạm cụ thể (Điều 39.13 Nghị định số 38/2021/NĐ-CP).\n\n2. **Hình thức xử phạt:**\n   - Các hành vi quảng cáo không đúng hoặc gây nhầm lẫn về khả năng kinh doanh, chất lượng, giá, công dụng, xuất xứ hàng hóa có thể bị phạt từ **60.000.000 đồng đến 80.000.000 đồng** (Điều 39.13 Nghị định số 38/2021/NĐ-CP).\n   - Nếu quảng cáo sử dụng từ ngữ như “nhất”, “duy nhất” mà không có tài liệu chứng minh, mức phạt có thể từ **10.000.000 đồng đến 20.000.000 đồng** (Điều 39.13 Nghị định số 38/2021/NĐ-CP).\n\n3. **Biện pháp khắc phục hậu quả:**\n   - Buộc tháo gỡ, xóa quảng cáo sai sự thật hoặc thu hồi sản phẩm báo, tạp chí in quảng cáo (Điều 39.13 Nghị định số 38/2021/NĐ-CP).\n   - Buộc cải chính thông tin đối với hành vi quảng cáo sai sự thật (Điều 39.13 Nghị định số 38/2021/NĐ-CP).\n\n4. **Trách nhiệm của các bên liên quan:**\n   - Người quảng cáo, người phát hành quảng cáo phải tuân thủ quy định của pháp luật về quảng cáo, bảo vệ quyền lợi người tiêu dùng và phải có trách nhiệm bồi thường thiệt hại nếu gây ra thiệt hại cho tổ chức, cá nhân khác (Điều 11 Luật số 16/2012/QH13).\n\n**Căn cứ pháp lý:**\n- Điều 39.13 Nghị định số 38/2021/NĐ-CP.\n- Điều 11 Luật số 16/2012/QH13."
+      },
+      {
+        "role": "user",
+        "content": "Xả thải vượt quy chuẩn môi trường bị xử lý thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi xả thải vượt quy chuẩn môi trường sẽ bị xử lý nghiêm khắc theo quy định của pháp luật.**\n\n1. **Xử phạt hành chính:**\n   - **Phạt cảnh cáo** đối với hành vi xả nước thải vượt quy chuẩn kỹ thuật về chất thải dưới **1,1 lần** (tương đương mức vượt quy chuẩn kỹ thuật là **10%**).\n   - Hành vi xả nước thải vượt quy chuẩn từ **1,1 lần đến dưới 1,5 lần** hoặc xả nước thải vượt quy chuẩn dưới **1,1 lần** trong trường hợp tái phạm sẽ bị phạt tiền từ **1.000.000 đồng đến 20.000.000 đồng** tùy thuộc vào lưu lượng nước thải (Điều 19 Nghị định số 45/2022/NĐ-CP).\n\n2. **Mức phạt cụ thể theo lưu lượng nước thải:**\n   - Từ **1,1 lần đến dưới 1,5 lần**:\n     - **Dưới 5 m³/ngày**: phạt từ **1.000.000 đồng đến 5.000.000 đồng**.\n     - **Từ 5 m³/ngày đến dưới 10 m³/ngày**: phạt từ **5.000.000 đồng đến 10.000.000 đồng**.\n     - **Từ 10 m³/ngày đến dưới 20 m³/ngày**: phạt từ **10.000.000 đồng đến 20.000.000 đồng**.\n     - Các mức phạt tiếp theo tăng dần theo lưu lượng nước thải (Điều 19 Nghị định số 45/2022/NĐ-CP).\n\n3. **Hình thức xử phạt bổ sung:**\n   - **Đình chỉ hoạt động** của nguồn phát sinh chất thải gây ô nhiễm môi trường từ **03 tháng đến 06 tháng**.\n   - **Tước quyền sử dụng giấy phép môi trường** từ **06 tháng đến 12 tháng** đối với các trường hợp vi phạm nghiêm trọng (Điều 19 Nghị định số 45/2022/NĐ-CP).\n\n4. **Biện pháp khắc phục hậu quả:**\n   - Buộc thực hiện các biện pháp khắc phục tình trạng ô nhiễm môi trường và báo cáo kết quả đã khắc phục xong trong thời hạn do người có thẩm quyền xử phạt ấn định (Điều 19 Nghị định số 45/2022/NĐ-CP).\n\n**Căn cứ pháp lý:**\n- Điều 19 Nghị định số 45/2022/NĐ-CP."
+      }
+    ],
+    "created_at": "2025-12-09T19:20:22.833327",
+    "updated_at": "2025-12-09T19:44:03.144253"
+  },
+  "a6d0657a-a0f9-4d0d-bbc1-4cec366e35fc": {
+    "title": "Xử phạt hành vi chống đối công vụ",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt theo quy định của pháp luật.**\n\n1. **Xử lý hình sự**: Theo **Điều 330 Bộ luật Hình sự số 100/2015/QH13**, người nào dùng vũ lực, đe dọa dùng vũ lực hoặc dùng thủ đoạn khác cản trở người thi hành công vụ thực hiện công vụ của họ sẽ bị xử lý như sau:\n   - Phạt cải tạo không giam giữ đến **03 năm** hoặc phạt tù từ **06 tháng đến 03 năm**.\n   - Nếu phạm tội thuộc một trong các trường hợp như có tổ chức, phạm tội 02 lần trở lên, gây thiệt hại về tài sản từ **50.000.000 đồng trở lên**, thì bị phạt tù từ **02 năm đến 07 năm**.\n\n2. **Xử lý hành chính**: Theo **Nghị định số 102/2021/NĐ-CP**, hành vi cản trở hoặc chống lại việc thanh tra, kiểm tra, kiểm soát của người thi hành công vụ sẽ bị xử phạt hành chính với mức phạt như sau:\n   - Phạt tiền từ **1.000.000 đồng đến 4.000.000 đồng** đối với hành vi môi giới, giúp sức cho cá nhân, tổ chức vi phạm.\n   - Phạt tiền từ **4.000.000 đồng đến 6.000.000 đồng** đối với hành vi cản trở, không chấp hành yêu cầu của người thi hành công vụ.\n   - Phạt tiền từ **6.000.000 đồng đến 8.000.000 đồng** đối với hành vi dùng vũ lực, đe dọa dùng vũ lực chống người thi hành công vụ.\n\n3. **Biện pháp khắc phục hậu quả**: Đối với hành vi xúc phạm danh dự, nhân phẩm người thi hành công vụ, có thể bị buộc xin lỗi công khai.\n\nCăn cứ pháp lý:\n- **Điều 330 Bộ luật Hình sự số 100/2015/QH13**.\n- **Nghị định số 102/2021/NĐ-CP**."
+      },
+      {
+        "role": "user",
+        "content": "Quyền và nghĩa vụ cơ bản của thanh niên theo pháp luật được quy định như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Quyền và nghĩa vụ cơ bản của thanh niên được quy định tại Luật Thanh niên số 57/2020/QH14. Cụ thể như sau:**\n\n1. **Quyền của thanh niên**:\n   - Thanh niên có quyền và nghĩa vụ của công dân theo quy định của Hiến pháp và pháp luật (Điều 36.3.LQ.4).\n   - Quyền của thanh niên được công nhận, tôn trọng, bảo vệ và bảo đảm thực hiện theo quy định của Hiến pháp và pháp luật (Điều 36.3.LQ.5).\n\n2. **Nghĩa vụ của thanh niên**:\n   - Thanh niên có nghĩa vụ chấp hành chính sách, pháp luật của Nhà nước và tham gia tích cực vào các hoạt động xã hội, phát triển kinh tế - xã hội (Điều 36.3.LQ.5).\n   - Thanh niên cũng có trách nhiệm tham gia vào việc xây dựng và thực hiện chính sách của Nhà nước đối với thanh niên, đảm bảo sự tham gia của thanh niên trong các quyết định liên quan đến quyền và lợi ích của mình (Điều 36.3.LQ.5).\n\n3. **Nguyên tắc thực hiện quyền và nghĩa vụ**:\n   - Không phân biệt dân tộc, giới tính, thành phần xã hội, tín ngưỡng, tôn giáo, trình độ văn hóa, nghề nghiệp trong thực hiện quyền, nghĩa vụ của thanh niên (Điều 36.3.LQ.5).\n   - Nhà nước và các tổ chức có trách nhiệm tạo điều kiện để thanh niên thực hiện quyền và nghĩa vụ theo quy định của pháp luật (Điều 36.3.LQ.5).\n\n**Căn cứ pháp lý**:\n- **Luật Thanh niên số 57/2020/QH14**.\n- **Điều 36.3.LQ.4 và 36.3.LQ.5**."
+      },
+      {
+        "role": "user",
+        "content": "Chính sách hỗ trợ phát triển kinh tế – xã hội đối với vùng dân tộc thiểu số được quy định ra sao?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Chính sách hỗ trợ phát triển kinh tế – xã hội đối với vùng dân tộc thiểu số được quy định cụ thể trong các văn bản pháp luật.**\n\n1. **Hỗ trợ phát triển kinh tế**:\n   - Theo **Điều 26.3.TT.29.14** của Thông tư số 55/2023/TT-BTC, chính sách hỗ trợ bao gồm:\n     - Hỗ trợ xây dựng mô hình khởi nghiệp, khởi sự kinh doanh với mức hỗ trợ cụ thể cho đào tạo, nghiên cứu phát triển sản phẩm, thiết kế bao bì, quảng cáo.\n     - Hỗ trợ chi phí vận hành các dự án “Trung tâm hỗ trợ khởi sự kinh doanh” tại các trường đại học và Văn phòng điều phối Chương trình thuộc Ủy ban Dân tộc.\n\n2. **Hỗ trợ bảo vệ và phát triển các dân tộc thiểu số**:\n   - Theo **Điều 26.3.TT.29.42** của Thông tư số 55/2023/TT-BTC, nội dung hỗ trợ bao gồm:\n     - Tư vấn dinh dưỡng cho bà mẹ mang thai, hỗ trợ trẻ em dưới 5 tuổi về dinh dưỡng và khám bệnh.\n     - Hỗ trợ các dịch vụ y tế cho bà mẹ và trẻ em, đảm bảo sức khỏe cho các đối tượng này.\n\n3. **Hỗ trợ phát triển giáo dục**:\n   - Theo **Điều 20 Thông tư số 55/2023/TT-BTC**, chính sách hỗ trợ bao gồm bồi dưỡng kiến thức dân tộc, đào tạo dự bị đại học, đại học cho vùng đồng bào dân tộc thiểu số.\n\n4. **Hỗ trợ phát triển làng nghề**:\n   - Theo **Điều 24.9.NĐ.14**, làng nghề, làng nghề truyền thống được hưởng các chính sách khuyến khích phát triển ngành nghề nông thôn, bao gồm hỗ trợ kinh phí đầu tư xây dựng cơ sở hạ tầng và các chính sách từ ngân sách địa phương.\n\n5. **Hỗ trợ ứng dụng công nghệ thông tin**:\n   - Theo **Điều 26.3.TT.29.53**, chi hỗ trợ thiết lập các điểm hỗ trợ đồng bào dân tộc thiểu số ứng dụng công nghệ thông tin, bao gồm mua sắm thiết bị và duy trì hoạt động.\n\n**Căn cứ pháp lý**:\n- **Thông tư số 55/2023/TT-BTC**.\n- **Nghị định số 14/2018/NĐ-CP**.\n- **Điều 20 Thông tư số 55/2023/TT-BTC**.\n- **Điều 24.9.NĐ.14**."
+      },
+      {
+        "role": "user",
+        "content": "Người nghiện ma túy bị áp dụng biện pháp cai nghiện bắt buộc trong trường hợp nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Người nghiện ma túy bị áp dụng biện pháp cai nghiện bắt buộc trong các trường hợp sau:**\n\n1. **Không đăng ký, không thực hiện hoặc tự ý chấm dứt cai nghiện ma túy tự nguyện**: Nếu người nghiện không thực hiện các biện pháp cai nghiện tự nguyện, họ sẽ bị đưa vào cơ sở cai nghiện bắt buộc.\n\n2. **Trong thời gian cai nghiện ma túy tự nguyện bị phát hiện sử dụng trái phép chất ma túy**: Nếu trong quá trình cai nghiện tự nguyện mà người đó vẫn tiếp tục sử dụng ma túy, họ sẽ bị áp dụng biện pháp cai nghiện bắt buộc.\n\n3. **Người nghiện ma túy các chất dạng thuốc phiện không đăng ký, không thực hiện hoặc tự ý chấm dứt điều trị nghiện các chất dạng thuốc phiện bằng thuốc thay thế**: Trường hợp này cũng dẫn đến việc áp dụng biện pháp cai nghiện bắt buộc.\n\n4. **Đối với người từ đủ 12 tuổi đến dưới 18 tuổi**: Họ sẽ bị đưa vào cơ sở cai nghiện bắt buộc nếu thuộc một trong các trường hợp nêu trên.\n\n5. **Người Việt Nam bị nước ngoài trục xuất về nước do có hành vi sử dụng trái phép chất ma túy, nghiện ma túy**: Khi về nước, nếu được xác định là nghiện ma túy, họ phải thực hiện các biện pháp cai nghiện theo quy định.\n\n**Căn cứ pháp lý**:\n- **Điều 33 Luật số 73/2021/QH14**.\n- **Điều 39 Nghị định số 116/2021/NĐ-CP**."
+      },
+      {
+        "role": "user",
+        "content": "Người bị tạm giữ có những quyền gì theo quy định pháp luật?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Người bị tạm giữ có quyền và nghĩa vụ theo quy định pháp luật như sau:**\n\n1. **Quyền của người bị tạm giữ**:\n   - **Được thông báo** về việc bị áp dụng biện pháp tạm giữ theo thủ tục hành chính.\n   - **Được biết lý do** bị tạm giữ, thời hạn và địa điểm tạm giữ; có quyền khiếu nại về việc bị tạm giữ.\n   - **Yêu cầu thông báo** quyết định tạm giữ cho gia đình hoặc tổ chức nơi làm việc, học tập biết.\n   - **Được bảo đảm chế độ ăn uống** theo quy định.\n   - **Được điều trị, chăm sóc y tế** khi bị bệnh.\n\n2. **Nghĩa vụ của người bị tạm giữ**:\n   - **Chấp hành nghiêm chỉnh** quyết định tạm giữ, nội quy, quy định của nơi tạm giữ.\n   - **Tuân thủ yêu cầu, mệnh lệnh** của người ra quyết định tạm giữ và người được giao nhiệm vụ quản lý, bảo vệ nơi tạm giữ.\n   - **Không được đưa vào nơi tạm giữ** các vật dụng cấm như vũ khí, vật liệu nổ, công cụ hỗ trợ, và các chất gây nghiện.\n\n**Căn cứ pháp lý**:\n- **Điều 37 Bộ luật Tố tụng hình sự số 101/2015/QH13**.\n- **Điều 39 Nghị định số 142/2021/NĐ-CP**."
+      },
+      {
+        "role": "user",
+        "content": "Hình thức kỷ luật đối với công chức giữ chức vụ lãnh đạo, quản lý là gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hình thức kỷ luật đối với công chức giữ chức vụ lãnh đạo, quản lý bao gồm:**\n\n1. **Khiển trách**: Áp dụng trong trường hợp vi phạm ít nghiêm trọng.\n2. **Cảnh cáo**: Được áp dụng khi có hành vi vi phạm nghiêm trọng hoặc tái phạm sau khi đã bị khiển trách.\n3. **Cách chức**: Áp dụng đối với trường hợp vi phạm rất nghiêm trọng, đặc biệt nghiêm trọng hoặc nhiều vụ việc tham nhũng trong cơ quan, tổ chức, đơn vị do mình quản lý.\n4. **Sa thải**: Hình thức kỷ luật cao nhất, áp dụng trong các trường hợp vi phạm nghiêm trọng, đặc biệt nghiêm trọng.\n\n**Căn cứ pháp lý**:\n- **Điều 124 Bộ luật số 45/2019/QH14** (có hiệu lực thi hành từ ngày 01/01/2021).\n- **Điều 77 và 78 Nghị định số 59/2019/NĐ-CP** (có hiệu lực thi hành từ ngày 15/08/2019)."
+      }
+    ],
+    "created_at": "2025-12-12T21:28:17.822074",
+    "updated_at": "2025-12-14T17:33:05.308911"
+  },
+  "297ac60c-7817-4e56-9206-b4408b8f1413": {
+    "title": "Nghỉ việc trong thời gian thử việc",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Nhân viên đang thử việc 30 ngày, làm được 10 ngày thì muốn nghỉ ngay, có phải báo trước không?"
+      },
+      {
+        "role": "assistant",
+        "content": "Nếu bạn cần thêm thông tin gì mình sẵn sàng giúp bạn giải đáp nha!"
+      }
+    ],
+    "created_at": "2025-12-18T15:02:51.723731",
+    "updated_at": "2025-12-18T15:02:58.247136"
+  },
+  "678e34dd-ab1d-43b6-a399-6b6cc4f1314f": {
+    "title": "Xin nghỉ việc trong thời gian thử việc",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Nhân viên đang thử việc 30 ngày, làm được 10 ngày thì muốn nghỉ ngay, có phải báo trước không?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Có** thể nghỉ ngay mà không cần báo trước. \n\nTheo quy định tại **khoản 2 Điều 27 Bộ luật Lao động số 45/2019/QH14**, trong thời gian thử việc, mỗi bên (người lao động và người sử dụng lao động) có quyền hủy bỏ hợp đồng thử việc mà không cần báo trước và không phải bồi thường. \n\nDo đó, nhân viên đang thử việc 30 ngày, sau khi làm được 10 ngày, có quyền nghỉ ngay mà không cần thông báo trước cho người sử dụng lao động.\n\nCăn cứ pháp lý: \n- **Điều 27 Bộ luật Lao động số 45/2019/QH14**."
+      }
+    ],
+    "created_at": "2025-12-18T15:04:34.160115",
+    "updated_at": "2025-12-18T15:05:33.824029"
+  },
+  "96f39bb0-8284-4650-be14-302b780c55f8": {
+    "title": "Yêu cầu bồi thường khi trả lương chậm",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Công ty trả lương chậm 20 ngày vì “khó khăn tài chính”, người lao động có quyền yêu cầu thêm khoản gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Người lao động có quyền yêu cầu thêm khoản tiền lãi do việc trả lương chậm.** \n\nCụ thể, theo **khoản 4 Điều 20.2.LQ.97** của Bộ luật Lao động, nếu người sử dụng lao động trả lương chậm từ 15 ngày trở lên, họ phải đền bù cho người lao động một khoản tiền ít nhất bằng số tiền lãi của số tiền trả chậm, tính theo lãi suất huy động tiền gửi có kỳ hạn 01 tháng do ngân hàng nơi người sử dụng lao động mở tài khoản trả lương công bố tại thời điểm trả lương.\n\nDo đó, người lao động có quyền yêu cầu khoản tiền lãi này bên cạnh số tiền lương chưa được trả.\n\nCăn cứ pháp lý:\n- **Điều 97 Bộ luật số 45/2019/QH14** (có hiệu lực thi hành từ ngày 01/01/2021)."
+      }
+    ],
+    "created_at": "2025-12-18T15:06:11.793989",
+    "updated_at": "2025-12-18T15:07:01.352095"
+  },
+  "d999f4f7-202f-46bb-b5bd-d6bc7f806c0d": {
+    "title": "Tính hợp pháp thông báo trả nhà 10 ngày",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hợp đồng thuê nhà không ghi thời hạn; chủ nhà báo “10 ngày nữa trả nhà” có hợp pháp không?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Có** thể chấm dứt hợp đồng thuê nhà trong trường hợp này, nhưng cần tuân thủ quy định về thời gian thông báo.\n\nTheo **Điều 474 Bộ luật Dân sự 2015**, nếu các bên không có thỏa thuận về thời hạn thuê, thì mỗi bên có quyền chấm dứt hợp đồng bất cứ lúc nào, nhưng phải thông báo cho bên kia trước một thời gian hợp lý. \n\nChủ nhà thông báo “10 ngày nữa trả nhà” có thể được coi là hợp pháp nếu thời gian này được xem là hợp lý trong bối cảnh cụ thể. Tuy nhiên, điều này cũng phụ thuộc vào các yếu tố như thời gian thuê đã diễn ra, thói quen của các bên, và các điều kiện cụ thể khác liên quan đến hợp đồng.\n\nCăn cứ pháp lý:\n- **Điều 474 Bộ luật Dân sự 2015**: \"Trường hợp các bên không thoả thuận về thời hạn thuê thì mỗi bên có quyền chấm dứt hợp đồng bất cứ lúc nào, nhưng phải thông báo cho bên kia trước một thời gian hợp lý.\""
+      },
+      {
+        "role": "user",
+        "content": "Website yêu cầu khách cung cấp CCCD + ảnh khuôn mặt để “xác thực”, chỉ có tick “Tôi đồng ý” chung chung; có ổn không?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Không ổn** khi yêu cầu khách cung cấp CCCD và ảnh khuôn mặt để “xác thực” mà chỉ có tick “Tôi đồng ý” chung chung. \n\n1. **Thiếu thông tin rõ ràng**: Theo **Điều 7 Luật An toàn thông tin mạng 2015**, tổ chức, cá nhân thu thập thông tin cá nhân phải thông báo rõ ràng về mục đích, phạm vi thu thập và sử dụng thông tin. Việc chỉ có tick đồng ý mà không có thông tin cụ thể về cách thức sử dụng và bảo vệ thông tin là không đủ.\n\n2. **Vi phạm quyền riêng tư**: Theo **Điều 21 Bộ luật Dân sự 2015**, mọi cá nhân có quyền bảo vệ quyền riêng tư của mình. Việc yêu cầu thông tin nhạy cảm như CCCD và ảnh khuôn mặt mà không có sự đồng ý rõ ràng và đầy đủ có thể vi phạm quyền này.\n\n3. **Cần có chính sách bảo mật**: Theo **Điều 26 Luật An toàn thông tin mạng 2015**, tổ chức phải có biện pháp bảo đảm an toàn thông tin cá nhân. Nếu không có chính sách bảo mật rõ ràng, việc thu thập thông tin này có thể dẫn đến rủi ro cho người dùng.\n\nCăn cứ pháp lý:\n- **Điều 7 Luật An toàn thông tin mạng 2015**: Quy định về nghĩa vụ thông báo khi thu thập thông tin cá nhân.\n- **Điều 21 Bộ luật Dân sự 2015**: Quy định về quyền riêng tư của cá nhân.\n- **Điều 26 Luật An toàn thông tin mạng 2015**: Quy định về biện pháp bảo đảm an toàn thông tin cá nhân. \n\nNếu bạn cần thêm thông tin hoặc có câu hỏi khác, hãy cho tôi biết!"
+      },
+      {
+        "role": "user",
+        "content": "Thành viên công ty TNHH 2TV muốn bán phần vốn góp cho người ngoài; các thành viên còn lại phản đối. Có bán được không?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Không** thể bán phần vốn góp cho người ngoài nếu các thành viên còn lại trong công ty TNHH 2TV phản đối, trừ khi có sự đồng ý của các thành viên còn lại.\n\nTheo **Điều 12.1.LQ.51 Luật Doanh nghiệp 2020**, việc chuyển nhượng phần vốn góp của thành viên trong công ty TNHH hai thành viên trở lên phải được sự đồng ý của các thành viên còn lại, trừ trường hợp có quy định khác trong Điều lệ công ty. Nếu Điều lệ công ty không quy định về việc chuyển nhượng, thì việc bán phần vốn góp cho người ngoài sẽ không được thực hiện nếu các thành viên còn lại không đồng ý.\n\nCăn cứ pháp lý:\n- **Điều 12.1.LQ.51 Luật Doanh nghiệp 2020**: \"Thành viên công ty TNHH hai thành viên trở lên có quyền chuyển nhượng phần vốn góp của mình cho người khác, trừ trường hợp Điều lệ công ty có quy định khác.\""
+      },
+      {
+        "role": "user",
+        "content": "Cá nhân làm 2 công ty trong năm (đều ký HĐLĐ >3 tháng). Cuối năm có được ủy quyền quyết toán thuế TNCN cho 1 công ty không?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Có** thể ủy quyền quyết toán thuế thu nhập cá nhân (TNCN) cho một trong hai công ty mà cá nhân làm việc, nhưng cần tuân thủ một số điều kiện.\n\n1. **Điều kiện ủy quyền**: Theo **Điều 30 Nghị định số 65/2013/NĐ-CP**, cá nhân có thu nhập từ tiền lương, tiền công ký hợp đồng lao động từ 03 tháng trở lên tại một nơi và thực tế đang làm việc tại đó vào thời điểm tổ chức, cá nhân trả thu nhập thực hiện việc quyết toán thuế, có thể ủy quyền quyết toán thuế cho tổ chức, cá nhân trả thu nhập.\n\n2. **Trường hợp cụ thể**: Nếu cá nhân làm việc tại cả hai công ty và có hợp đồng lao động từ 03 tháng trở lên với cả hai, cá nhân có thể ủy quyền cho một trong hai công ty quyết toán thuế TNCN cho toàn bộ thu nhập của mình, miễn là công ty đó có trách nhiệm trả thu nhập cho cá nhân trong năm quyết toán.\n\n3. **Thủ tục ủy quyền**: Cần có văn bản ủy quyền rõ ràng, trong đó nêu rõ quyền hạn và trách nhiệm của bên ủy quyền và bên nhận ủy quyền.\n\nCăn cứ pháp lý:\n- **Điều 30 Nghị định số 65/2013/NĐ-CP**: Quy định về quyết toán thuế TNCN và quyền ủy quyền quyết toán thuế của cá nhân.\n- **Điều 33.4.NĐ.2.8**: Quy định về các loại thuế khai theo tháng, khai theo quý, khai theo năm, trong đó có thuế TNCN. \n\nNếu bạn cần thêm thông tin hoặc có câu hỏi khác, hãy cho tôi biết!"
+      },
+      {
+        "role": "user",
+        "content": "Đã xuất hóa đơn điện tử và gửi cho khách, sau đó phát hiện sai thuế suất/tiền thuế; xử lý “điều chỉnh” hay “thay thế”?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Có** thể xử lý hóa đơn điện tử đã xuất với sai sót về thuế suất hoặc tiền thuế bằng cách điều chỉnh hoặc thay thế, tùy thuộc vào loại sai sót.\n\n1. **Trường hợp sai sót về tên, địa chỉ của người mua nhưng không sai mã số thuế**: Người bán thông báo cho người mua về việc hóa đơn có sai sót và không cần lập lại hóa đơn. Tuy nhiên, người bán vẫn phải thông báo với cơ quan thuế về hóa đơn điện tử có sai sót theo **Mẫu số 04/SS-HĐĐT**.\n\n2. **Trường hợp có sai sót về mã số thuế, số tiền ghi trên hóa đơn, sai về thuế suất, tiền thuế hoặc hàng hóa ghi trên hóa đơn không đúng quy cách**: Người bán có thể lựa chọn một trong hai cách:\n   - **Lập hóa đơn điện tử điều chỉnh**: Hóa đơn điều chỉnh phải có dòng chữ “Điều chỉnh cho hóa đơn Mẫu số... ký hiệu... số... ngày... tháng... năm”.\n   - **Lập hóa đơn điện tử mới thay thế**: Hóa đơn mới phải có dòng chữ “Thay thế cho hóa đơn Mẫu số... ký hiệu... số... ngày... tháng... năm”.\n\n3. **Thông báo với cơ quan thuế**: Sau khi lập hóa đơn điều chỉnh hoặc thay thế, người bán phải gửi thông báo cho cơ quan thuế để cấp mã cho hóa đơn mới (nếu hóa đơn có mã của cơ quan thuế).\n\nCăn cứ pháp lý:\n- **Điều 19 Nghị định số 123/2020/NĐ-CP**: Quy định về xử lý hóa đơn có sai sót.\n- **Mẫu số 04/SS-HĐĐT**: Mẫu thông báo về hóa đơn điện tử có sai sót."
+      }
+    ],
+    "created_at": "2025-12-18T15:08:14.717959",
+    "updated_at": "2025-12-18T15:24:16.747372"
+  },
+  "16b356bc-d7d4-4945-bb46-cd4370d63080": {
+    "title": "Xử phạt chậm đóng BHXH và BHTN",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Doanh nghiệp chậm đóng BHXH bắt buộc và BHTN 4 tháng, mức rủi ro xử phạt thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Doanh nghiệp chậm đóng BHXH bắt buộc và BHTN 4 tháng sẽ bị xử phạt theo quy định của pháp luật.**\n\n1. **Mức phạt**: Doanh nghiệp sẽ bị phạt tiền từ **12% đến 15%** tổng số tiền phải đóng bảo hiểm xã hội bắt buộc và bảo hiểm thất nghiệp tại thời điểm lập biên bản vi phạm hành chính, nhưng tối đa không quá **75.000.000 đồng**. \n\n2. **Biện pháp khắc phục**: Doanh nghiệp sẽ bị buộc phải đóng đủ số tiền bảo hiểm xã hội bắt buộc và bảo hiểm thất nghiệp phải đóng cho cơ quan bảo hiểm xã hội.\n\nCăn cứ pháp lý:\n- Điều 39 Nghị định số 12/2022/NĐ-CP quy định về xử phạt vi phạm hành chính trong lĩnh vực bảo hiểm xã hội, bảo hiểm thất nghiệp."
+      },
+      {
+        "role": "user",
+        "content": "Một người 16 tuổi có được tự quyết định nghề nghiệp của mình theo pháp luật hiện hành không?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Có**. Theo quy định của pháp luật hiện hành, một người từ đủ **16 tuổi** trở lên có quyền tự quyết định nghề nghiệp của mình. Cụ thể, Điều 36 Nghị định số 2/2016/NĐ-CP quy định rằng thanh niên từ đủ 16 tuổi đến dưới 18 tuổi được:\n\n- **Cung cấp thông tin** về xu hướng phát triển kỹ năng nghề, việc làm tương lai và thị trường lao động.\n- **Tham gia các buổi tư vấn**, định hướng nghề nghiệp, việc làm.\n- **Tham gia các cuộc thi** phát triển kỹ năng nghề, thực hành nghề nghiệp gắn với việc làm.\n\nNgoài ra, theo Điều 145 của Bộ luật Lao động, người từ đủ 15 tuổi trở lên có thể giao kết hợp đồng lao động và tự quyết định công việc phù hợp với khả năng và nguyện vọng của mình.\n\nCăn cứ pháp lý:\n- Điều 36 Nghị định số 2/2016/NĐ-CP.\n- Điều 145 Bộ luật Lao động số 45/2019/QH14."
+      },
+      {
+        "role": "user",
+        "content": "Người điều khiển phương tiện thủy nội địa có bắt buộc phải có giấy phép lái tàu không?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Có**, người điều khiển phương tiện thủy nội địa bắt buộc phải có giấy phép lái tàu. Cụ thể, theo quy định tại **Điều 14.3 Nghị định số 08/2021/NĐ-CP**, người điều khiển phương tiện thủy nội địa phải có giấy chứng nhận khả năng chuyên môn, tức là giấy phép lái tàu, phù hợp với loại phương tiện mà họ điều khiển.\n\nCăn cứ pháp lý:\n- Điều 14.3 Nghị định số 08/2021/NĐ-CP."
+      },
+      {
+        "role": "user",
+        "content": "Nếu người dân phát hiện một cổ vật trong vườn nhà mình, họ có được giữ lại không? Pháp luật quy định xử lý ra sao?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Có**, người dân phát hiện một cổ vật trong vườn nhà mình có thể giữ lại, nhưng phải tuân thủ các quy định của pháp luật về di sản văn hóa. Theo **Điều 1 Luật Di sản văn hóa**, di sản văn hóa bao gồm các di tích, di vật, cổ vật và bảo vật quốc gia. \n\n1. **Cổ vật**: Nếu cổ vật được phát hiện là di vật, cổ vật theo quy định của pháp luật, người phát hiện phải thông báo cho cơ quan nhà nước có thẩm quyền (thường là Sở Văn hóa, Thể thao và Du lịch) để xác định giá trị và xử lý theo quy định.\n\n2. **Quyền sở hữu**: Theo **Điều 9.1.LQ.165 Bộ luật Dân sự**, người phát hiện và giữ tài sản vô chủ, tài sản không xác định được ai là chủ sở hữu có quyền giữ tài sản đó, nhưng phải thông báo cho cơ quan nhà nước có thẩm quyền.\n\n3. **Trách nhiệm**: Nếu cổ vật có giá trị lịch sử, văn hóa, người phát hiện có trách nhiệm bảo quản và không được tự ý bán, chuyển nhượng mà phải chờ quyết định của cơ quan nhà nước.\n\nCăn cứ pháp lý:\n- **Điều 1 Luật Di sản văn hóa**.\n- **Điều 165 Bộ luật Dân sự số 91/2015/QH13**."
+      },
+      {
+        "role": "user",
+        "content": "Nhà nước có chính sách hỗ trợ gì cho học sinh dân tộc thiểu số học ở vùng có điều kiện kinh tế - xã hội đặc biệt khó khăn?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Nhà nước có chính sách hỗ trợ cho học sinh dân tộc thiểu số học ở vùng có điều kiện kinh tế - xã hội đặc biệt khó khăn.** Cụ thể, các chính sách hỗ trợ bao gồm:\n\n1. **Hỗ trợ học tập**:\n   - Học sinh dân tộc thiểu số rất ít người học tại các trường tiểu học, trung học cơ sở, trung học phổ thông được hưởng mức hỗ trợ học tập bằng **40% mức lương cơ sở/học sinh/tháng**.\n   - Học sinh dân tộc thiểu số rất ít người học tại các trường phổ thông dân tộc bán trú hoặc là học sinh bán trú học tại trường phổ thông công lập có học sinh bán trú được hưởng mức hỗ trợ bằng **60% mức lương cơ sở/học sinh/tháng**.\n   - Học sinh dân tộc thiểu số rất ít người học tại các trường phổ thông dân tộc nội trú được hưởng mức hỗ trợ bằng **100% mức lương cơ sở/học sinh/tháng**.\n\n2. **Miễn, giảm học phí**:\n   - Nhà nước miễn học phí cho học sinh dân tộc thiểu số thuộc hộ nghèo, hộ cận nghèo, và những học sinh có hoàn cảnh khó khăn khác theo quy định của pháp luật.\n\n3. **Hỗ trợ chi phí sinh hoạt**:\n   - Học sinh, sinh viên dân tộc thiểu số thuộc hộ nghèo, hộ cận nghèo, người khuyết tật được hỗ trợ chi phí sinh hoạt theo quy định của Thủ tướng Chính phủ.\n\n4. **Chính sách ưu tiên trong giáo dục**:\n   - Học sinh tốt nghiệp trường trung học cơ sở dân tộc nội trú được tuyển thẳng vào học trường trung cấp, cao đẳng công lập.\n\nCăn cứ pháp lý:\n- **Điều 4 Nghị định số 57/2017/NĐ-CP**.\n- **Điều 20.1.LQ.62 Luật số 74/2014/QH13**.\n- **Điều 13.1.NĐ.9.4 Nghị định số 57/2017/NĐ-CP**."
+      },
+      {
+        "role": "user",
+        "content": "Người Việt Nam định cư ở nước ngoài có được mua nhà và sở hữu nhà ở tại Việt Nam không?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Có**, người Việt Nam định cư ở nước ngoài được phép mua nhà và sở hữu nhà ở tại Việt Nam. Cụ thể, theo quy định tại **Điều 1 Nghị định số 99/2015/NĐ-CP**, người Việt Nam định cư ở nước ngoài có quyền sở hữu nhà ở tại Việt Nam, bao gồm:\n\n1. **Quyền sở hữu**: Người Việt Nam định cư ở nước ngoài được mua và sở hữu nhà ở tại Việt Nam theo hình thức sở hữu nhà ở riêng lẻ (nhà ở riêng lẻ, căn hộ chung cư) và không vượt quá **10% tổng số căn hộ** trong một tòa nhà chung cư hoặc **10% tổng số nhà ở** trong một khu vực dân cư.\n\n2. **Thủ tục**: Người mua phải thực hiện các thủ tục theo quy định của pháp luật về nhà ở, bao gồm việc đăng ký quyền sở hữu nhà ở tại cơ quan nhà nước có thẩm quyền.\n\nCăn cứ pháp lý:\n- **Điều 1 Nghị định số 99/2015/NĐ-CP**."
+      },
+      {
+        "role": "user",
+        "content": "Người dân xây nhà trên đất ở nhưng chưa đăng ký quyền sử dụng đất có phải nộp thuế sử dụng đất phi nông nghiệp không?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Có**, người dân xây nhà trên đất ở nhưng chưa đăng ký quyền sử dụng đất vẫn phải nộp thuế sử dụng đất phi nông nghiệp. Theo quy định tại **Điều 33.8.LQ.4** của Luật thuế sử dụng đất phi nông nghiệp, người đang sử dụng đất là người nộp thuế, bao gồm cả trường hợp chưa được cấp Giấy chứng nhận quyền sử dụng đất.\n\nCụ thể, Điều 33.8.LQ.4 quy định:\n\n1. **Người nộp thuế** là tổ chức, hộ gia đình, cá nhân có quyền sử dụng đất thuộc đối tượng chịu thuế.\n2. **Trường hợp chưa được cấp Giấy chứng nhận quyền sử dụng đất**, người đang sử dụng đất là người nộp thuế.\n\nDo đó, mặc dù chưa có Giấy chứng nhận quyền sử dụng đất, người dân vẫn có nghĩa vụ nộp thuế sử dụng đất phi nông nghiệp theo quy định của pháp luật.\n\nCăn cứ pháp lý:\n- **Điều 33.8.LQ.4 Luật thuế sử dụng đất phi nông nghiệp**."
+      },
+      {
+        "role": "user",
+        "content": "Người thân của người nghiện ma túy có trách nhiệm gì khi phát hiện hành vi sử dụng trái phép chất ma túy?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Đúng**, người thân của người nghiện ma túy có trách nhiệm khi phát hiện hành vi sử dụng trái phép chất ma túy. Cụ thể, theo quy định tại **Điều 39.7.LQ.25** và **Điều 39.7.LQ.42** của Luật Phòng, chống ma túy, trách nhiệm của gia đình và cộng đồng bao gồm:\n\n1. **Quản lý và giáo dục**: Gia đình có trách nhiệm quản lý, giáo dục người sử dụng trái phép chất ma túy và ngăn chặn hành vi sử dụng trái phép.\n\n2. **Cung cấp thông tin**: Gia đình phải cung cấp thông tin về hành vi sử dụng trái phép chất ma túy của người đó cho công an cấp xã nơi cư trú.\n\n3. **Ngăn chặn hành vi gây mất trật tự**: Gia đình có trách nhiệm ngăn chặn người sử dụng trái phép chất ma túy có hành vi gây mất trật tự, an toàn xã hội.\n\n4. **Hỗ trợ cai nghiện**: Gia đình cần hỗ trợ người nghiện ma túy trong quá trình cai nghiện và hòa nhập cộng đồng, phối hợp với cơ quan có thẩm quyền trong việc lập hồ sơ áp dụng biện pháp cai nghiện ma túy bắt buộc.\n\n5. **Động viên và giúp đỡ**: Cộng đồng nơi người nghiện ma túy cư trú cũng có trách nhiệm động viên, giúp đỡ người nghiện trong quá trình cai nghiện và quản lý sau cai nghiện.\n\nCăn cứ pháp lý:\n- **Điều 39.7.LQ.25 Luật số 73/2021/QH14**.\n- **Điều 39.7.LQ.42 Luật số 73/2021/QH14**."
+      },
+      {
+        "role": "user",
+        "content": "Người bị tạm giữ có được gặp thân nhân hoặc luật sư trong thời gian bị tạm giữ không? Điều kiện là gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Có**, người bị tạm giữ có quyền gặp thân nhân và luật sư trong thời gian bị tạm giữ. Cụ thể như sau:\n\n1. **Quyền gặp thân nhân**:\n   - Người bị tạm giữ được gặp thân nhân **một lần trong thời gian tạm giữ** và **một lần trong mỗi lần gia hạn tạm giữ**. Thời gian mỗi lần gặp không quá **một giờ**.\n   - Người bị tạm giam được gặp thân nhân **một lần trong một tháng**, với thời gian cũng không quá **một giờ**. Nếu muốn tăng thêm số lần gặp hoặc gặp người không phải thân nhân, cần có sự đồng ý của cơ quan đang thụ lý vụ án.\n\n2. **Quyền gặp luật sư**:\n   - Người bị tạm giữ, tạm giam có quyền gặp người bào chữa (luật sư) để thực hiện quyền bào chữa của mình. Việc gặp gỡ này được thực hiện tại buồng làm việc của cơ sở giam giữ hoặc nơi người bị tạm giữ, tạm giam đang khám bệnh, chữa bệnh.\n\n3. **Điều kiện gặp**:\n   - Người đến thăm gặp phải xuất trình giấy tờ tùy thân và giấy tờ xác nhận về quan hệ với người bị tạm giữ, tạm giam trong trường hợp là thân nhân. Việc thăm gặp phải tuân thủ nội quy của cơ sở giam giữ và không làm ảnh hưởng đến các hoạt động tố tụng hình sự.\n\n4. **Trường hợp không được gặp**:\n   - Thủ trưởng cơ sở giam giữ có quyền không đồng ý cho thăm gặp trong một số trường hợp như: thân nhân không xuất trình giấy tờ cần thiết, có yêu cầu từ cơ quan thụ lý vụ án, hoặc trong các tình huống khẩn cấp để bảo vệ an toàn cơ sở giam giữ.\n\nCăn cứ pháp lý:\n- **Điều 22 Luật Thi hành tạm giữ, tạm giam số 94/2015/QH13**.\n- **Điều 10 Thông tư liên tịch số 01/2018/TTLT-BCA-BQP-TANDTC-VKSNDTC**."
+      }
+    ],
+    "created_at": "2025-12-18T15:25:07.848804",
+    "updated_at": "2025-12-19T16:53:16.966867"
+  },
+  "3b3c9ac9-e079-446f-bb89-c23b58623323": {
+    "title": "Chào hỏi đơn giản",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hello"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello 👋! Mình là trợ lý pháp lý AI hỗ trợ tra cứu văn bản luật Việt Nam. Bạn có thể hỏi mình về quy định, mức xử phạt, điều kiện pháp lý hoặc hướng dẫn thủ tục nhé."
+      },
+      {
+        "role": "user",
+        "content": "Bạn là ai"
+      },
+      {
+        "role": "assistant",
+        "content": "Mình là một **trợ lý pháp lý AI** được thiết kế để hỗ trợ bạn trong việc tìm hiểu và tra cứu các quy định pháp luật Việt Nam. Mình có thể tóm tắt điều luật, giải thích nội dung văn bản, hoặc cung cấp căn cứ pháp lý cho câu hỏi của bạn."
+      },
+      {
+        "role": "user",
+        "content": "bhjabvvahb;"
+      },
+      {
+        "role": "assistant",
+        "content": "Có vẻ yêu cầu của bạn chưa rõ ràng hoặc không nằm trong phạm vi mình xử lý nên mình không thể hỗ trợ bạn được. Mình là trợ lý pháp lý hỗ trợ tìm kiếm và giải thích luật. Bạn có thể hỏi mình về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."
+      },
+      {
+        "role": "user",
+        "content": "AGDHJDVCBSDJ"
+      },
+      {
+        "role": "assistant",
+        "content": "Xin lỗi, tôi không thể xử lý yêu cầu của bạn vì nó có dấu hiệu spam. Bạn hãy cung cấp thông tin cụ thể hơn để tôi có thể hỗ trợ bạn tốt nhất. Cảm ơn bạn!"
+      },
+      {
+        "role": "user",
+        "content": "Okay"
+      },
+      {
+        "role": "assistant",
+        "content": "Có vẻ yêu cầu của bạn chưa rõ ràng hoặc không nằm trong phạm vi mình xử lý nên mình không thể hỗ trợ bạn được. Mình là trợ lý pháp lý hỗ trợ tìm kiếm và giải thích luật. Bạn có thể hỏi mình về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."
+      },
+      {
+        "role": "user",
+        "content": "okay"
+      },
+      {
+        "role": "assistant",
+        "content": "Rất vui được hỗ trợ bạn. Bạn có thể hỏi mình về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."
+      },
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt nghiêm khắc theo quy định của pháp luật.**\n\n1. **Xử lý hình sự**: Theo **Điều 330 Bộ luật Hình sự 2015**, người nào dùng vũ lực, đe dọa dùng vũ lực hoặc dùng thủ đoạn khác cản trở người thi hành công vụ thực hiện công vụ của họ sẽ bị xử lý như sau:\n   - Phạt cải tạo không giam giữ đến **03 năm** hoặc phạt tù từ **06 tháng đến 03 năm**.\n   - Nếu phạm tội thuộc một trong các trường hợp như có tổ chức, tái phạm nguy hiểm, gây thiệt hại về tài sản từ **50 triệu đồng trở lên**, thì bị phạt tù từ **02 năm đến 07 năm**.\n\n2. **Xử lý hành chính**: Theo **Nghị định số 144/2021/NĐ-CP**, hành vi cản trở hoặc không chấp hành yêu cầu của người thi hành công vụ sẽ bị xử phạt hành chính với mức phạt như sau:\n   - Phạt tiền từ **4.000.000 đồng đến 6.000.000 đồng** đối với hành vi cản trở hoặc không chấp hành yêu cầu.\n   - Phạt tiền từ **6.000.000 đồng đến 8.000.000 đồng** đối với hành vi dùng vũ lực hoặc đe dọa dùng vũ lực chống người thi hành công vụ.\n\n3. **Biện pháp khắc phục hậu quả**: Đối với hành vi xúc phạm danh dự, nhân phẩm người thi hành công vụ, có thể bị buộc xin lỗi công khai.\n\nCăn cứ pháp lý:\n- **Điều 330 Bộ luật Hình sự 2015**.\n- **Nghị định số 144/2021/NĐ-CP**."
+      },
+      {
+        "role": "user",
+        "content": "Quyền lợi của lao động nữ mang thai là gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Quyền lợi của lao động nữ mang thai được quy định rõ ràng trong Bộ luật Lao động và các văn bản pháp luật liên quan. Dưới đây là các quyền lợi chính:**\n\n1. **Quyền đơn phương chấm dứt hoặc tạm hoãn hợp đồng lao động**: \n   - Lao động nữ mang thai có quyền đơn phương chấm dứt hợp đồng lao động hoặc tạm hoãn thực hiện hợp đồng lao động nếu có xác nhận của cơ sở khám bệnh, chữa bệnh có thẩm quyền về việc tiếp tục làm việc sẽ ảnh hưởng xấu tới thai nhi. (Căn cứ theo **Điều 138 Bộ luật Lao động 2019**).\n\n2. **Bảo đảm việc làm sau khi nghỉ thai sản**:\n   - Lao động nữ được bảo đảm việc làm cũ khi trở lại làm việc sau khi nghỉ hết thời gian theo quy định mà không bị cắt giảm tiền lương và quyền lợi so với trước khi nghỉ thai sản. Nếu việc làm cũ không còn, người sử dụng lao động phải bố trí việc làm khác với mức lương không thấp hơn mức lương trước khi nghỉ thai sản. (Căn cứ theo **Điều 140 Bộ luật Lao động 2019**).\n\n3. **Chăm sóc sức khỏe**:\n   - Lao động nữ được khám sức khỏe định kỳ, bao gồm khám chuyên khoa phụ sản. Người sử dụng lao động khuyến khích tạo điều kiện cho lao động nữ đang mang thai được nghỉ đi khám thai nhiều hơn quy định. (Căn cứ theo **Điều 80 Nghị định số 145/2020/NĐ-CP**).\n\n4. **Thời gian nghỉ trong thời gian nuôi con**:\n   - Lao động nữ có quyền được nghỉ mỗi ngày 60 phút trong thời gian làm việc để cho con bú, vắt, trữ sữa, và thời gian nghỉ này vẫn được hưởng đủ tiền lương theo hợp đồng lao động. (Căn cứ theo **Điều 80 Nghị định số 145/2020/NĐ-CP**).\n\n5. **Bảo vệ sức khỏe**:\n   - Các tổ chức và cá nhân sử dụng lao động nữ phải thực hiện các quy định về bảo vệ sức khỏe cho phụ nữ, bảo đảm chế độ đối với phụ nữ có thai, sinh con, nuôi con và không được sử dụng lao động nữ vào những công việc nặng nhọc, độc hại. (Căn cứ theo **Điều 45 Luật Bảo vệ sức khỏe nhân dân**).\n\n**Căn cứ pháp lý**:\n- **Điều 138, 140 Bộ luật Lao động 2019**.\n- **Điều 80 Nghị định số 145/2020/NĐ-CP**.\n- **Điều 45 Luật Bảo vệ sức khỏe nhân dân**."
+      }
+    ],
+    "created_at": "2026-01-12T14:56:14.399933",
+    "updated_at": "2026-01-12T15:03:53.299130"
+  },
+  "4ec8dbe2-7a4e-4c33-98da-16dbe0fe6584": {
+    "title": "Quyền lợi lao động nữ mang thai",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Quyền lợi của lao động nữ mang thai là gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Lao động nữ mang thai có nhiều quyền lợi theo quy định của pháp luật Việt Nam. Dưới đây là các quyền lợi chính:**\n\n1. **Quyền đơn phương chấm dứt hoặc tạm hoãn hợp đồng lao động**: \n   - **Lao động nữ mang thai** có quyền đơn phương chấm dứt hợp đồng lao động hoặc tạm hoãn thực hiện hợp đồng nếu có xác nhận của cơ sở khám bệnh, chữa bệnh có thẩm quyền về việc tiếp tục làm việc sẽ ảnh hưởng xấu tới thai nhi. \n   - Khi thực hiện quyền này, lao động nữ phải thông báo cho người sử dụng lao động kèm theo xác nhận của cơ sở khám bệnh. Thời gian tạm hoãn do hai bên thỏa thuận nhưng tối thiểu phải bằng thời gian do cơ sở khám bệnh chỉ định. \n   - **Căn cứ theo** (Điều 138 Bộ luật số 45/2019/QH14).\n\n2. **Bảo đảm việc làm sau khi nghỉ thai sản**: \n   - Lao động nữ được bảo đảm việc làm cũ khi trở lại làm việc sau khi nghỉ hết thời gian theo quy định mà không bị cắt giảm tiền lương và quyền lợi so với trước khi nghỉ thai sản. Nếu việc làm cũ không còn, người sử dụng lao động phải bố trí việc làm khác với mức lương không thấp hơn mức lương trước khi nghỉ thai sản. \n   - **Căn cứ theo** (Điều 140 Bộ luật số 45/2019/QH14).\n\n3. **Chăm sóc sức khỏe**: \n   - Lao động nữ được khám chuyên khoa phụ sản khi khám sức khỏe định kỳ. Người sử dụng lao động khuyến khích tạo điều kiện cho lao động nữ đang mang thai được nghỉ đi khám thai nhiều hơn quy định. \n   - **Căn cứ theo** (Điều 80 Nghị định số 145/2020/NĐ-CP).\n\n4. **Thời gian nghỉ trong thời gian nuôi con**: \n   - Lao động nữ có quyền được nghỉ mỗi ngày 60 phút trong thời gian làm việc để cho con bú, vắt, trữ sữa, và thời gian nghỉ này vẫn được hưởng đủ tiền lương theo hợp đồng lao động. \n   - **Căn cứ theo** (Điều 80 Nghị định số 145/2020/NĐ-CP).\n\n5. **Bảo vệ sức khỏe**: \n   - Các tổ chức và cá nhân sử dụng lao động nữ phải thực hiện các quy định về bảo vệ sức khỏe cho phụ nữ, bảo đảm chế độ đối với phụ nữ có thai, sinh con, nuôi con và không được sử dụng lao động nữ vào những công việc nặng nhọc, độc hại. \n   - **Căn cứ theo** (Điều 45 Luật số 21-LCT/HDNN8).\n\n**Tóm lại**, lao động nữ mang thai được bảo vệ quyền lợi và sức khỏe, có quyền đơn phương chấm dứt hoặc tạm hoãn hợp đồng lao động, được bảo đảm việc làm sau khi nghỉ thai sản, và có quyền nghỉ để chăm sóc sức khỏe và nuôi con. Các quy định này nhằm đảm bảo quyền lợi và sự an toàn cho lao động nữ trong quá trình mang thai và nuôi con."
+      },
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ là hành vi vi phạm pháp luật và sẽ bị xử phạt theo quy định của pháp luật Việt Nam.**\n\n1. **Xử phạt hành chính**: Theo **Điều 330 Bộ luật Hình sự 2015 (sửa đổi, bổ sung năm 2017)**, người nào có hành vi chống đối người thi hành công vụ có thể bị phạt tiền từ **10 triệu đồng đến 30 triệu đồng** hoặc bị phạt cải tạo không giam giữ đến **3 năm**.\n\n2. **Xử lý hình sự**: Nếu hành vi chống đối dẫn đến hậu quả nghiêm trọng, người vi phạm có thể bị truy cứu trách nhiệm hình sự theo **Điều 257 Bộ luật Hình sự 2015**, với mức án phạt tù từ **6 tháng đến 3 năm**.\n\n3. **Hình thức xử phạt bổ sung**: Ngoài hình phạt chính, người vi phạm có thể bị áp dụng hình phạt bổ sung như cấm đảm nhiệm chức vụ nhất định hoặc cấm hành nghề trong một thời gian nhất định.\n\n**Căn cứ pháp lý**:\n- **Điều 330 Bộ luật Hình sự 2015**.\n- **Điều 257 Bộ luật Hình sự 2015**."
+      },
+      {
+        "role": "user",
+        "content": "Cụ thể các mức phạt đi"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt theo quy định của pháp luật Việt Nam.**\n\n1. **Xử phạt hành chính**: Theo **Điều 330 Bộ luật Hình sự 2015 (sửa đổi, bổ sung năm 2017)**, người nào có hành vi chống đối người thi hành công vụ có thể bị phạt tiền từ **10 triệu đồng đến 30 triệu đồng** hoặc bị phạt cải tạo không giam giữ đến **3 năm**.\n\n2. **Xử lý hình sự**: Nếu hành vi chống đối dẫn đến hậu quả nghiêm trọng, người vi phạm có thể bị truy cứu trách nhiệm hình sự theo **Điều 257 Bộ luật Hình sự 2015**, với mức án phạt tù từ **6 tháng đến 3 năm**.\n\n3. **Hình thức xử phạt bổ sung**: Ngoài hình phạt chính, người vi phạm có thể bị áp dụng hình phạt bổ sung như cấm đảm nhiệm chức vụ nhất định hoặc cấm hành nghề trong một thời gian nhất định.\n\n**Căn cứ pháp lý**:\n- **Điều 330 Bộ luật Hình sự 2015**.\n- **Điều 257 Bộ luật Hình sự 2015**."
+      },
+      {
+        "role": "user",
+        "content": "Cụ thể xử phạt như thế nào"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt theo quy định của pháp luật Việt Nam.**\n\n1. **Xử phạt hành chính**: Theo **Điều 330 Bộ luật Hình sự 2015 (sửa đổi, bổ sung năm 2017)**, người nào có hành vi chống đối người thi hành công vụ có thể bị phạt tiền từ **10 triệu đồng đến 30 triệu đồng** hoặc bị phạt cải tạo không giam giữ đến **3 năm**.\n\n2. **Xử lý hình sự**: Nếu hành vi chống đối dẫn đến hậu quả nghiêm trọng, người vi phạm có thể bị truy cứu trách nhiệm hình sự theo **Điều 257 Bộ luật Hình sự 2015**, với mức án phạt tù từ **6 tháng đến 3 năm**.\n\n3. **Hình thức xử phạt bổ sung**: Ngoài hình phạt chính, người vi phạm có thể bị áp dụng hình phạt bổ sung như cấm đảm nhiệm chức vụ nhất định hoặc cấm hành nghề trong một thời gian nhất định.\n\n**Căn cứ pháp lý**:\n- **Điều 330 Bộ luật Hình sự 2015**.\n- **Điều 257 Bộ luật Hình sự 2015**."
+      },
+      {
+        "role": "user",
+        "content": "Cụ thể mức phạt hành chính"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt theo quy định của pháp luật Việt Nam.**\n\n1. **Xử phạt hành chính**: \n   - Theo **Điều 330 Bộ luật Hình sự 2015 (sửa đổi, bổ sung năm 2017)**, người nào có hành vi chống đối người thi hành công vụ có thể bị phạt tiền từ **10 triệu đồng đến 30 triệu đồng** hoặc bị phạt cải tạo không giam giữ đến **3 năm**.\n\n2. **Xử lý hình sự**: \n   - Nếu hành vi chống đối dẫn đến hậu quả nghiêm trọng, người vi phạm có thể bị truy cứu trách nhiệm hình sự theo **Điều 257 Bộ luật Hình sự 2015**, với mức án phạt tù từ **6 tháng đến 3 năm**.\n\n3. **Hình thức xử phạt bổ sung**: \n   - Ngoài hình phạt chính, người vi phạm có thể bị áp dụng hình phạt bổ sung như cấm đảm nhiệm chức vụ nhất định hoặc cấm hành nghề trong một thời gian nhất định.\n\n**Căn cứ pháp lý**:\n- **Điều 330 Bộ luật Hình sự 2015**.\n- **Điều 257 Bộ luật Hình sự 2015**."
+      },
+      {
+        "role": "user",
+        "content": "Doanh nghiệp chậm đóng BHXH bắt buộc và BHTN 4 tháng, mức rủi ro xử phạt thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Đối với hành vi chậm đóng bảo hiểm xã hội (BHXH) bắt buộc và bảo hiểm thất nghiệp (BHTN) trong 4 tháng, doanh nghiệp sẽ bị xử phạt theo quy định của pháp luật.**\n\n1. **Mức phạt hành chính**: \n   - Theo **Điều 26 Nghị định số 28/2020/NĐ-CP**, phạt tiền từ **1.000.000 đồng đến 2.000.000 đồng** đối với hành vi chậm đóng BHXH, BHTN từ 1 tháng đến dưới 3 tháng.\n   - Phạt tiền từ **2.000.000 đồng đến 5.000.000 đồng** đối với hành vi chậm đóng BHXH, BHTN từ 3 tháng đến dưới 6 tháng.\n   - Phạt tiền từ **5.000.000 đồng đến 10.000.000 đồng** đối với hành vi chậm đóng BHXH, BHTN từ 6 tháng trở lên.\n\n2. **Hình thức xử phạt bổ sung**: \n   - Ngoài việc bị phạt tiền, doanh nghiệp còn có thể bị yêu cầu nộp đủ số tiền BHXH, BHTN còn thiếu.\n\n3. **Thời gian tính tiền chậm nộp**: \n   - Theo **Điều 59 Luật số 38/2019/QH14**, mức tiền chậm nộp được tính là **0,03%/ngày** trên số tiền BHXH, BHTN chưa nộp.\n\n**Căn cứ pháp lý**:\n- **Điều 26 Nghị định số 28/2020/NĐ-CP**.\n- **Điều 59 Luật số 38/2019/QH14**."
+      }
+    ],
+    "created_at": "2026-01-12T15:19:33.033228",
+    "updated_at": "2026-01-12T16:23:24.711618"
+  },
+  "1166d389-a33a-4d43-9b5f-9d1228215b46": {
+    "title": "Xử phạt chậm đóng BHXH và BHTN",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Doanh nghiệp chậm đóng BHXH bắt buộc và BHTN 4 tháng, mức rủi ro xử phạt thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Doanh nghiệp chậm đóng BHXH bắt buộc và BHTN 4 tháng sẽ bị xử phạt.** \n\nTheo quy định tại **Điều 17 Nghị định 28/2020/NĐ-CP**, doanh nghiệp có trách nhiệm đóng bảo hiểm xã hội (BHXH) và bảo hiểm thất nghiệp (BHTN) cho người lao động. Nếu doanh nghiệp không thực hiện nghĩa vụ này, sẽ bị xử phạt vi phạm hành chính.\n\nCụ thể, mức phạt đối với hành vi chậm đóng BHXH, BHTN được quy định như sau:\n\n1. **Phạt tiền từ 1.000.000 đồng đến 2.000.000 đồng** đối với hành vi chậm đóng BHXH, BHTN từ 1 đến 30 ngày.\n2. **Phạt tiền từ 2.000.000 đồng đến 5.000.000 đồng** đối với hành vi chậm đóng BHXH, BHTN từ 31 đến 60 ngày.\n3. **Phạt tiền từ 5.000.000 đồng đến 10.000.000 đồng** đối với hành vi chậm đóng BHXH, BHTN từ 61 đến 90 ngày.\n4. **Phạt tiền từ 10.000.000 đồng đến 15.000.000 đồng** đối với hành vi chậm đóng BHXH, BHTN từ 91 ngày trở lên.\n\nNgoài ra, doanh nghiệp còn phải nộp lãi chậm đóng theo quy định của pháp luật.\n\nCăn cứ pháp lý:\n- **Điều 17 Nghị định 28/2020/NĐ-CP** quy định về xử phạt vi phạm hành chính trong lĩnh vực BHXH."
+      },
+      {
+        "role": "user",
+        "content": "hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt.** \n\nTheo quy định tại **Điều 39 Nghị định 81/2013/NĐ-CP**, hành vi chống đối người thi hành công vụ được phân loại và xử phạt như sau:\n\n1. **Phạt tiền từ 1.000.000 đồng đến 4.000.000 đồng** đối với hành vi cản trở hoặc không chấp hành yêu cầu thanh tra, kiểm tra, kiểm soát hoặc nhiệm vụ khác của người thi hành công vụ.\n\n2. **Phạt tiền từ 4.000.000 đồng đến 6.000.000 đồng** đối với các hành vi:\n   - Có lời nói, hành động đe dọa, lăng mạ, xúc phạm danh dự, nhân phẩm người thi hành công vụ.\n   - Tổ chức, xúi giục, giúp sức, lôi kéo hoặc kích động người khác không chấp hành yêu cầu của người thi hành công vụ.\n\n3. **Phạt tiền từ 6.000.000 đồng đến 8.000.000 đồng** đối với các hành vi:\n   - Dùng vũ lực, đe dọa dùng vũ lực chống người thi hành công vụ.\n   - Gây thiệt hại về tài sản, phương tiện của cơ quan nhà nước, của người thi hành công vụ.\n   - Đưa tiền, tài sản, lợi ích vật chất khác hoặc lợi ích phi vật chất hối lộ cho người thi hành công vụ.\n\n4. **Biện pháp khắc phục hậu quả**: Buộc xin lỗi công khai đối với hành vi xúc phạm danh dự, nhân phẩm người thi hành công vụ.\n\nCăn cứ pháp lý:\n- **Điều 39 Nghị định 81/2013/NĐ-CP** quy định về xử phạt vi phạm hành chính trong lĩnh vực trật tự, an toàn xã hội."
+      }
+    ],
+    "created_at": "2026-01-12T16:30:41.340137",
+    "updated_at": "2026-01-12T16:33:06.597702"
+  },
+  "3eecfe3c-f155-42ee-a39a-71308ed861bd": {
+    "title": "Xử phạt hành vi chống đối người thi hành công",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt theo quy định của pháp luật.**\n\n1. **Xử lý hình sự**: Theo **Điều 330 Bộ luật Hình sự 2015**, người nào dùng vũ lực, đe dọa dùng vũ lực hoặc dùng thủ đoạn khác để cản trở người thi hành công vụ sẽ bị xử lý như sau:\n   - Phạt cải tạo không giam giữ đến **03 năm** hoặc phạt tù từ **06 tháng đến 03 năm**.\n   - Nếu phạm tội thuộc một trong các trường hợp như có tổ chức, phạm tội 02 lần trở lên, gây thiệt hại về tài sản từ **50.000.000 đồng trở lên**, thì bị phạt tù từ **02 năm đến 07 năm**.\n\n2. **Xử lý hành chính**: Theo **Nghị định số 102/2021/NĐ-CP**, hành vi cản trở hoặc chống lại việc thanh tra, kiểm tra, kiểm soát của người thi hành công vụ sẽ bị xử phạt như sau:\n   - Phạt tiền từ **4.000.000 đồng đến 6.000.000 đồng** đối với hành vi cản trở hoặc không chấp hành yêu cầu của người thi hành công vụ.\n   - Phạt tiền từ **6.000.000 đồng đến 8.000.000 đồng** nếu dùng vũ lực hoặc đe dọa dùng vũ lực chống người thi hành công vụ.\n\n3. **Biện pháp khắc phục hậu quả**: Đối với hành vi xúc phạm danh dự, nhân phẩm người thi hành công vụ, có thể bị buộc xin lỗi công khai.\n\nCăn cứ pháp lý:\n- **Điều 330 Bộ luật Hình sự 2015**.\n- **Nghị định số 102/2021/NĐ-CP**."
+      },
+      {
+        "role": "user",
+        "content": "Quyền lợi của lao động nữ mang thai là gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Lao động nữ mang thai có nhiều quyền lợi theo quy định của pháp luật Việt Nam. Dưới đây là các quyền lợi chính:**\n\n1. **Quyền đơn phương chấm dứt hoặc tạm hoãn hợp đồng lao động**: \n   - Lao động nữ mang thai có quyền đơn phương chấm dứt hợp đồng lao động hoặc tạm hoãn thực hiện hợp đồng lao động nếu có xác nhận của cơ sở khám bệnh, chữa bệnh có thẩm quyền về việc tiếp tục làm việc sẽ ảnh hưởng xấu tới thai nhi. (Căn cứ theo **Điều 138 Bộ luật số 45/2019/QH14**).\n\n2. **Bảo đảm việc làm sau khi nghỉ thai sản**:\n   - Lao động nữ được bảo đảm việc làm cũ khi trở lại làm việc sau khi nghỉ hết thời gian thai sản mà không bị cắt giảm tiền lương và quyền lợi so với trước khi nghỉ. Nếu việc làm cũ không còn, người sử dụng lao động phải bố trí việc làm khác với mức lương không thấp hơn mức lương trước khi nghỉ thai sản. (Căn cứ theo **Điều 140 Bộ luật số 45/2019/QH14**).\n\n3. **Chăm sóc sức khỏe**:\n   - Lao động nữ mang thai được khám chuyên khoa phụ sản theo danh mục khám do Bộ Y tế ban hành và được khuyến khích nghỉ để đi khám thai nhiều hơn quy định. (Căn cứ theo **Điều 80 Nghị định số 145/2020/NĐ-CP**).\n\n4. **Nghỉ trong thời gian nuôi con**:\n   - Trong thời gian nuôi con dưới 12 tháng tuổi, lao động nữ có quyền được nghỉ mỗi ngày 60 phút để cho con bú, vắt, trữ sữa, và thời gian nghỉ này vẫn được hưởng đủ tiền lương. (Căn cứ theo **Điều 80 Nghị định số 145/2020/NĐ-CP**).\n\n5. **Bảo vệ sức khỏe**:\n   - Các tổ chức và cá nhân sử dụng lao động nữ phải thực hiện các quy định về bảo vệ sức khỏe cho phụ nữ, đảm bảo chế độ đối với phụ nữ có thai, sinh con, nuôi con và không được sử dụng lao động nữ vào những công việc nặng nhọc, độc hại. (Căn cứ theo **Điều 45 Luật số 21-LCT/HDNN8**).\n\n**Căn cứ pháp lý**:\n- **Điều 138 Bộ luật số 45/2019/QH14**.\n- **Điều 140 Bộ luật số 45/2019/QH14**.\n- **Điều 80 Nghị định số 145/2020/NĐ-CP**.\n- **Điều 45 Luật số 21-LCT/HDNN8**."
+      }
+    ],
+    "created_at": "2026-01-12T16:57:54.392890",
+    "updated_at": "2026-01-12T17:05:30.290058"
+  }
+}
