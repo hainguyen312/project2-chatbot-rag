@@ -6,6 +6,7 @@ from pymilvus import (
 from openai import OpenAI
 import json
 import pandas as pd  # vẫn dùng cho error_rows -> csv
+import pymysql
 
 # ----------------- OpenAI EMBEDDING -----------------
 client = OpenAI()
@@ -70,12 +71,34 @@ print("Created collection:", collection_name)
 
 
 # ----------------- DATA: đọc từ JSON -----------------
-def load_data_from_json(path="data.json"):
-    """Đọc toàn bộ mảng bản ghi từ file JSON."""
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    # data là list[dict] với các key: tenchude, tendemuc, tenchuong, tendieu, noidung(list)
-    return data
+
+def load_data_from_mysql():
+    conn = pymysql.connect(
+        host="localhost",
+        port=3306,
+        user="root",
+        password="123456789",
+        database="law",
+        charset="utf8mb4"
+    )
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    
+    cursor.execute("""
+        SELECT 
+            cd.ten    AS tenchude,
+            dm.ten    AS tendemuc,
+            ch.ten    AS tenchuong,
+            d.ten     AS tendieu,
+            d.noidung AS noidung
+        FROM pddieu d
+        LEFT JOIN pdchuong ch ON d.chuong_id = ch.mapc
+        LEFT JOIN pddemuc  dm ON d.demuc_id  = dm.id
+        LEFT JOIN pdchude  cd ON d.chude_id  = cd.id
+    """)
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return rows
 
 def select_batch(data, batch_size, offset):
     """Lấy 1 batch từ list data."""
@@ -217,7 +240,7 @@ def insert_batch(records, global_offset, error_rows):
 
 # ----------------- MAIN -----------------
 def main():
-    data = load_data_from_json("data.json")
+    data = load_data_from_mysql()
     total = len(data)
     batch_size = 200
 

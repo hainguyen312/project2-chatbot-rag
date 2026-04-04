@@ -34,7 +34,6 @@ Hệ thống cho phép:
 > Lưu ý:  
 > - Docker **chỉ dùng cho database (MySQL, Milvus)**  
 > - **Toàn bộ code Python chạy trên host bằng venv**  
-> - **Chi tiết clone từ đầu:** xem [SETUP_CLONE.md](SETUP_CLONE.md)  
 
 ---
 
@@ -118,24 +117,24 @@ Sau khi chạy xong, dữ liệu sẽ được lưu vào DB, bạn có thể exp
 
 ### 4. Embed dữ liệu để lưu vào cơ sở Milvus
 
--   Trở lại thư mục chính của dự án
+-    Trở lại thư mục chính của dự án
 
 ```bash
     cd ..
 ```
 
--   Cài đặt các thư viện cần thiết (nếu chưa có):
+-   Cài đặt các thư viện cần thiết:
 
 ```bash
+    cd test_raptor
     pip install -r requirements.txt
 ```
 
 -   Khởi động Milvus (Docker)
 
 ```bash
-    cd test_raptor
+    
     docker compose up -d
-    cd ..
 ```
 
 Các service:
@@ -147,15 +146,12 @@ Các service:
 -   Embed dữ liệu từ MySQL rồi lưu Milvus
 
 ```bash
+    cd ..
     cd data_processing
-    python seed_milvus_from_mysql.py
+    python seed_data_batch.py
 ```
 
-Script `seed_milvus_from_mysql.py` đọc toàn bộ điều từ MySQL, embed tên điều bằng OpenAI, và lưu vào collection `phapdien_tendieu`. Cần cấu hình `OPENAI_API_KEY` trước khi chạy.
-
-> **Lưu ý:** Nếu muốn dùng dữ liệu mẫu từ `data.json` (không qua MySQL), dùng `python seed_data_batch.py` thay thế — khi đó collection tạo ra là `phapdien_simple_tendieu` và cần chỉnh sửa code retrieve cho phù hợp.
-
-Như vậy, data đã được embed và lưu vào Milvus sẵn sàng phục vụ cho giai đoạn truy xuất thông tin.
+Như vậy, data đã được embed và lưu vào Milvus sẵn sàng phục vụ cho giai đoạn truy xuất thông tin. Việc embed theo batch cũng giúp tăng tốc độ và giảm chi phí request khi dùng api
 
 ### 5. Chạy hệ thống Streamlit
 

@@ -22,7 +22,7 @@ engine = create_engine("mysql+mysqlconnector://root:123456789@localhost:3306/law
 connections.connect("default", host="localhost", port="19530")
 print("Connected to Milvus")
 
-collection_name = "phapdien_tendieu"
+collection_name = "phapdien_simple_tendieu"
 collection = Collection(collection_name)
 collection.load()
 print("Loaded collection:", collection_name)
@@ -95,7 +95,6 @@ class TwoStageRetriever:
         return [item.embedding for item in resp.data]
 
     def _select_noidung(self, offset):
-        # Thứ tự phải khớp với data_processing/seed_milvus_from_mysql.py
         query = f"""
             SELECT 
                 p.*,
@@ -106,7 +105,6 @@ class TwoStageRetriever:
             LEFT JOIN pdchude  cd ON cd.id = p.chude_id
             LEFT JOIN pddemuc  dm ON dm.id = p.demuc_id
             LEFT JOIN pdchuong ch ON ch.mapc = p.chuong_id
-            ORDER BY cd.stt, dm.stt, COALESCE(ch.stt, 0), p.stt, p.mapc
             LIMIT 1 OFFSET {offset - 1};
         """
         df = pd.read_sql(query, engine).fillna("")

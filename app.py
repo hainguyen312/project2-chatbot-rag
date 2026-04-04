@@ -351,7 +351,7 @@ if prompt:
             if query_chuanhoa:
                 status_ph.caption(query_chuanhoa)
 
-            intent_result = detect_intent(query_chuanhoa) 
+            intent_result = detect_intent(query_chuanhoa) or "Có"
 
             if "không" in intent_result.lower():
                 response = "Có vẻ yêu cầu của bạn chưa rõ ràng hoặc không nằm trong phạm vi mình xử lý nên mình không thể hỗ trợ bạn được. Mình là trợ lý pháp lý hỗ trợ tìm kiếm và giải thích luật. Bạn có thể hỏi mình về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."        

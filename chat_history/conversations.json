@@ -2192,5 +2192,43 @@
     ],
     "created_at": "2026-01-12T16:57:54.392890",
     "updated_at": "2026-01-12T17:05:30.290058"
+  },
+  "956b9a7e-b96e-4334-92ec-9f76a95ee16d": {
+    "title": "Xử phạt hành vi chống đối công vụ",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt hình sự như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ sẽ bị xử phạt hình sự.** \n\nTheo quy định tại **Điều 330 Bộ luật Hình sự 2015**, người nào dùng vũ lực, đe dọa dùng vũ lực hoặc dùng thủ đoạn khác cản trở người thi hành công vụ thực hiện công vụ của họ hoặc ép buộc họ thực hiện hành vi trái pháp luật sẽ bị xử lý như sau:\n\n1. **Phạt cải tạo không giam giữ đến 03 năm hoặc phạt tù từ 06 tháng đến 03 năm** nếu không thuộc các trường hợp nặng hơn.\n   \n2. Nếu phạm tội thuộc một trong các trường hợp sau, thì bị phạt tù từ **02 năm đến 07 năm**:\n   - Có tổ chức;\n   - Phạm tội 02 lần trở lên;\n   - Xúi giục, lôi kéo, kích động người khác phạm tội;\n   - Gây thiệt hại về tài sản **50.000.000 đồng trở lên**;\n   - Tái phạm nguy hiểm.\n\nCăn cứ pháp lý: **Điều 330 Bộ luật Hình sự 2015 (sửa đổi, bổ sung năm 2017)**."
+      },
+      {
+        "role": "user",
+        "content": "thế phạt hành chính thì sao?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ có thể bị xử phạt hành chính.** \n\nTheo quy định tại **Điều 39 Nghị định số 102/2021/NĐ-CP**, các hành vi cản trở hoặc không chấp hành yêu cầu của người thi hành công vụ sẽ bị xử phạt như sau:\n\n1. **Phạt tiền từ 4.000.000 đồng đến 6.000.000 đồng** đối với các hành vi:\n   - Cản trở hoặc không chấp hành yêu cầu thanh tra, kiểm tra, kiểm soát của người thi hành công vụ.\n   - Có lời nói, hành động đe dọa, lăng mạ, xúc phạm danh dự, nhân phẩm người thi hành công vụ.\n   - Tổ chức, xúi giục, giúp sức, lôi kéo hoặc kích động người khác không chấp hành yêu cầu của người thi hành công vụ.\n\n2. **Phạt tiền từ 6.000.000 đồng đến 8.000.000 đồng** đối với các hành vi:\n   - Dùng vũ lực, đe dọa dùng vũ lực chống người thi hành công vụ.\n   - Gây thiệt hại về tài sản, phương tiện của cơ quan nhà nước, của người thi hành công vụ.\n\nCăn cứ pháp lý:\n- **Điều 39 Nghị định số 102/2021/NĐ-CP** (có hiệu lực thi hành kể từ ngày 01/01/2022)."
+      }
+    ],
+    "created_at": "2026-04-01T17:23:03.712403",
+    "updated_at": "2026-04-01T17:28:03.914002"
+  },
+  "ded588f3-8f8e-4223-a586-6860365cd3a8": {
+    "title": "Xử phạt vượt đèn đỏ",
+    "messages": [
+      {
+        "role": "user",
+        "content": "hành vi điều khiển phương tiện giao thông vượt đèn đỏ bị xử phạt như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi điều khiển phương tiện giao thông vượt đèn đỏ bị xử phạt.** \n\nTheo quy định tại **Điều 5 Nghị định số 100/2019/NĐ-CP**, hành vi vượt đèn đỏ sẽ bị xử phạt như sau:\n\n1. **Đối với người điều khiển xe mô tô, xe gắn máy**:\n   - Phạt tiền từ **800.000 đồng đến 1.200.000 đồng**.\n\n2. **Đối với người điều khiển ô tô**:\n   - Phạt tiền từ **1.200.000 đồng đến 2.000.000 đồng**.\n\nNgoài ra, người vi phạm còn có thể bị **tước quyền sử dụng giấy phép lái xe từ 1 đến 3 tháng**.\n\nCăn cứ pháp lý:\n- **Nghị định số 100/2019/NĐ-CP** quy định xử phạt vi phạm hành chính trong lĩnh vực giao thông đường bộ và đường sắt."
+      }
+    ],
+    "created_at": "2026-04-01T17:30:32.867441",
+    "updated_at": "2026-04-01T17:31:16.971866"
   }
 }

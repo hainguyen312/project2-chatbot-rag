@@ -14,7 +14,7 @@ checkpoint = None
 
 # Đọc Chủ đề
 print("Load Chủ Đề Từ File ...")
-with open("./phap-dien/chude.json", "r") as chude_file:
+with open("./phap-dien/chude.json", "r", encoding="utf-8") as chude_file:
     chudes = json.load(chude_file)
 chude_file.close()
 
@@ -28,7 +28,7 @@ except:
 
 # Đọc Đề mục
 print("Load Đề Mục Từ File ...")
-with open("./phap-dien/demuc.json", "r") as demuc_file:
+with open("./phap-dien/demuc.json", "r", encoding="utf-8") as demuc_file:
     demucs = json.load(demuc_file)
 demuc_file.close()
 
@@ -37,13 +37,13 @@ try:
     with db.atomic():
         PDDeMuc.bulk_create(
             [PDDeMuc(ten=demuc["Text"], stt=demuc["STT"], id=demuc["Value"], chude_id=demuc["ChuDe"]) for demuc in
-             demucs])
+             demucs])   
 except:
     pass
 print("Inserted tất cả đề mục pháp điển!")
 
 print("Load Tree Nodes Từ File ...")
-with open("./phap-dien/treeNode.json", "r") as tree_nodes_file:
+with open("./phap-dien/treeNode.json", "r", encoding="utf-8") as tree_nodes_file:
     tree_nodes = json.load(tree_nodes_file)
 tree_nodes_file.close()
 
@@ -58,7 +58,7 @@ else:
     isSkipping = False
 for file in os.listdir(demuc_directory):
     file_name = os.fsdecode(file)
-    with open("./phap-dien/demuc/" + file_name, "r") as demuc_file:
+    with open("./phap-dien/demuc/" + file_name, "r", encoding="utf-8") as demuc_file:
         count +=1
         if file_name == checkpoint:
             isSkipping = False

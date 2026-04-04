@@ -37,8 +37,6 @@ def embed_batch(texts):
 
 def _openai_chat(messages, model=OPENAI_MODEL, temperature=0.2, max_tokens=600):
     try:
-        from openai import OpenAI
-        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         resp = client.chat.completions.create(
             model=model,
             messages=messages,
@@ -46,16 +44,9 @@ def _openai_chat(messages, model=OPENAI_MODEL, temperature=0.2, max_tokens=600):
             max_tokens=max_tokens,
         )
         return (resp.choices[0].message.content or "").strip()
-    except Exception:
-        import openai
-        openai.api_key = os.getenv("OPENAI_API_KEY")
-        resp = openai.ChatCompletion.create(
-            model=model,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-        )
-        return (resp["choices"][0]["message"]["content"] or "").strip()
+    except Exception as e:
+        print(f"[Lỗi _openai_chat]: {e}")
+        return None
 
 
 def generate_chat_title(messages):
