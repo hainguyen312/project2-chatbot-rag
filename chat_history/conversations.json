@@ -2439,5 +2439,50 @@
     ],
     "created_at": "2026-04-13T16:04:26.643262",
     "updated_at": "2026-04-13T16:16:09.583569"
+  },
+  "7d03f1dd-d1d3-465c-83e8-3112f44fb6bf": {
+    "title": "Hành vi đục tường của người thuê nhà",
+    "messages": [
+      {
+        "role": "user",
+        "content": "A thuê nhà B, tự ý đục tường, B có thể làm gì?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Vi phạm 1: Tự ý đục tường**\n- Chủ thể: A (người thuê nhà)\n- Căn cứ pháp lý: Điều 39.13.NĐ.37.6 — \"Hành vi vi phạm quy định về thuê tài sản\" quy định rằng việc thực hiện các hành vi liên quan đến tài sản thuê mà không có sự đồng ý của bên cho thuê có thể bị xử phạt hành chính.\n- Mức xử lý: Hành chính (phạt tiền từ 1.000.000 đồng đến 5.000.000 đồng nếu hợp đồng thuê có giá trị dưới 100.000.000 đồng).\n- Hướng xử lý cho bên bị hại: Bên cho thuê (B) có thể yêu cầu A khôi phục lại tình trạng ban đầu của tường và có thể yêu cầu bồi thường thiệt hại nếu có.\n\n**Kết luận tổng hợp:**\nBên cho thuê (B) có quyền yêu cầu A khôi phục lại tình trạng ban đầu của tường và có thể áp dụng biện pháp xử phạt hành chính nếu vi phạm được xác định rõ ràng. Bước đầu tiên nên là thương lượng với A để khôi phục tình trạng ban đầu, nếu không thành công, B có thể tiến hành thủ tục xử phạt hành chính.\n\n**Căn cứ pháp lý tổng hợp:**\n- Điều 39.13.NĐ.37.6 — Hành vi vi phạm quy định về thuê tài sản."
+      }
+    ],
+    "created_at": "2026-04-14T14:26:44.200176",
+    "updated_at": "2026-04-14T14:27:15.191638"
+  },
+  "48e83cc9-de43-42ca-a223-5237cc163449": {
+    "title": "Xử lý hành vi chống đối công vụ",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hành vi chống đối người thi hành công vụ bị xử lý như thế nào?"
+      },
+      {
+        "role": "assistant",
+        "content": "**Hành vi chống đối người thi hành công vụ là hành vi vi phạm pháp luật.** \n\nTheo quy định tại **Điều 16.1.LQ.330** của Bộ luật Hình sự, người nào dùng vũ lực, đe dọa dùng vũ lực hoặc dùng thủ đoạn khác cản trở người thi hành công vụ thực hiện công vụ của họ hoặc ép buộc họ thực hiện hành vi trái pháp luật sẽ bị xử lý hình sự. Cụ thể, mức phạt có thể là cải tạo không giam giữ đến 03 năm hoặc phạt tù từ 06 tháng đến 03 năm. Nếu phạm tội trong các trường hợp nghiêm trọng hơn, mức phạt có thể lên đến từ 02 năm đến 07 năm tù giam.\n\nNgoài ra, theo **Điều 39.13.NĐ.102.21**, hành vi cản trở hoặc không chấp hành yêu cầu thanh tra, kiểm tra, kiểm soát của người thi hành công vụ cũng bị xử phạt vi phạm hành chính với mức phạt tiền từ 4.000.000 đồng đến 6.000.000 đồng.\n\nTóm lại, hành vi chống đối người thi hành công vụ có thể bị xử lý cả về hình sự và hành chính, tùy thuộc vào tính chất và mức độ của hành vi vi phạm.\n\nCăn cứ pháp lý:\n- **Điều 16.1.LQ.330** Bộ luật Hình sự\n- **Điều 39.13.NĐ.102.21** Nghị định 102/2021/NĐ-CP"
+      }
+    ],
+    "created_at": "2026-04-14T14:34:50.081232",
+    "updated_at": "2026-04-14T14:35:10.865440"
+  },
+  "75db7793-cf95-4460-bb6e-05ebaa8d9325": {
+    "title": "Cuộc gọi thoại ngắn gọn",
+    "messages": [
+      {
+        "role": "user",
+        "content": "alo"
+      },
+      {
+        "role": "assistant",
+        "content": "Có vẻ yêu cầu của bạn chưa rõ ràng hoặc không nằm trong phạm vi mình xử lý. Mình là trợ lý pháp lý hỗ trợ tìm kiếm và giải thích luật. Bạn có thể hỏi về các quy định, điều luật cụ thể, hoặc quy trình pháp lý mà bạn đang thắc mắc."
+      }
+    ],
+    "created_at": "2026-04-14T14:42:23.915875",
+    "updated_at": "2026-04-14T14:42:31.957436"
   }
 }

@@ -19,3 +19,5 @@ scikit-learn==1.5.*
 # optional
 hdbscan
 rank_bm25
+
+markdown
