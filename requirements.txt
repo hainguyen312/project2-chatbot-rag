@@ -21,3 +21,4 @@ hdbscan
 rank_bm25
 
 markdown
+pymongo
