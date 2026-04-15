@@ -31,6 +31,7 @@ st.set_page_config(
 )
 
 # =====================================================================
+# =====================================================================
 # SESSION STATE
 # =====================================================================
 if "query" not in st.session_state:
@@ -47,231 +48,201 @@ st.session_state.setdefault("pending_action", None)
 st.session_state.setdefault("new_name", "")
 st.session_state.setdefault("last_action", None)
 
+
+
 # =====================================================================
-# GLOBAL CSS — chat bubbles + layout + sidebar + responsive
+# GLOBAL CSS
 # =====================================================================
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
 
-/* ── Root & base ─────────────────────────────────────────── */
-html, body, [class*="css"] {
+html, body, [class*="css"] {{
     font-family: 'Be Vietnam Pro', sans-serif !important;
-}
+    background-color: var(--background-color) !important;
+    color: var(--text-color) !important;
+}}
 
-.block-container {
+.block-container {{
     padding-top: 40px !important;
     padding-bottom: 0rem !important;
     max-width: 100% !important;
-}
+    background-color: var(--background-color) !important;
+}}
 
-/* ── Topbar title ─────────────────────────────────────────── */
-.topbar-title {
+/* ── Topbar title ── */
+.topbar-title {{
     font-weight: 700;
     font-size: 26px;
     line-height: 32px;
-    color: #1a2744;
+    color: var(--text-color);
     letter-spacing: -0.3px;
-}
+}}
 
-/* ── Divider ──────────────────────────────────────────────── */
-hr {
+hr {{
     margin: 8px 0 12px 0 !important;
-    border-color: #e2e8f0 !important;
-}
+    border-color: color-mix(in srgb, var(--border-color) 80%, transparent) !important;
+}}
 
-/* ══════════════════════════════════════════════════════════
-   SIDEBAR
-══════════════════════════════════════════════════════════ */
-[data-testid="stSidebar"] {
-    background: #f7f8fc !important;
-    border-right: 1px solid #e2e8f0;
-}
+/* ══ SIDEBAR ══ */
+[data-testid="stSidebar"] {{
+    background: var(--secondary-background-color) !important;
+    border-right: 1px solid var(--border-color);
+}}
 
-[data-testid="stSidebar"] .stButton > button {
-    background-color: transparent;
-    color: #374151;
+[data-testid="stSidebar"] .stButton > button {{
+    background-color: transparent !important;
+    color: var(--text-color) !important;
     border: none !important;
     border-radius: 10px;
     font-size: 14px;
     font-family: 'Be Vietnam Pro', sans-serif !important;
     width: 100%;
     justify-content: flex-start !important;
-    align-items: center !important;
     text-align: left !important;
     padding: 8px 14px !important;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     transition: background 0.15s ease;
-}
+}}
 
-[data-testid="stSidebar"] .stButton > button:hover {
-    background-color: #edf0f7 !important;
-    color: #1a2744 !important;
-}
+[data-testid="stSidebar"] .stButton > button:hover {{
+    background-color: color-mix(in srgb, var(--primary-color) 12%, var(--secondary-background-color)) !important;
+    color: var(--text-color) !important;
+}}
 
-[data-testid="stSidebar"] button[data-testid="baseButton-primary"] {
-    background-color: #1a2744 !important;
+[data-testid="stSidebar"] button[data-testid="baseButton-primary"] {{
+    background-color: var(--primary-color) !important;
     color: #ffffff !important;
     font-weight: 600;
-}
+}}
 
-/* ══════════════════════════════════════════════════════════
-   MODE TOGGLE BUTTONS
-══════════════════════════════════════════════════════════ */
-div[data-testid="column"] .stButton > button {
+/* ══ MODE TOGGLE ══ */
+div[data-testid="column"] .stButton > button {{
     border-radius: 20px !important;
     font-size: 13.5px !important;
     font-weight: 500 !important;
     padding: 6px 18px !important;
-    border: 1.5px solid #d1d5db !important;
-    background: #fff !important;
-    color: #374151 !important;
+    border: 1.5px solid var(--border-color) !important;
+    background: var(--secondary-background-color) !important;
+    color: var(--text-color) !important;
     transition: all 0.18s ease;
-}
+}}
 
-div[data-testid="column"] button[data-testid="baseButton-primary"] {
-    background: #1a2744 !important;
+/* Nút trong topbar (đổi tên/xoá) và các nhóm nút ngang */
+div[data-testid="column"] .stButton {{
+    width: 100%;
+}}
+div[data-testid="column"] .stButton > button {{
+    width: 100% !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}}
+
+div[data-testid="column"] button[data-testid="baseButton-primary"] {{
+    background: var(--primary-color) !important;
     color: #fff !important;
-    border-color: #1a2744 !important;
+    border-color: var(--primary-color) !important;
     font-weight: 600 !important;
-}
+}}
 
-.chat-bubble p {
+/* ══ CHAT BUBBLE ══ */
+.chat-bubble p {{
     margin: 0 0 12px 0 !important;
     padding: 0 !important;
-}
-
-.chat-bubble p:last-child {
+}}
+.chat-bubble p:last-child {{
     margin-bottom: 0 !important;
-}
-
-.chat-bubble ul, .chat-bubble ol {
+}}
+.chat-bubble ul, .chat-bubble ol {{
     margin: 4px 0 4px 20px !important;
     padding: 0 !important;
-}
-
-.chat-bubble li {
+}}
+.chat-bubble li {{
     margin-bottom: 2px !important;
-}
-
-.chat-bubble strong {
+}}
+.chat-bubble strong {{
     font-weight: 600 !important;
-}
+}}
 
-/* ══════════════════════════════════════════════════════════
-   RESPONSIVE
-══════════════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
-    [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) .stMarkdown,
-    [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) .stMarkdown {
-        max-width: 75% !important;
-    }
-}
+/* ══ CHAT INPUT ══ */
+[data-testid="stChatInput"] > div {{
+    border-radius: 16px !important;
+    border: 1px solid var(--border-color) !important;
+    background: var(--secondary-background-color) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08) !important;
+    padding: 4px 8px !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}}
+[data-testid="stChatInput"] > div:focus-within {{
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--primary-color) 30%, transparent) !important;
+    transform: translateY(-1px);
+}}
+[data-testid="stChatInput"] textarea {{
+    color: var(--text-color) !important;
+    background: transparent !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    border-radius: 16px !important;
+    padding: 8px 6px !important;
+}}
+[data-testid="stChatInput"] button {{
+    border-radius: 12px !important;
+    min-height: 36px !important;
+    min-width: 36px !important;
+}}
+[data-testid="stChatInput"] button:hover {{
+    filter: brightness(1.05);
+}}
 
-@media (max-width: 768px) {
-    [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) .stMarkdown,
-    [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) .stMarkdown {
-        max-width: 85% !important;
-        font-size: 14px !important;
-    }
-}
-
-@media (max-width: 480px) {
-    [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) .stMarkdown,
-    [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) .stMarkdown {
-        max-width: 92% !important;
-        font-size: 13.5px !important;
-        padding: 8px 12px !important;
-    }
-}
-
-/* Topbar title nhỏ lại trên mobile */
-@media (max-width: 768px) {
-    .topbar-title {
-        font-size: 18px !important;
-        line-height: 24px !important;
-    }
-}
-
-@media (max-width: 480px) {
-    .topbar-title {
-        font-size: 15px !important;
-        line-height: 20px !important;
-        letter-spacing: 0 !important;
-    }
-}
-
-/* Nút Đổi tên / Xoá nhỏ lại */
-@media (max-width: 768px) {
-    [data-testid="stSidebar"] ~ div [data-testid="column"]:last-child .stButton > button {
-        font-size: 11px !important;
-        padding: 4px 8px !important;
-    }
-}
-
-/* Mode toggle — thu nhỏ chữ và padding */
-@media (max-width: 768px) {
-    div[data-testid="column"] .stButton > button {
+/* ══ RESPONSIVE ══ */
+@media (max-width: 768px) {{
+    .topbar-title {{ font-size: 18px !important; line-height: 24px !important; }}
+    div[data-testid="column"] .stButton > button {{
         font-size: 12px !important;
-        padding: 5px 10px !important;
-    }
-}
-
-@media (max-width: 480px) {
-    div[data-testid="column"] .stButton > button {
-        font-size: 11px !important;
-        padding: 4px 8px !important;
+        padding: 6px 10px !important;
+        min-height: 36px !important;
         border-radius: 14px !important;
-    }
-}
-
-/* Divider bớt margin trên mobile */
-@media (max-width: 480px) {
-    hr {
-        margin: 4px 0 8px 0 !important;
-    }
-
-    .block-container {
-        padding-top: 16px !important;
-    }
-
-
-/* ══════════════════════════════════════════════════════════
-   CHAT INPUT
-══════════════════════════════════════════════════════════ */
-[data-testid="stChatInput"] > div {
-    border-radius: 24px !important;
-    border: 1.5px solid #d1d5db !important;
-    background: #fff !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
-    transition: border-color 0.2s ease;
-}
-
-[data-testid="stChatInput"] > div:focus-within {
-    border-color: #1a2744 !important;
-    box-shadow: 0 2px 12px rgba(26,39,68,0.12) !important;
-}
-
-/* ══════════════════════════════════════════════════════════
-   TOPBAR ACTIONS (Đổi tên / Xoá)
-══════════════════════════════════════════════════════════ */
-.topbar-actions .stButton > button {
-    border-radius: 8px !important;
-    font-size: 13px !important;
-    padding: 5px 12px !important;
-    border: 1px solid #d1d5db !important;
-    background: #fff !important;
-    color: #374151 !important;
-}
-
-.topbar-actions .stButton > button:hover {
-    background: #f3f4f6 !important;
-}
+    }}
+    [data-testid="stSidebar"] .stButton > button {{
+        font-size: 13px !important;
+        padding: 8px 10px !important;
+        min-height: 36px !important;
+    }}
+    [data-testid="stSidebar"] .stButton {{
+        margin-bottom: 2px !important;
+    }}
+    /* Nút hành động hội thoại hiện tại */
+    div[data-testid="column"] button[key="rename_btn"],
+    div[data-testid="column"] button[key="delete_btn"] {{
+        font-size: 11.5px !important;
+    }}
+}}
+@media (max-width: 480px) {{
+    .topbar-title {{ font-size: 15px !important; line-height: 20px !important; }}
+    div[data-testid="column"] .stButton > button {{
+        font-size: 11px !important;
+        padding: 7px 8px !important;
+        border-radius: 12px !important;
+        min-height: 34px !important;
+    }}
+    [data-testid="stSidebar"] .stButton > button {{
+        font-size: 12px !important;
+        padding: 7px 8px !important;
+        min-height: 34px !important;
+    }}
+    /* Thanh mode toggle co lại cho không vỡ hàng */
+    div[data-testid="column"] .stButton > button {{
+        letter-spacing: -0.1px;
+    }}
+    hr {{ margin: 4px 0 8px 0 !important; }}
+    .block-container {{ padding-top: 16px !important; }}
+}}
 </style>
 """, unsafe_allow_html=True)
-
 
 # =====================================================================
 # UTILITY
@@ -442,52 +413,51 @@ if st.session_state.last_action:
 for msg in st.session_state.chat_history:
     role = msg["role"]
     content_html = md.markdown(msg["content"], extensions=["extra", "nl2br"])
-    
+
     if role == "user":
         st.markdown(f"""
-        <div style="display:flex; justify-content:flex-end; align-items:flex-end; gap:8px; margin:6px 0;">
+        <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px; margin:6px 0;">
             <div class="chat-bubble" style="
-                background:#1a2744;
-                color:#fff;
+                background:var(--primary-color, var(--st-primary-color, #1d4ed8));
+                color:#ffffff;
                 border-radius:18px 4px 18px 18px;
                 padding:10px 16px;
                 max-width:75%;
                 font-size:14.5px;
                 line-height:1.6;
-                box-shadow:0 2px 8px rgba(26,39,68,0.15);
+                box-shadow:0 2px 8px color-mix(in srgb, var(--primary-color, var(--st-primary-color, #1d4ed8)) 30%, transparent);
                 font-family:'Be Vietnam Pro',sans-serif;
-            ">
-            {content_html}</div>
+            ">{content_html}</div>
             <div style="
                 width:36px; height:36px; border-radius:50%;
-                background:#1a2744; color:#fff;
+                background:var(--primary-color, var(--st-primary-color, #1d4ed8)); color:#fff;
                 display:flex; align-items:center; justify-content:center;
                 font-size:16px; flex-shrink:0;
-            ">👤</div>
+            ">😊
+</div>
         </div>
         """, unsafe_allow_html=True)
     else:
         st.markdown(f"""
-        <div style="display:flex; justify-content:flex-start; align-items:flex-end; gap:8px; margin:6px 0;">
+        <div style="display:flex; justify-content:flex-start; align-items:center; gap:8px; margin:6px 0;">
             <div style="
                 width:36px; height:36px; border-radius:50%;
-                background:#e8edf5; color:#1a2744;
+                background:var(--secondary-background-color, var(--st-secondary-background-color, #ffffff)); color:var(--text-color, var(--st-text-color, #0f172a));
                 display:flex; align-items:center; justify-content:center;
                 font-size:16px; flex-shrink:0;
             ">⚖️</div>
             <div class="chat-bubble" style="
-                background:#ffffff;
-                color:#1a2744;
+                background:var(--secondary-background-color, var(--st-secondary-background-color, #ffffff));
+                color:var(--text-color, var(--st-text-color, #0f172a));
                 border-radius:4px 18px 18px 18px;
                 padding:10px 16px;
                 max-width:75%;
                 font-size:14.5px;
                 line-height:1.7;
-                box-shadow:0 1px 4px rgba(0,0,0,0.08);
-                border:1px solid #e8edf5;
+                box-shadow:0 1px 4px rgba(0,0,0,0.10);
+                border:1px solid color-mix(in srgb, var(--border-color, var(--st-border-color, #cbd5e1)) 85%, transparent);
                 font-family:'Be Vietnam Pro',sans-serif;
-            ">
-            {content_html}</div>
+            ">{content_html}</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -506,15 +476,54 @@ if prompt:
     st.session_state.chats = load_chats()
 
     add_to_history("user", prompt)
-    st.chat_message("user").write(prompt)
+    prompt_html = md.markdown(prompt, extensions=["extra", "nl2br"])
+    st.markdown(f"""
+    <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px; margin:6px 0;">
+        <div class="chat-bubble" style="
+            background:var(--primary-color, var(--st-primary-color, #1d4ed8));
+            color:#ffffff;
+            border-radius:18px 4px 18px 18px;
+            padding:10px 16px;
+            max-width:75%;
+            font-size:14.5px;
+            line-height:1.6;
+            box-shadow:0 2px 8px color-mix(in srgb, var(--primary-color, var(--st-primary-color, #1d4ed8)) 30%, transparent);
+            font-family:'Be Vietnam Pro',sans-serif;
+        ">{prompt_html}</div>
+        <div style="
+            width:36px; height:36px; border-radius:50%;
+            background:var(--primary-color, var(--st-primary-color, #1d4ed8)); color:#fff;
+            display:flex; align-items:center; justify-content:center;
+            font-size:16px; flex-shrink:0;
+        ">😊</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    with st.chat_message("assistant"):
+    # Lưu ngay lượt chat của user để tránh mất dữ liệu
+    # nếu người dùng chuyển sang hội thoại khác khi bot đang trả lời.
+    if st.session_state.chat_id:
+        current_title = st.session_state.chats.get(chat_id, {}).get("title", "")
+        safe_title = current_title or "Cuộc trò chuyện mới"
+        save_chat(chat_id, safe_title, st.session_state.chat_history)
+        st.session_state.chats = load_chats()
+
+    history_for_processing = list(st.session_state.chat_history)
+
+    with st.container():
         status_ph = st.empty()
         message_ph = st.empty()
 
         status_ph.caption("⏳ Đang phân tích yêu cầu…")
-        decision = run_pre_retrieve(prompt, st.session_state.chat_history)
+        decision = run_pre_retrieve(prompt, history_for_processing)
         status_ph.empty()
+
+        # Tạo bản nháp assistant để không mất hội thoại nếu người dùng rời chat giữa chừng.
+        add_to_history("assistant", "⏳ Đang tạo câu trả lời...")
+        if st.session_state.chat_id:
+            current_title = st.session_state.chats.get(chat_id, {}).get("title", "")
+            safe_title = current_title or "Cuộc trò chuyện mới"
+            save_chat(chat_id, safe_title, st.session_state.chat_history)
+            st.session_state.chats = load_chats()
 
         # ── Helper: streaming effect ──────────────────────────────
         def stream_text(text: str, chunk: int = 5, delay: float = 0.05):
@@ -522,9 +531,53 @@ if prompt:
             ph = st.empty()
             for i in range(0, len(text), chunk):
                 full += text[i:i + chunk]
-                ph.markdown(full + "▌")
+                live_html = md.markdown(full + "▌", extensions=["extra", "nl2br"])
+                ph.markdown(f"""
+                <div style="display:flex; justify-content:flex-start; align-items:center; gap:8px; margin:6px 0;">
+                    <div style="
+                        width:36px; height:36px; border-radius:50%;
+                        background:var(--secondary-background-color, var(--st-secondary-background-color, #ffffff)); color:var(--text-color, var(--st-text-color, #0f172a));
+                        display:flex; align-items:center; justify-content:center;
+                        font-size:16px; flex-shrink:0;
+                    ">⚖️</div>
+                    <div class="chat-bubble" style="
+                        background:var(--secondary-background-color, var(--st-secondary-background-color, #ffffff));
+                        color:var(--text-color, var(--st-text-color, #0f172a));
+                        border-radius:4px 18px 18px 18px;
+                        padding:10px 16px;
+                        max-width:75%;
+                        font-size:14.5px;
+                        line-height:1.7;
+                        box-shadow:0 1px 4px rgba(0,0,0,0.10);
+                        border:1px solid color-mix(in srgb, var(--border-color, var(--st-border-color, #cbd5e1)) 85%, transparent);
+                        font-family:'Be Vietnam Pro',sans-serif;
+                    ">{live_html}</div>
+                </div>
+                """, unsafe_allow_html=True)
                 time.sleep(delay)
-            ph.markdown(full)
+            final_html = md.markdown(full, extensions=["extra", "nl2br"])
+            ph.markdown(f"""
+            <div style="display:flex; justify-content:flex-start; align-items:center; gap:8px; margin:6px 0;">
+                <div style="
+                    width:36px; height:36px; border-radius:50%;
+                    background:var(--secondary-background-color, var(--st-secondary-background-color, #ffffff)); color:var(--text-color, var(--st-text-color, #0f172a));
+                    display:flex; align-items:center; justify-content:center;
+                    font-size:16px; flex-shrink:0;
+                ">⚖️</div>
+                <div class="chat-bubble" style="
+                    background:var(--secondary-background-color, var(--st-secondary-background-color, #ffffff));
+                    color:var(--text-color, var(--st-text-color, #0f172a));
+                    border-radius:4px 18px 18px 18px;
+                    padding:10px 16px;
+                    max-width:75%;
+                    font-size:14.5px;
+                    line-height:1.7;
+                    box-shadow:0 1px 4px rgba(0,0,0,0.10);
+                    border:1px solid color-mix(in srgb, var(--border-color, var(--st-border-color, #cbd5e1)) 85%, transparent);
+                    font-family:'Be Vietnam Pro',sans-serif;
+                ">{final_html}</div>
+            </div>
+            """, unsafe_allow_html=True)
             return full
 
         # ── QUICK_ANSWER ──────────────────────────────────────────
@@ -549,7 +602,7 @@ if prompt:
         elif decision.action == Action.PROCEED:
             status_ph.caption("🔍 Đang tìm kiếm thông tin…")
 
-            hist = st.session_state.get("chat_history", [])
+            hist = history_for_processing
             base = hist[:-1] if hist and hist[-1].get("role") == "user" else hist
             lastest_history = base[-10:]
 
@@ -647,6 +700,15 @@ if prompt:
                             context_parts, query_chuanhoa, decision.sentiment, lastest_history
                         )
 
+                    # Một số nhánh OpenAI có thể trả None khi lỗi API;
+                    # ép về chuỗi để không làm vỡ luồng lưu lịch sử chat.
+                    raw_response = (raw_response or "").strip()
+                    if not raw_response:
+                        raw_response = (
+                            "Mình chưa thể tạo câu trả lời lúc này do lỗi dịch vụ AI. "
+                            "Bạn vui lòng thử lại sau ít phút."
+                        )
+
                     if web_sources:
                         source_lines = ["\n\n---\n**Nguồn tham khảo từ web:**"]
                         for s in web_sources:
@@ -670,7 +732,10 @@ if prompt:
                 status_ph.empty()
                 response = stream_text(raw_response)
 
-    add_to_history("assistant", response)
+    if st.session_state.chat_history and st.session_state.chat_history[-1].get("role") == "assistant":
+        st.session_state.chat_history[-1]["content"] = response
+    else:
+        add_to_history("assistant", response)
 
     # Tự động đặt tên nếu chưa có
     if st.session_state.chat_id:

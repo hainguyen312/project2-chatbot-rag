@@ -1,71 +1,356 @@
-import os
 import json
+import os
+import sqlite3
 import uuid
-from openai import OpenAI
 from datetime import datetime
+from typing import Optional
 
-CHAT_FILE = os.path.join("chat_history", "conversations.json")
+from dotenv import load_dotenv
 
-def cleanup_empty_chats():
-    """
-    Xoá các hội thoại không có tin nhắn (rác).
-    """
-    chats = load_chats()
-    to_delete = [cid for cid, chat in chats.items() if not chat.get("messages")]
-    for cid in to_delete:
-        del chats[cid]
+try:
+    from pymongo import MongoClient
+    from pymongo.errors import PyMongoError
+except Exception:  # pragma: no cover
+    MongoClient = None
+    PyMongoError = Exception
 
-    with open(CHAT_FILE, "w", encoding="utf-8") as f:
-        json.dump(chats, f, ensure_ascii=False, indent=2)
+load_dotenv()
 
-def load_chats():
-    """
-    Đọc toàn bộ lịch sử hội thoại từ file JSON
-    Trả về dict dạng {chat_id: {...}}
-    """
+CHAT_DIR = "chat_history"
+CHAT_FILE = os.path.join(CHAT_DIR, "conversations.json")
+DB_FILE = os.path.join(CHAT_DIR, "conversations.sqlite")
+MONGODB_URI = (os.getenv("MONGODB_URI") or "").strip()
+MONGODB_DB = (os.getenv("MONGODB_DB") or "chatbot_rag").strip()
+MONGODB_COLLECTION = (os.getenv("MONGODB_COLLECTION") or "conversations").strip()
+
+
+def _mongo_enabled() -> bool:
+    return bool(MONGODB_URI and MongoClient is not None)
+
+
+def _get_mongo_collection():
+    if not _mongo_enabled():
+        return None
+    try:
+        client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=1500)
+        client.admin.command("ping")
+        db = client[MONGODB_DB]
+        return db[MONGODB_COLLECTION]
+    except Exception:
+        return None
+
+
+def _ensure_storage():
+    os.makedirs(CHAT_DIR, exist_ok=True)
+    conn = sqlite3.connect(DB_FILE)
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS sessions (
+                id TEXT PRIMARY KEY,
+                title TEXT,
+                created_at TEXT,
+                updated_at TEXT
+            )
+            """
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT,
+                role TEXT,
+                content TEXT,
+                created_at TEXT
+            )
+            """
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _read_json():
     if not os.path.exists(CHAT_FILE):
         return {}
     try:
         with open(CHAT_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
-            if isinstance(data, list):
-                # Format cũ: danh sách
-                return {str(i): chat for i, chat in enumerate(data)}
-            elif isinstance(data, dict):
-                return data
-            else:
-                return {}
+        if isinstance(data, list):
+            return {str(i): chat for i, chat in enumerate(data)}
+        if isinstance(data, dict):
+            return data
+        return {}
     except Exception:
         return {}
 
+
+def _write_json(chats):
+    os.makedirs(CHAT_DIR, exist_ok=True)
+    with open(CHAT_FILE, "w", encoding="utf-8") as f:
+        json.dump(chats, f, ensure_ascii=False, indent=2)
+
+
+def _load_chats_from_mongo():
+    col = _get_mongo_collection()
+    if col is None:
+        return {}
+    try:
+        docs = list(col.find({}, {"_id": 1, "title": 1, "messages": 1, "created_at": 1, "updated_at": 1}))
+        chats = {}
+        for d in docs:
+            sid = str(d.get("_id"))
+            chats[sid] = {
+                "title": d.get("title") or "Cuộc trò chuyện mới",
+                "messages": d.get("messages") or [],
+                "created_at": d.get("created_at") or datetime.now().isoformat(),
+                "updated_at": d.get("updated_at") or datetime.now().isoformat(),
+            }
+        return chats
+    except PyMongoError:
+        return {}
+
+
+def _upsert_chat_mongo(chat_id, chat):
+    col = _get_mongo_collection()
+    if col is None:
+        return False
+    now = datetime.now().isoformat()
+    payload = {
+        "_id": chat_id,
+        "title": chat.get("title", "Cuộc trò chuyện mới"),
+        "messages": chat.get("messages", []),
+        "created_at": chat.get("created_at", now),
+        "updated_at": chat.get("updated_at", now),
+    }
+    try:
+        col.replace_one({"_id": chat_id}, payload, upsert=True)
+        return True
+    except PyMongoError:
+        return False
+
+
+def _delete_chat_mongo(chat_id):
+    col = _get_mongo_collection()
+    if col is None:
+        return False
+    try:
+        col.delete_one({"_id": chat_id})
+        return True
+    except PyMongoError:
+        return False
+
+
+def _sync_all_to_mongo(chats):
+    col = _get_mongo_collection()
+    if col is None:
+        return False
+    try:
+        col.delete_many({})
+        now = datetime.now().isoformat()
+        docs = []
+        for chat_id, chat in chats.items():
+            docs.append(
+                {
+                    "_id": chat_id,
+                    "title": chat.get("title", "Cuộc trò chuyện mới"),
+                    "messages": chat.get("messages", []),
+                    "created_at": chat.get("created_at", now),
+                    "updated_at": chat.get("updated_at", now),
+                }
+            )
+        if docs:
+            col.insert_many(docs, ordered=False)
+        return True
+    except PyMongoError:
+        return False
+
+
+def _load_chats_from_sqlite():
+    _ensure_storage()
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    try:
+        sessions = conn.execute(
+            "SELECT id, title, created_at, updated_at FROM sessions"
+        ).fetchall()
+        if not sessions:
+            return {}
+
+        rows = conn.execute(
+            """
+            SELECT session_id, role, content, created_at
+            FROM messages
+            ORDER BY id ASC
+            """
+        ).fetchall()
+
+        msg_map = {}
+        for row in rows:
+            sid = row["session_id"]
+            msg_map.setdefault(sid, []).append(
+                {"role": row["role"], "content": row["content"]}
+            )
+
+        chats = {}
+        for s in sessions:
+            sid = s["id"]
+            chats[sid] = {
+                "title": s["title"] or "Cuoc tro chuyen moi",
+                "messages": msg_map.get(sid, []),
+                "created_at": s["created_at"] or datetime.now().isoformat(),
+                "updated_at": s["updated_at"] or datetime.now().isoformat(),
+            }
+        return chats
+    finally:
+        conn.close()
+
+
+def _upsert_chat_sqlite(chat_id, chat):
+    _ensure_storage()
+    conn = sqlite3.connect(DB_FILE)
+    now = datetime.now().isoformat()
+    try:
+        conn.execute(
+            """
+            INSERT INTO sessions (id, title, created_at, updated_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                title=excluded.title,
+                updated_at=excluded.updated_at
+            """,
+            (
+                chat_id,
+                chat.get("title", "Cuoc tro chuyen moi"),
+                chat.get("created_at", now),
+                chat.get("updated_at", now),
+            ),
+        )
+        conn.execute("DELETE FROM messages WHERE session_id = ?", (chat_id,))
+        for msg in chat.get("messages", []):
+            conn.execute(
+                """
+                INSERT INTO messages (session_id, role, content, created_at)
+                VALUES (?, ?, ?, ?)
+                """,
+                (
+                    chat_id,
+                    msg.get("role", "assistant"),
+                    msg.get("content", ""),
+                    now,
+                ),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _delete_chat_sqlite(chat_id):
+    _ensure_storage()
+    conn = sqlite3.connect(DB_FILE)
+    try:
+        conn.execute("DELETE FROM messages WHERE session_id = ?", (chat_id,))
+        conn.execute("DELETE FROM sessions WHERE id = ?", (chat_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _sync_all_to_sqlite(chats):
+    _ensure_storage()
+    conn = sqlite3.connect(DB_FILE)
+    try:
+        conn.execute("DELETE FROM messages")
+        conn.execute("DELETE FROM sessions")
+        for chat_id, chat in chats.items():
+            conn.execute(
+                """
+                INSERT INTO sessions (id, title, created_at, updated_at)
+                VALUES (?, ?, ?, ?)
+                """,
+                (
+                    chat_id,
+                    chat.get("title", "Cuoc tro chuyen moi"),
+                    chat.get("created_at", datetime.now().isoformat()),
+                    chat.get("updated_at", datetime.now().isoformat()),
+                ),
+            )
+            for msg in chat.get("messages", []):
+                conn.execute(
+                    """
+                    INSERT INTO messages (session_id, role, content, created_at)
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    (
+                        chat_id,
+                        msg.get("role", "assistant"),
+                        msg.get("content", ""),
+                        datetime.now().isoformat(),
+                    ),
+                )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def load_chats():
+    """
+    Đọc lịch sử hội thoại. Ưu tiên SQLite; nếu SQLite trống thì fallback JSON.
+    Luôn đồng bộ lại để có cả conversations.json và conversations.sqlite.
+    """
+    # Ưu tiên MongoDB nếu có cấu hình, fallback SQLite/JSON nếu Mongo không sẵn sàng.
+    chats = _load_chats_from_mongo()
+    if chats:
+        _write_json(chats)
+        return chats
+
+    chats = _load_chats_from_sqlite()
+    if chats:
+        _write_json(chats)
+        _sync_all_to_mongo(chats)
+        return chats
+
+    chats = _read_json()
+    if chats:
+        _sync_all_to_sqlite(chats)
+        _sync_all_to_mongo(chats)
+    else:
+        _ensure_storage()
+    _write_json(chats)
+    return chats
+
+
+def cleanup_empty_chats():
+    chats = load_chats()
+    to_delete = [cid for cid, chat in chats.items() if not chat.get("messages")]
+    for cid in to_delete:
+        chats.pop(cid, None)
+        _delete_chat_sqlite(cid)
+        _delete_chat_mongo(cid)
+    _write_json(chats)
+
+
 def save_chat(chat_id, title, messages):
-    """
-    Ghi đè hoặc cập nhật hội thoại có sẵn
-    """
     chats = load_chats()
     now = datetime.now().isoformat()
-
     if chat_id in chats:
-        # Cập nhật cuộc hội thoại cũ
         chats[chat_id]["title"] = title
         chats[chat_id]["messages"] = messages
         chats[chat_id]["updated_at"] = now
     else:
-        # Nếu chưa có, tạo mới
         chats[chat_id] = {
             "title": title,
             "messages": messages,
             "created_at": now,
-            "updated_at": now
+            "updated_at": now,
         }
+    _write_json(chats)
+    if not _upsert_chat_mongo(chat_id, chats[chat_id]):
+        _upsert_chat_sqlite(chat_id, chats[chat_id])
 
-    with open(CHAT_FILE, "w", encoding="utf-8") as f:
-        json.dump(chats, f, ensure_ascii=False, indent=2)
 
 def create_new_chat():
-    """
-    Tạo cuộc hội thoại mới, trả về chat_id
-    """
     chats = load_chats()
     new_id = str(uuid.uuid4())
     now = datetime.now().isoformat()
@@ -73,32 +358,29 @@ def create_new_chat():
         "title": "Cuộc trò chuyện mới",
         "messages": [],
         "created_at": now,
-        "updated_at": now
+        "updated_at": now,
     }
-
-    with open(CHAT_FILE, "w", encoding="utf-8") as f:
-        json.dump(chats, f, ensure_ascii=False, indent=2)
-
+    _write_json(chats)
+    if not _upsert_chat_mongo(new_id, chats[new_id]):
+        _upsert_chat_sqlite(new_id, chats[new_id])
     return new_id
 
+
 def rename_chat(chat_id, new_title):
-    """
-    Đổi tên cuộc hội thoại
-    """
     chats = load_chats()
     if chat_id in chats:
         chats[chat_id]["title"] = new_title
         chats[chat_id]["updated_at"] = datetime.now().isoformat()
-        with open(CHAT_FILE, "w", encoding="utf-8") as f:
-            json.dump(chats, f, ensure_ascii=False, indent=2)
+        _write_json(chats)
+        if not _upsert_chat_mongo(chat_id, chats[chat_id]):
+            _upsert_chat_sqlite(chat_id, chats[chat_id])
+
 
 def delete_chat(chat_id):
-    """
-    Xoá cuộc hội thoại theo ID
-    """
     chats = load_chats()
     if chat_id in chats:
         del chats[chat_id]
-        with open(CHAT_FILE, "w", encoding="utf-8") as f:
-            json.dump(chats, f, ensure_ascii=False, indent=2)
+        _write_json(chats)
+        if not _delete_chat_mongo(chat_id):
+            _delete_chat_sqlite(chat_id)
 
