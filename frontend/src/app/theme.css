@@ -15,6 +15,7 @@
     --bg-msg-user:   #2563eb;   /* user chat bubble */
     --bg-msg-bot:    #ffffff;   /* bot chat bubble */
     --bg-hover:      #f0f0ed;   /* hover state on list items */
+    --bg-msgbtn:     #cec9fd;
   
     /* Text */
     --text-primary:    #18181b;
@@ -59,6 +60,7 @@
     --bg-msg-user:   #2563eb;
     --bg-msg-bot:    #272727;
     --bg-hover:      #252525;
+    --bg-msgbtn:     #534AB7;
   
     --text-primary:    #f4f4f5;
     --text-secondary:  #a1a1aa;

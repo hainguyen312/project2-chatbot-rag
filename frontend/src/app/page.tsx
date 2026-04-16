@@ -130,7 +130,7 @@ export default function Home() {
     let statusIdx = 0;
     const statusSteps = [
       "⏳ Đang phân tích yêu cầu...",
-      "<Search size={18} /> Đang tìm kiếm thông tin pháp lý...",
+      "🔍 Đang tìm kiếm thông tin pháp lý...",
       "🧠 Đang tổng hợp và lập luận...",
       "✍️ Đang soạn câu trả lời...",
     ];
@@ -269,7 +269,7 @@ export default function Home() {
         <aside
           className="relative transition-all duration-200"
           style={{
-            width: sidebarOpen ? 320 : 56,
+            width: sidebarOpen ? 340 : 56,
             padding: sidebarOpen ? 12 : 8,
             display: "flex",
             flexDirection: "column",
@@ -320,7 +320,7 @@ export default function Home() {
                     key={chat._id}
                     onClick={() => chatActions.setActiveChat(chat._id)}
                     className="h-9 w-9 rounded-lg text-xs flex items-center justify-center"
-                    style={{ background: activeId === chat._id ? "#534AB7" : "var(--bg-surface)" }}
+                    style={{ background: activeId === chat._id ? "var(--bg-msgbtn)" : "var(--bg-surface)" }}
                     title={chat.title ?? "Chat"}
                   >
                     <MessageCircle size={16} />
@@ -336,8 +336,15 @@ export default function Home() {
               <div>
                 {/* Title + theme toggle */}
                 <div className="mb-3 flex items-center justify-between pr-10">
-                  <div className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>
-                    Chatbot VNLaw
+                  <div className="flex items-center gap-2 text-lg font-semibold" style={{ color: "var(--text-primary)" }}>
+                    <Image
+                      src="/logo.png"
+                      alt="VNLaw Logo"
+                      width={65}
+                      height={65}
+                      className="rounded"
+                    />
+                    <span>Chatbot VNLaw</span>
                   </div>
                   <div className="flex items-center gap-2">
                     {/* Sun icon */}
