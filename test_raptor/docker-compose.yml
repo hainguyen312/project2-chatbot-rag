@@ -45,6 +45,7 @@ services:
   milvus:
     container_name: milvus-standalone
     image: milvusdb/milvus:v2.4.14
+    platform: linux/amd64
     command: ["milvus", "run", "standalone"]
     security_opt:
       - seccomp:unconfined

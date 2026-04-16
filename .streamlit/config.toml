@@ -27,7 +27,7 @@ borderColor = "#c7d2fe"
 primaryColor = "#3b82f6"
 backgroundColor = "#0b1220"
 secondaryBackgroundColor = "#111827"
-textColor = "#e5e7eb"
+textColor = "#ffffff"
 borderColor = "#334155"
 
 [theme.dark.sidebar]

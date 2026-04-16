@@ -14,6 +14,8 @@ import asyncio
 import nest_asyncio
 import markdown as md 
 
+from urllib.parse import quote as _url_quote
+
 neo4j_driver = get_neo4j()
 two_stage_retriever = GraphRAGRetriever(
     neo4j_driver=neo4j_driver,
@@ -48,6 +50,39 @@ st.session_state.setdefault("pending_action", None)
 st.session_state.setdefault("new_name", "")
 st.session_state.setdefault("last_action", None)
 
+# =====================================================================
+# AVATAR (IMG)
+# =====================================================================
+def _svg_data_uri(svg: str) -> str:
+    # SVG có dấu tiếng Việt/space → encode để nhét vào data URI an toàn
+    return "data:image/svg+xml;utf8," + _url_quote(svg)
+
+
+USER_AVATAR_SRC = _svg_data_uri(
+    """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<defs>
+  <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#3b82f6"/>
+    <stop offset="1" stop-color="#1d4ed8"/>
+  </linearGradient>
+</defs>
+<rect width="64" height="64" rx="32" fill="url(#g)"/>
+<circle cx="32" cy="26" r="12" fill="#fff" opacity="0.95"/>
+<path d="M14 54c3.5-11 13.2-16 18-16s14.5 5 18 16" fill="#fff" opacity="0.95"/>
+</svg>"""
+)
+
+BOT_AVATAR_SRC = _svg_data_uri(
+    """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<rect width="64" height="64" rx="32" fill="#0f172a"/>
+<path d="M22 18h20a10 10 0 0 1 10 10v10a12 12 0 0 1-12 12H24A12 12 0 0 1 12 38V28a10 10 0 0 1 10-10z" fill="#e2e8f0"/>
+<circle cx="26" cy="34" r="4" fill="#0f172a"/>
+<circle cx="38" cy="34" r="4" fill="#0f172a"/>
+<path d="M28 46c2.5 2 5.5 2 8 0" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>
+<path d="M32 12v8" stroke="#e2e8f0" stroke-width="4" stroke-linecap="round"/>
+</svg>"""
+)
+
 
 
 # =====================================================================
@@ -71,13 +106,13 @@ html, body, [class*="css"] {{
 }}
 
 /* ── Topbar title ── */
-.topbar-title {{
-    font-weight: 700;
-    font-size: 26px;
-    line-height: 32px;
-    color: var(--text-color);
-    letter-spacing: -0.3px;
-}}
+.topbar-title {
+    font-weight: 700 !important;
+    font-size: 46px !important;
+    line-height: 52px !important;
+    color: var(--text-color) !important;
+    letter-spacing: -0.3px !important;
+}
 
 hr {{
     margin: 8px 0 12px 0 !important;
@@ -198,49 +233,57 @@ div[data-testid="column"] button[data-testid="baseButton-primary"] {{
     filter: brightness(1.05);
 }}
 
+/* Bottom input wrapper */
+[data-testid="stBottomBlockContainer"] {
+    padding: 1rem !important;
+}
+
 /* ══ RESPONSIVE ══ */
-@media (max-width: 768px) {{
-    .topbar-title {{ font-size: 18px !important; line-height: 24px !important; }}
-    div[data-testid="column"] .stButton > button {{
+@media (max-width: 768px) {
+    .topbar-title { font-size: 32px !important; line-height: 38px !important; }
+    div[data-testid="column"] .stButton > button {
         font-size: 12px !important;
         padding: 6px 10px !important;
         min-height: 36px !important;
         border-radius: 14px !important;
-    }}
-    [data-testid="stSidebar"] .stButton > button {{
+    }
+    [data-testid="stSidebar"] .stButton > button {
         font-size: 13px !important;
         padding: 8px 10px !important;
         min-height: 36px !important;
-    }}
-    [data-testid="stSidebar"] .stButton {{
+    }
+    [data-testid="stSidebar"] .stButton {
         margin-bottom: 2px !important;
-    }}
+    }
     /* Nút hành động hội thoại hiện tại */
     div[data-testid="column"] button[key="rename_btn"],
-    div[data-testid="column"] button[key="delete_btn"] {{
+    div[data-testid="column"] button[key="delete_btn"] {
         font-size: 11.5px !important;
-    }}
-}}
-@media (max-width: 480px) {{
-    .topbar-title {{ font-size: 15px !important; line-height: 20px !important; }}
-    div[data-testid="column"] .stButton > button {{
+    }
+}
+@media (max-width: 480px) {
+    .topbar-title { font-size: 26px !important; line-height: 32px !important; }
+    div[data-testid="column"] .stButton > button {
         font-size: 11px !important;
         padding: 7px 8px !important;
         border-radius: 12px !important;
         min-height: 34px !important;
-    }}
-    [data-testid="stSidebar"] .stButton > button {{
+    }
+    [data-testid="stSidebar"] .stButton > button {
         font-size: 12px !important;
         padding: 7px 8px !important;
         min-height: 34px !important;
-    }}
+    }
     /* Thanh mode toggle co lại cho không vỡ hàng */
-    div[data-testid="column"] .stButton > button {{
+    div[data-testid="column"] .stButton > button {
         letter-spacing: -0.1px;
-    }}
-    hr {{ margin: 4px 0 8px 0 !important; }}
-    .block-container {{ padding-top: 16px !important; }}
-}}
+    }
+    hr { margin: 4px 0 8px 0 !important; }
+    .block-container { padding-top: 56px !important; }
+    [data-testid="stBottomBlockContainer"] {
+        padding: 1rem !important;
+    }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -416,7 +459,7 @@ for msg in st.session_state.chat_history:
 
     if role == "user":
         st.markdown(f"""
-        <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px; margin:6px 0;">
+        <div style="display:flex; justify-content:flex-end; align-items:flex-start; gap:8px; margin:6px 0;">
             <div class="chat-bubble" style="
                 background:var(--primary-color, var(--st-primary-color, #1d4ed8));
                 color:#ffffff;
@@ -428,24 +471,19 @@ for msg in st.session_state.chat_history:
                 box-shadow:0 2px 8px color-mix(in srgb, var(--primary-color, var(--st-primary-color, #1d4ed8)) 30%, transparent);
                 font-family:'Be Vietnam Pro',sans-serif;
             ">{content_html}</div>
-            <div style="
+            <img src="{USER_AVATAR_SRC}" alt="user" style="
                 width:36px; height:36px; border-radius:50%;
-                background:var(--primary-color, var(--st-primary-color, #1d4ed8)); color:#fff;
-                display:flex; align-items:center; justify-content:center;
-                font-size:16px; flex-shrink:0;
-            ">😊
-</div>
+                flex-shrink:0; object-fit:cover;
+            "/>
         </div>
         """, unsafe_allow_html=True)
     else:
         st.markdown(f"""
-        <div style="display:flex; justify-content:flex-start; align-items:center; gap:8px; margin:6px 0;">
-            <div style="
+        <div style="display:flex; justify-content:flex-start; align-items:flex-start; gap:8px; margin:6px 0;">
+            <img src="{BOT_AVATAR_SRC}" alt="bot" style="
                 width:36px; height:36px; border-radius:50%;
-                background:var(--secondary-background-color, var(--st-secondary-background-color, #ffffff)); color:var(--text-color, var(--st-text-color, #0f172a));
-                display:flex; align-items:center; justify-content:center;
-                font-size:16px; flex-shrink:0;
-            ">⚖️</div>
+                flex-shrink:0; object-fit:cover;
+            "/>
             <div class="chat-bubble" style="
                 background:var(--secondary-background-color, var(--st-secondary-background-color, #ffffff));
                 color:var(--text-color, var(--st-text-color, #0f172a));
@@ -478,7 +516,7 @@ if prompt:
     add_to_history("user", prompt)
     prompt_html = md.markdown(prompt, extensions=["extra", "nl2br"])
     st.markdown(f"""
-    <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px; margin:6px 0;">
+    <div style="display:flex; justify-content:flex-end; align-items:flex-start; gap:8px; margin:6px 0;">
         <div class="chat-bubble" style="
             background:var(--primary-color, var(--st-primary-color, #1d4ed8));
             color:#ffffff;
@@ -490,12 +528,10 @@ if prompt:
             box-shadow:0 2px 8px color-mix(in srgb, var(--primary-color, var(--st-primary-color, #1d4ed8)) 30%, transparent);
             font-family:'Be Vietnam Pro',sans-serif;
         ">{prompt_html}</div>
-        <div style="
+        <img src="{USER_AVATAR_SRC}" alt="user" style="
             width:36px; height:36px; border-radius:50%;
-            background:var(--primary-color, var(--st-primary-color, #1d4ed8)); color:#fff;
-            display:flex; align-items:center; justify-content:center;
-            font-size:16px; flex-shrink:0;
-        ">😊</div>
+            flex-shrink:0; object-fit:cover;
+        "/>
     </div>
     """, unsafe_allow_html=True)
 
@@ -533,13 +569,11 @@ if prompt:
                 full += text[i:i + chunk]
                 live_html = md.markdown(full + "▌", extensions=["extra", "nl2br"])
                 ph.markdown(f"""
-                <div style="display:flex; justify-content:flex-start; align-items:center; gap:8px; margin:6px 0;">
-                    <div style="
+                <div style="display:flex; justify-content:flex-start; align-items:flex-start; gap:8px; margin:6px 0;">
+                    <img src="{BOT_AVATAR_SRC}" alt="bot" style="
                         width:36px; height:36px; border-radius:50%;
-                        background:var(--secondary-background-color, var(--st-secondary-background-color, #ffffff)); color:var(--text-color, var(--st-text-color, #0f172a));
-                        display:flex; align-items:center; justify-content:center;
-                        font-size:16px; flex-shrink:0;
-                    ">⚖️</div>
+                        flex-shrink:0; object-fit:cover;
+                    "/>
                     <div class="chat-bubble" style="
                         background:var(--secondary-background-color, var(--st-secondary-background-color, #ffffff));
                         color:var(--text-color, var(--st-text-color, #0f172a));
@@ -557,13 +591,11 @@ if prompt:
                 time.sleep(delay)
             final_html = md.markdown(full, extensions=["extra", "nl2br"])
             ph.markdown(f"""
-            <div style="display:flex; justify-content:flex-start; align-items:center; gap:8px; margin:6px 0;">
-                <div style="
+            <div style="display:flex; justify-content:flex-start; align-items:flex-start; gap:8px; margin:6px 0;">
+                <img src="{BOT_AVATAR_SRC}" alt="bot" style="
                     width:36px; height:36px; border-radius:50%;
-                    background:var(--secondary-background-color, var(--st-secondary-background-color, #ffffff)); color:var(--text-color, var(--st-text-color, #0f172a));
-                    display:flex; align-items:center; justify-content:center;
-                    font-size:16px; flex-shrink:0;
-                ">⚖️</div>
+                    flex-shrink:0; object-fit:cover;
+                "/>
                 <div class="chat-bubble" style="
                     background:var(--secondary-background-color, var(--st-secondary-background-color, #ffffff));
                     color:var(--text-color, var(--st-text-color, #0f172a));

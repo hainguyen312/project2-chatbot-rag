@@ -22,3 +22,7 @@ rank_bm25
 
 markdown
 pymongo
+
+neo4j
+tavily
+nest_asyncio

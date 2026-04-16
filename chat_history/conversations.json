@@ -19,6 +19,7 @@
         "content": "Thái độ: neutral_info --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu\n Yêu cầu người dùng: Có quy định nào về trang phục khi thực hiện thủ tục đăng ký kết hôn không? "
       }
     ],
+    "pinned": false,
     "created_at": "2025-11-11T15:39:28.540369",
     "updated_at": "2025-11-11T15:40:41.744743"
   },
@@ -34,73 +35,44 @@
         "content": "Thái độ: neutral_info --- Elasticsearch hết bản dùng thử rồi, thử lại sau vậy huhuhu\n Yêu cầu người dùng: Hành vi chống đối người thi hành công vụ sẽ bị xử phạt theo quy định nào trong pháp luật Việt Nam? "
       }
     ],
+    "pinned": false,
     "created_at": "2025-11-11T15:40:04.599141",
     "updated_at": "2025-11-11T15:40:12.159065"
   },
   "7ceff593-5a09-48b2-8908-5292f7ccaf61": {
-    "title": "Xử lý chống đối người thi hành công vụ",
+    "title": "Cuộc trò chuyện mới",
     "messages": [
       {
         "role": "user",
         "content": "chống đối người thi hành công vụ bị xử lý như thế nào?"
-      },
-      {
-        "role": "user",
-        "content": "chống đối người thi hành công vụ bị xử lý như thế nào"
-      },
-      {
-        "role": "assistant",
-        "content": "**Hành vi chống đối người thi hành công vụ có thể bị xử lý theo cả hình thức hành chính và hình sự.**\n\n1. **Xử phạt hành chính**: Theo Điều 39.13 Nghị định 102/2021/NĐ-CP, hành vi cản trở hoặc không chấp hành yêu cầu của người thi hành công vụ có thể bị phạt tiền từ **4.000.000 đồng đến 6.000.000 đồng**. Cụ thể:\n   - Cản trở hoặc không chấp hành yêu cầu thanh tra, kiểm tra, kiểm soát.\n   - Có lời nói, hành động đe dọa, lăng mạ, xúc phạm danh dự, nhân phẩm của người thi hành công vụ.\n\n2. **Truy cứu trách nhiệm hình sự**: Theo Điều 16.1 Luật Hình sự, người nào dùng vũ lực, đe dọa dùng vũ lực hoặc dùng thủ đoạn khác để cản trở người thi hành công vụ sẽ bị xử lý hình sự với mức phạt cải tạo không giam giữ đến **03 năm** hoặc phạt tù từ **06 tháng đến 03 năm**. Nếu phạm tội trong các trường hợp nghiêm trọng hơn (có tổ chức, tái phạm, gây thiệt hại lớn), mức phạt có thể lên đến **07 năm tù**.\n\nCăn cứ pháp lý:\n- Nghị định 102/2021/NĐ-CP, Điều 39.13.\n- Bộ luật Hình sự, Điều 16.1."
-      },
-      {
-        "role": "user",
-        "content": "A thuê nhà của B và tự ý đục tường nhà B thì B có quyền làm gì?"
-      },
-      {
-        "role": "assistant",
-        "content": "**Vi phạm 1: Tự ý đục tường nhà B**\n- **Chủ thể**: A (người thuê nhà)\n- **Căn cứ pháp lý**: Điều 9.1.LQ.169, Bộ luật Dân sự — \"Khi thực hiện quyền sở hữu, quyền khác đối với tài sản, chủ thể có quyền yêu cầu người có hành vi cản trở trái pháp luật phải chấm dứt hành vi đó hoặc có quyền yêu cầu Tòa án, cơ quan nhà nước có thẩm quyền khác buộc người đó chấm dứt hành vi vi phạm.\"\n- **Mức xử lý**: Dân sự\n- **Hướng xử lý cho bên bị hại**: B (chủ nhà) có quyền yêu cầu A chấm dứt hành vi vi phạm, khôi phục lại tình trạng ban đầu của tài sản (tường nhà) và có thể yêu cầu bồi thường thiệt hại nếu có.\n\n**Kết luận tổng hợp:**\nB có quyền yêu cầu A chấm dứt hành vi đục tường và khôi phục lại tình trạng ban đầu của tài sản. Nếu A không hợp tác, B có thể khởi kiện ra Tòa án để yêu cầu xử lý.\n\n**Căn cứ pháp lý tổng hợp:**\n- Điều 9.1.LQ.169, Bộ luật Dân sự."
-      },
-      {
-        "role": "user",
-        "content": "đánh nhau trong đồn công an bi xử phạt như thế nào?"
-      },
-      {
-        "role": "assistant",
-        "content": "**Hành vi đánh nhau trong đồn công an là vi phạm pháp luật.** \n\n1. **Xử lý hành chính**: Hành vi gây rối trật tự công cộng, bao gồm đánh nhau, có thể bị xử phạt hành chính theo Nghị định 167/2013/NĐ-CP. Cụ thể, người có hành vi gây rối trật tự công cộng có thể bị phạt tiền từ **1.000.000 đồng đến 3.000.000 đồng**.\n\n2. **Truy cứu trách nhiệm hình sự**: Nếu hành vi đánh nhau gây thương tích cho người khác, có thể bị xử lý hình sự theo Điều 134 của Bộ luật Hình sự. Mức phạt có thể từ **03 năm đến 07 năm tù** tùy thuộc vào mức độ thương tích và các tình tiết tăng nặng.\n\n3. **Thẩm quyền xử lý**: Trong trường hợp xảy ra đánh nhau trong đồn công an, cán bộ công an có thẩm quyền sẽ tiến hành lập biên bản và xử lý theo quy định của pháp luật.\n\n**Căn cứ pháp lý**:\n- Nghị định 167/2013/NĐ-CP, Điều 5.\n- Bộ luật Hình sự, Điều 134."
       }
     ],
+    "pinned": false,
     "created_at": "2026-04-15T14:25:22.707961",
-    "updated_at": "2026-04-15T14:48:03.766877"
+    "updated_at": "2026-04-15T14:25:22.723779"
   },
-  "010e1cb7-5327-4f7d-b697-46b50640bb61": {
-    "title": "Xử lý hành vi cố ý gây thương tích",
+  "89e94622-342a-4062-be42-0047f13d9f37": {
+    "title": "Tăng thời gian cải tạo khi đánh nhau trong tù",
     "messages": [
       {
         "role": "user",
-        "content": "hành vi cố ý gây thương tích bị xử lý như thế nào?"
+        "content": "đánh nhau trong tù có bị tăng thời gian cải tạo không?"
       },
       {
         "role": "assistant",
-        "content": "**Có** hành vi cố ý gây thương tích được quy định trong Bộ luật Hình sự Việt Nam. Cụ thể, hành vi này được quy định tại Điều 134 của Bộ luật Hình sự 2015 (sửa đổi, bổ sung năm 2017).\n\n1. **Tội cố ý gây thương tích hoặc gây tổn hại cho sức khỏe của người khác**:\n   - Người nào cố ý gây thương tích hoặc gây tổn hại cho sức khỏe của người khác mà tỷ lệ tổn thương cơ thể từ **11% đến 30%** hoặc dưới **11%** nhưng thuộc một trong các trường hợp như dùng vũ khí, hóa chất nguy hiểm, đối với người dễ bị tổn thương thì bị phạt cải tạo không giam giữ đến **03 năm** hoặc phạt tù từ **06 tháng đến 03 năm** (Điều 134).\n\n2. **Trường hợp gây thương tích nặng**:\n   - Nếu tỷ lệ tổn thương cơ thể từ **31% đến 60%**, người phạm tội sẽ bị phạt tiền từ **5.000.000 đồng đến 20.000.000 đồng** hoặc phạt tù từ **03 tháng đến 02 năm** (Điều 136).\n\n3. **Hành vi trong khi thi hành công vụ**:\n   - Nếu hành vi gây thương tích xảy ra trong khi thi hành công vụ và tỷ lệ tổn thương từ **31% đến 60%**, người phạm tội có thể bị phạt cải tạo không giam giữ đến **03 năm** hoặc phạt tù từ **06 tháng đến 03 năm** (Điều 137).\n\nCác quy định này thể hiện rõ ràng các hình thức xử lý đối với hành vi cố ý gây thương tích, tùy thuộc vào mức độ tổn thương mà người bị hại phải chịu.\n\n**Căn cứ pháp lý**:\n- Điều 134, 136, 137 Bộ luật Hình sự 2015 (sửa đổi, bổ sung năm 2017)."
+        "content": "**Chưa đủ dữ liệu** để xác định quy định cụ thể về việc tăng thời gian cải tạo do đánh nhau trong tù. Hiện tại, không có thông tin trong các văn bản pháp luật được cung cấp liên quan đến việc này. Để có thông tin chính xác, bạn có thể tham khảo các quy định trong Luật Thi hành án hình sự hoặc các văn bản pháp luật liên quan đến quản lý, cải tạo phạm nhân. Vui lòng cung cấp thêm thông tin hoặc yêu cầu cụ thể hơn để tôi có thể hỗ trợ tốt hơn."
       },
       {
         "role": "user",
-        "content": "bạn là ai"
+        "content": "Luật trí tuệ nhân tạo 2025"
       },
       {
         "role": "assistant",
-        "content": "Mình là một **trợ lý pháp lý AI** được thiết kế để hỗ trợ bạn trong việc tìm hiểu và tra cứu các quy định pháp luật Việt Nam. Mình có thể tóm tắt điều luật, giải thích nội dung văn bản, hoặc cung cấp căn cứ pháp lý cho câu hỏi của bạn."
-      },
-      {
-        "role": "user",
-        "content": "bạn có thể làm gì?"
-      },
-      {
-        "role": "assistant",
-        "content": "Mình có thể giúp bạn:\n- 📜 Tra cứu văn bản pháp luật Việt Nam (Luật, Nghị định, Thông tư...)\n- 💡 Giải thích điều khoản, khái niệm hoặc quy định cụ thể\n- ⚖️ Gợi ý căn cứ pháp lý liên quan đến tình huống bạn đang hỏi\n- 🧭 Hướng dẫn quy trình, thủ tục hành chính hoặc xử phạt hành chính\n\nBạn muốn mình bắt đầu với chủ đề nào?"
+        "content": "**Chưa đủ dữ liệu** để cung cấp thông tin chi tiết về Luật trí tuệ nhân tạo 2025, vì văn bản này chưa có hiệu lực cho đến ngày 01/3/2026. Tuy nhiên, theo thông tin từ các nguồn hiện có, Luật này sẽ quy định về nghiên cứu, phát triển, cung cấp, triển khai và sử dụng hệ thống trí tuệ nhân tạo, đồng thời xác lập quyền và nghĩa vụ của tổ chức, cá nhân trong lĩnh vực này.\n\nMột số điểm nổi bật trong Luật bao gồm:\n1. **Ưu đãi và hỗ trợ** cho tổ chức, cá nhân hoạt động trong lĩnh vực trí tuệ nhân tạo, bao gồm việc tiếp cận hạ tầng, dữ liệu và môi trường thử nghiệm.\n2. **Nguyên tắc hoạt động** của trí tuệ nhân tạo phải đặt con người ở vị trí trung tâm, bảo đảm quyền con người, quyền riêng tư và tuân thủ pháp luật.\n3. **Cấm lợi dụng AI** để thực hiện hành vi vi phạm pháp luật, như tạo nội dung giả mạo (deepfake) nhằm lừa đảo hoặc thao túng nhận thức.\n\nLuật Trí tuệ nhân tạo 2025 (Luật số 134/2025/QH15) được Quốc hội thông qua ngày 10/12/2025. \n\nNguồn tham khảo: [Web - tham khảo]\n\n---\n**Nguồn tham khảo từ web:**\n✅ [Web] [Luật Trí tuệ nhân tạo 2025, số 134/2025/QH15 - LuatVietnam](https://luatvietnam.vn/khoa-hoc/luat-tri-tue-nhan-tao-2025-so-134-2025-qh15-422299-d1.html)\n⚠️ [Web - tham khảo] [Luật Trí tuệ nhân tạo 2025 – Khung pháp lý toàn diện cho kỷ nguyên AI an toàn và phát triển bền vững](https://congan.daklak.gov.vn/an-ninh-doi-song/luat-tri-tue-nhan-tao-2025-khung-phap-ly-toan-dien-cho-ky-nguyen-ai-an-toan-va-phat-trien-ben-vung-11243.html)\n⚠️ [Web - tham khảo] [Luật Trí tuệ nhân tạo 2025 – Khung pháp lý toàn diện cho kỷ nguyên AI an toàn và phát triển bền vững](https://congan.daklak.gov.vn/tin-moi/luat-tri-tue-nhan-tao-2025-khung-phap-ly-toan-dien-cho-ky-nguyen-ai-an-toan-va-phat-trien-ben-vung-11243.html)\n⚠️ [Web - tham khảo] [[PDF] pháp luật về trí tuệ nhân tạo ở việt nam: định hướng hoàn](https://ai.siu.edu.vn/wp-content/uploads/2025/01/Bai-1-HT-1.-SIU.pdf)\n⚠️ [Web - tham khảo] [Luật Trí tuệ nhân tạo 2025- công cụ quản lý công nghệ, hành lang pháp lý bảo vệ người dân](https://antv.gov.vn/ban-hoi-luat-su-tra-loi-C5670893E/luat-tri-tue-nhan-tao-2025-cong-cu-quan-ly-cong-nghe-hanh-lang-phap-ly-bao-ve-nguoi-dan-1D827FB65.html)"
       }
     ],
-    "created_at": "2026-04-15T14:50:33.704023",
-    "updated_at": "2026-04-15T14:56:58.608405"
+    "pinned": false,
+    "created_at": "2026-04-15T18:56:23.104182",
+    "updated_at": "2026-04-15T18:57:55.482328"
   }
 }

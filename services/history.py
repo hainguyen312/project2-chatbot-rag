@@ -14,7 +14,8 @@ except Exception:  # pragma: no cover
     MongoClient = None
     PyMongoError = Exception
 
-load_dotenv()
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(_PROJECT_ROOT, ".env"))
 
 CHAT_DIR = "chat_history"
 CHAT_FILE = os.path.join(CHAT_DIR, "conversations.json")
@@ -22,6 +23,7 @@ DB_FILE = os.path.join(CHAT_DIR, "conversations.sqlite")
 MONGODB_URI = (os.getenv("MONGODB_URI") or "").strip()
 MONGODB_DB = (os.getenv("MONGODB_DB") or "chatbot_rag").strip()
 MONGODB_COLLECTION = (os.getenv("MONGODB_COLLECTION") or "conversations").strip()
+MONGODB_TIMEOUT_MS = int((os.getenv("MONGODB_TIMEOUT_MS") or "8000").strip())
 
 
 def _mongo_enabled() -> bool:
@@ -32,11 +34,19 @@ def _get_mongo_collection():
     if not _mongo_enabled():
         return None
     try:
-        client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=1500)
+        client = MongoClient(
+            MONGODB_URI,
+            serverSelectionTimeoutMS=MONGODB_TIMEOUT_MS,
+            connectTimeoutMS=MONGODB_TIMEOUT_MS,
+            socketTimeoutMS=MONGODB_TIMEOUT_MS,
+        )
         client.admin.command("ping")
         db = client[MONGODB_DB]
         return db[MONGODB_COLLECTION]
-    except Exception:
+    except Exception as e:
+        # Không raise để app vẫn chạy (fallback SQLite/JSON),
+        # nhưng in ra lỗi để người dùng biết Mongo đang không truy cập được.
+        print(f"[MongoDB] Không kết nối được: {type(e).__name__}: {e}")
         return None
 
 
@@ -50,11 +60,17 @@ def _ensure_storage():
             CREATE TABLE IF NOT EXISTS sessions (
                 id TEXT PRIMARY KEY,
                 title TEXT,
+                pinned INTEGER DEFAULT 0,
                 created_at TEXT,
                 updated_at TEXT
             )
             """
         )
+        # Migration nhẹ: thêm cột pinned nếu DB cũ chưa có.
+        try:
+            cur.execute("ALTER TABLE sessions ADD COLUMN pinned INTEGER DEFAULT 0")
+        except sqlite3.OperationalError:
+            pass
         cur.execute(
             """
             CREATE TABLE IF NOT EXISTS messages (
@@ -97,13 +113,26 @@ def _load_chats_from_mongo():
     if col is None:
         return {}
     try:
-        docs = list(col.find({}, {"_id": 1, "title": 1, "messages": 1, "created_at": 1, "updated_at": 1}))
+        docs = list(
+            col.find(
+                {},
+                {
+                    "_id": 1,
+                    "title": 1,
+                    "messages": 1,
+                    "pinned": 1,
+                    "created_at": 1,
+                    "updated_at": 1,
+                },
+            )
+        )
         chats = {}
         for d in docs:
             sid = str(d.get("_id"))
             chats[sid] = {
                 "title": d.get("title") or "Cuộc trò chuyện mới",
                 "messages": d.get("messages") or [],
+                "pinned": bool(d.get("pinned", False)),
                 "created_at": d.get("created_at") or datetime.now().isoformat(),
                 "updated_at": d.get("updated_at") or datetime.now().isoformat(),
             }
@@ -121,6 +150,7 @@ def _upsert_chat_mongo(chat_id, chat):
         "_id": chat_id,
         "title": chat.get("title", "Cuộc trò chuyện mới"),
         "messages": chat.get("messages", []),
+        "pinned": bool(chat.get("pinned", False)),
         "created_at": chat.get("created_at", now),
         "updated_at": chat.get("updated_at", now),
     }
@@ -147,21 +177,26 @@ def _sync_all_to_mongo(chats):
     if col is None:
         return False
     try:
-        col.delete_many({})
+        # KHÔNG xoá toàn bộ collection trước khi sync.
+        # Trước đây delete_many({}) có thể làm mất dữ liệu Mongo nếu nguồn fallback
+        # (sqlite/json) chưa đầy đủ hoặc đang lỗi tạm thời.
         now = datetime.now().isoformat()
-        docs = []
+        if not chats:
+            return True
         for chat_id, chat in chats.items():
-            docs.append(
-                {
-                    "_id": chat_id,
-                    "title": chat.get("title", "Cuộc trò chuyện mới"),
-                    "messages": chat.get("messages", []),
-                    "created_at": chat.get("created_at", now),
-                    "updated_at": chat.get("updated_at", now),
-                }
+            payload = {
+                "_id": chat_id,
+                "title": chat.get("title", "Cuộc trò chuyện mới"),
+                "messages": chat.get("messages", []),
+                "pinned": bool(chat.get("pinned", False)),
+                "created_at": chat.get("created_at", now),
+                "updated_at": chat.get("updated_at", now),
+            }
+            col.replace_one(
+                {"_id": chat_id},
+                payload,
+                upsert=True,
             )
-        if docs:
-            col.insert_many(docs, ordered=False)
         return True
     except PyMongoError:
         return False
@@ -173,7 +208,7 @@ def _load_chats_from_sqlite():
     conn.row_factory = sqlite3.Row
     try:
         sessions = conn.execute(
-            "SELECT id, title, created_at, updated_at FROM sessions"
+            "SELECT id, title, pinned, created_at, updated_at FROM sessions"
         ).fetchall()
         if not sessions:
             return {}
@@ -199,6 +234,7 @@ def _load_chats_from_sqlite():
             chats[sid] = {
                 "title": s["title"] or "Cuoc tro chuyen moi",
                 "messages": msg_map.get(sid, []),
+                "pinned": bool(s["pinned"] or 0),
                 "created_at": s["created_at"] or datetime.now().isoformat(),
                 "updated_at": s["updated_at"] or datetime.now().isoformat(),
             }
@@ -214,15 +250,17 @@ def _upsert_chat_sqlite(chat_id, chat):
     try:
         conn.execute(
             """
-            INSERT INTO sessions (id, title, created_at, updated_at)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO sessions (id, title, pinned, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 title=excluded.title,
+                pinned=excluded.pinned,
                 updated_at=excluded.updated_at
             """,
             (
                 chat_id,
                 chat.get("title", "Cuoc tro chuyen moi"),
+                1 if chat.get("pinned", False) else 0,
                 chat.get("created_at", now),
                 chat.get("updated_at", now),
             ),
@@ -266,12 +304,13 @@ def _sync_all_to_sqlite(chats):
         for chat_id, chat in chats.items():
             conn.execute(
                 """
-                INSERT INTO sessions (id, title, created_at, updated_at)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO sessions (id, title, pinned, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?)
                 """,
                 (
                     chat_id,
                     chat.get("title", "Cuoc tro chuyen moi"),
+                    1 if chat.get("pinned", False) else 0,
                     chat.get("created_at", datetime.now().isoformat()),
                     chat.get("updated_at", datetime.now().isoformat()),
                 ),
@@ -335,13 +374,16 @@ def save_chat(chat_id, title, messages):
     chats = load_chats()
     now = datetime.now().isoformat()
     if chat_id in chats:
+        pinned = bool(chats[chat_id].get("pinned", False))
         chats[chat_id]["title"] = title
         chats[chat_id]["messages"] = messages
+        chats[chat_id]["pinned"] = pinned
         chats[chat_id]["updated_at"] = now
     else:
         chats[chat_id] = {
             "title": title,
             "messages": messages,
+            "pinned": False,
             "created_at": now,
             "updated_at": now,
         }
@@ -357,6 +399,7 @@ def create_new_chat():
     chats[new_id] = {
         "title": "Cuộc trò chuyện mới",
         "messages": [],
+        "pinned": False,
         "created_at": now,
         "updated_at": now,
     }
@@ -374,6 +417,20 @@ def rename_chat(chat_id, new_title):
         _write_json(chats)
         if not _upsert_chat_mongo(chat_id, chats[chat_id]):
             _upsert_chat_sqlite(chat_id, chats[chat_id])
+
+
+def toggle_pin_chat(chat_id, pinned: Optional[bool] = None):
+    chats = load_chats()
+    if chat_id not in chats:
+        return False
+    current = bool(chats[chat_id].get("pinned", False))
+    new_value = (not current) if pinned is None else bool(pinned)
+    chats[chat_id]["pinned"] = new_value
+    chats[chat_id]["updated_at"] = datetime.now().isoformat()
+    _write_json(chats)
+    if not _upsert_chat_mongo(chat_id, chats[chat_id]):
+        _upsert_chat_sqlite(chat_id, chats[chat_id])
+    return True
 
 
 def delete_chat(chat_id):
