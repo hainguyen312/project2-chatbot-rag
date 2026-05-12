@@ -2,7 +2,24 @@
 
 import { useSyncExternalStore } from "react";
 
-export type Message = { role: "user" | "assistant"; content: string };
+export type Passage = {
+  mapc: string;
+  ten: string;
+  tenchuong?: string;
+  tendemuc?: string;
+  tenchude?: string;
+  noidung: string;
+  score?: number;
+  source?: string;
+  url?: string;
+};
+
+export interface Message {
+  role: "user" | "assistant";
+  content: string;
+  passages?: Passage[];
+  tts_url?: string|null;   // ← thêm
+}
 
 export type Chat = {
   _id: string;

@@ -133,16 +133,13 @@ def insert_dieu(driver, conn):
  
     for i in tqdm(range(0, total, BATCH_SIZE), desc="Dieu nodes"):
         batch = rows[i : i + BATCH_SIZE]
-        # Giới hạn noidung để tránh quá nặng (500 ký tự để search, full text dùng MySQL)
-        for r in batch:
-            r["noidung_short"] = (r["noidung"] or "")[:500]
- 
+
         with driver.session() as session:
             session.run("""
                 UNWIND $batch AS r
                 MERGE (d:Dieu {mapc: r.mapc})
                 SET d.ten       = r.ten,
-                    d.noidung   = r.noidung_short,
+                    d.noidung   = r.noidung,
                     d.chimuc    = r.chimuc,
                     d.stt       = r.stt,
                     d.demuc_id  = r.demuc_id,
@@ -191,13 +188,16 @@ def insert_lienquan(driver, conn):
 MAPC_PATTERN = re.compile(r'\b(\d+\.\d+\.[A-ZĐ]+\.\d+(?:\.\d+)*)\b')
  
 def insert_thamchieu(driver, conn):
-    """
-    Parse các tham chiếu chéo trong noidung của pddieu.
-    Ví dụ: "theo quy định tại Điều 1.1.LQ.5" → THAM_CHIEU edge.
-    """
     with conn.cursor() as cur:
-        cur.execute("SELECT mapc, noidung FROM pddieu WHERE noidung IS NOT NULL")
+        cur.execute("SELECT mapc, noidung FROM pddieu WHERE noidung IS NOT NULL LIMIT 5")
         rows = cur.fetchall()
+
+    # ── DEBUG: in thử noidung và kết quả regex ──
+    for row in rows:
+        print(f"\n--- mapc: {row['mapc']} ---")
+        print(f"noidung (200 ký tự đầu): {row['noidung'][:200]}")
+        found = MAPC_PATTERN.findall(row['noidung'] or "")
+        print(f"MAPC_PATTERN tìm được: {found}")
  
     # Lấy tập hợp mapc hợp lệ để tránh tạo edge tới node không tồn tại
     with conn.cursor() as cur:

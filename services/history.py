@@ -119,7 +119,7 @@ def _load_chats_from_mongo():
                 {
                     "_id": 1,
                     "title": 1,
-                    "messages": 1,
+                    "messages": 1,   # ← đã include messages, tts_url nằm trong này
                     "pinned": 1,
                     "created_at": 1,
                     "updated_at": 1,
@@ -129,10 +129,15 @@ def _load_chats_from_mongo():
         chats = {}
         for d in docs:
             sid = str(d.get("_id"))
+            # Giữ nguyên toàn bộ message object kể cả tts_url
+            messages = d.get("messages") or []
             chats[sid] = {
-                "title": d.get("title") or "Cuộc trò chuyện mới",
-                "messages": d.get("messages") or [],
-                "pinned": bool(d.get("pinned", False)),
+                "title":      d.get("title") or "Cuộc trò chuyện mới",
+                "messages":   [
+                    {**msg, "tts_url": msg.get("tts_url", None)}  # ← đảm bảo field tồn tại
+                    for msg in (d.get("messages") or [])
+                ],
+                "pinned":     bool(d.get("pinned", False)),
                 "created_at": d.get("created_at") or datetime.now().isoformat(),
                 "updated_at": d.get("updated_at") or datetime.now().isoformat(),
             }
@@ -373,20 +378,34 @@ def cleanup_empty_chats():
 def save_chat(chat_id, title, messages):
     chats = load_chats()
     now = datetime.now().isoformat()
+
     if chat_id in chats:
+        old_messages = chats[chat_id].get("messages", [])
+        # Merge: giữ tts_url từ messages cũ
+        merged = []
+        for i, msg in enumerate(messages):
+            merged_msg = dict(msg)
+            if i < len(old_messages):
+                old_tts = old_messages[i].get("tts_url")
+                if old_tts and not merged_msg.get("tts_url"):
+                    merged_msg["tts_url"] = old_tts
+            merged.append(merged_msg)
+        messages = merged
+
         pinned = bool(chats[chat_id].get("pinned", False))
-        chats[chat_id]["title"] = title
-        chats[chat_id]["messages"] = messages
-        chats[chat_id]["pinned"] = pinned
+        chats[chat_id]["title"]      = title
+        chats[chat_id]["messages"]   = messages
+        chats[chat_id]["pinned"]     = pinned
         chats[chat_id]["updated_at"] = now
     else:
         chats[chat_id] = {
-            "title": title,
-            "messages": messages,
-            "pinned": False,
+            "title":      title,
+            "messages":   messages,
+            "pinned":     False,
             "created_at": now,
             "updated_at": now,
         }
+
     _write_json(chats)
     if not _upsert_chat_mongo(chat_id, chats[chat_id]):
         _upsert_chat_sqlite(chat_id, chats[chat_id])
@@ -440,4 +459,21 @@ def delete_chat(chat_id):
         _write_json(chats)
         if not _delete_chat_mongo(chat_id):
             _delete_chat_sqlite(chat_id)
+
+def save_tts_url(chat_id: str, msg_idx: int, tts_url: str) -> bool:
+    """Lưu URL audio TTS vào message tương ứng trong MongoDB."""
+    col = _get_mongo_collection()
+    if col is None:
+        print("[TTS] MongoDB không khả dụng, bỏ qua lưu URL")
+        return False
+    try:
+        result = col.update_one(
+            {"_id": chat_id},
+            {"$set": {f"messages.{msg_idx}.tts_url": tts_url}},
+        )
+        print(f"[TTS] Saved URL to MongoDB: chat={chat_id} msg={msg_idx}")
+        return result.modified_count > 0
+    except Exception as e:
+        print(f"[TTS MongoDB] Lỗi lưu URL: {e}")
+        return False
 

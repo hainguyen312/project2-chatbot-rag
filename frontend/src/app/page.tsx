@@ -2,103 +2,94 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import ReactMarkdown from "react-markdown";
-import remarkBreaks from "remark-breaks";
-import remarkGfm from "remark-gfm";
-import { chatActions, Chat, Message, useChatStore } from "@/store/chat-store";
+import { chatActions, Chat, Message, useChatStore, Passage } from "@/store/chat-store";
 import {
-  Plus,
-  Search,
-  MoreHorizontal,
-  Pin,
-  Trash2,
-  Pencil,
-  MessageCircle,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
+  Plus, Search, MoreHorizontal, Pin, Trash2, Pencil,
+  MessageCircle, ChevronLeft, ChevronRight, ChevronDown,
+  Clock, BookOpen, Folder, Menu, X,
 } from "lucide-react";
+import { useTTS } from "@/hooks/useTTS";
+import { useSTT } from "@/hooks/useSTT";
+import { MessageRow, Avatar, BotBubble } from "@/components/chat/MessageRow";
+import { PassagePanel, PassageFullModal } from "@/components/chat/PassagePanel";
+import { LiveWaveform } from "@/components/chat/LiveWaveform";
+import { VoiceMessage } from "@/components/chat/VoiceMessage";
 
+if (typeof CanvasRenderingContext2D !== "undefined" &&
+  !CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(
+    x: number, y: number, w: number, h: number, r: number
+  ) {
+    this.beginPath();
+    this.moveTo(x + r, y);
+    this.arcTo(x + w, y, x + w, y + h, r);
+    this.arcTo(x + w, y + h, x, y + h, r);
+    this.arcTo(x, y + h, x, y, r);
+    this.arcTo(x, y, x + w, y, r);
+    this.closePath();
+  };
+}
 
-/* ─────────────────────────────────────────────
-   Inline SVG avatars (unchanged)
-───────────────────────────────────────────── */
-const USER_AVATAR_SRC = toSvgDataUri(
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-<defs>
-  <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#534AB7"/>
-    <stop offset="1" stop-color="#1d4ed8"/>
-  </linearGradient>
-</defs>
-<rect width="64" height="64" rx="32" fill="url(#g)"/>
-<circle cx="32" cy="26" r="12" fill="#fff" opacity="0.95"/>
-<path d="M14 54c3.5-11 13.2-16 18-16s14.5 5 18 16" fill="#fff" opacity="0.95"/>
-</svg>`
-);
+function toSvgDataUri(svg: string) {
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
 
-const BOT_AVATAR_SRC = toSvgDataUri(
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-<rect width="64" height="64" rx="32" fill="#0f172a"/>
-<path d="M22 18h20a10 10 0 0 1 10 10v10a12 12 0 0 1-12 12H24A12 12 0 0 1 12 38V28a10 10 0 0 1 10-10z" fill="#e2e8f0"/>
-<circle cx="26" cy="34" r="4" fill="#0f172a"/>
-<circle cx="38" cy="34" r="4" fill="#0f172a"/>
-<path d="M28 46c2.5 2 5.5 2 8 0" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>
-<path d="M32 12v8" stroke="#e2e8f0" stroke-width="4" stroke-linecap="round"/>
-</svg>`
-);
+function autoTitle(messages: Message[], currentTitle: string) {
+  if (!currentTitle.startsWith("Cuộc trò chuyện")) return currentTitle;
+  const firstUser = messages.find((m) => m.role === "user")?.content?.trim();
+  if (!firstUser) return currentTitle;
+  return firstUser.length > 40 ? `${firstUser.slice(0, 40)}...` : firstUser;
+}
 
-/* ─────────────────────────────────────────────
-   Component
-───────────────────────────────────────────── */
 export default function Home() {
   const { chats, activeId, loading, error } = useChatStore((s) => s);
-  const [search, setSearch] = useState("");
-  const [input, setInput] = useState("");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [search, setSearch]               = useState("");
+  const [input, setInput]                 = useState("");
+  const [sidebarOpen, setSidebarOpen]     = useState(true);
+  // Mobile: sidebar dạng drawer overlay
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openMenuChatId, setOpenMenuChatId] = useState<string | null>(null);
-  const [sending, setSending] = useState(false);
-  const [renameChatId, setRenameChatId] = useState<string | null>(null);
-  const [renameValue, setRenameValue] = useState("");
-  const [loadingDots, setLoadingDots] = useState(".");
+  const [sending, setSending]             = useState(false);
+  const [renameChatId, setRenameChatId]   = useState<string | null>(null);
+  const [renameValue, setRenameValue]     = useState("");
+  const [loadingDots, setLoadingDots]     = useState(".");
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [pendingChatId, setPendingChatId] = useState<string | null>(null);
   const [streamingText, setStreamingText] = useState("");
   const [streamingChatId, setStreamingChatId] = useState<string | null>(null);
-  const [darkMode, setDarkMode] = useState(true);
-  const [queryMode, setQueryMode] = useState<"normal" | "situation">("normal");
-  const menuRef = useRef<HTMLDivElement | null>(null);
+  const [darkMode, setDarkMode]           = useState(true);
+  const [queryMode, setQueryMode]         = useState<"normal" | "situation">("normal");
+  const [selectedPassages, setSelectedPassages] = useState<Passage[] | null>(null);
+  const [selectedMsgIdx, setSelectedMsgIdx]     = useState<number | null>(null);
+  const [fullViewPassage, setFullViewPassage]   = useState<Passage | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const menuRef   = useRef<HTMLDivElement | null>(null);
 
   const activeChat = useMemo(
     () => chats.find((c) => c._id === activeId) ?? null,
     [chats, activeId]
   );
 
-  /* Toggle dark/light on <html> */
-  useEffect(() => {
-    const root = document.documentElement;
-    if (darkMode) {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-  }, [darkMode]);
+  const { speak, speakingIdx, loadingIdx } = useTTS();
+  const {
+    startRecording, stopRecording, cancelRecording, clearBlob,
+    recording, audioBlob, duration, supported: sttSupported,
+  } = useSTT();
 
-  const handleRename = async () => {
-    if (!renameChatId) return;
-    const value = renameValue.trim();
-    if (!value) return;
-    await patchChat(renameChatId, { title: value });
-    setRenameChatId(null);
-    setRenameValue("");
-  };
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", darkMode);
+  }, [darkMode]);
 
   useEffect(() => { void chatActions.ensureChatsLoaded(); }, []);
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (!menuRef.current) return;
-      if (!menuRef.current.contains(event.target as Node)) setOpenMenuChatId(null);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [activeChat?.messages, streamingText]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node))
+        setOpenMenuChatId(null);
     }
     if (openMenuChatId) {
       document.addEventListener("mousedown", handleClickOutside);
@@ -109,62 +100,124 @@ export default function Home() {
   useEffect(() => {
     if (!sending) { setLoadingDots("."); return; }
     const frames = [".", "..", "..."];
-    let idx = 0;
-    const timer = setInterval(() => { idx = (idx + 1) % frames.length; setLoadingDots(frames[idx]); }, 350);
-    return () => clearInterval(timer);
+    let i = 0;
+    const t = setInterval(() => { i = (i + 1) % frames.length; setLoadingDots(frames[i]); }, 350);
+    return () => clearInterval(t);
   }, [sending]);
+
+  // Đóng mobile sidebar khi đổi chat
+  useEffect(() => {
+    setMobileSidebarOpen(false);
+  }, [activeId]);
 
   async function createChat() { await chatActions.createChat(); }
   async function patchChat(id: string, patch: Partial<Chat>) { await chatActions.patchChat(id, patch); }
   async function removeChat(id: string) { await chatActions.removeChat(id); }
 
+  const saveTtsUrl = async (msgIdx: number, url: string) => {
+    if (!activeChat) return;
+    const updated = activeChat.messages.map((m, i) =>
+      i === msgIdx ? { ...m, tts_url: url } : m
+    );
+    await patchChat(activeChat._id, { messages: updated });
+  };
+
+  const handleRename = async () => {
+    if (!renameChatId || !renameValue.trim()) return;
+    await patchChat(renameChatId, { title: renameValue.trim() });
+    setRenameChatId(null);
+    setRenameValue("");
+  };
+
   async function onSend(e: FormEvent) {
     e.preventDefault();
-    if (!input.trim()) return;
-    if (!activeChat) { await createChat(); return; }
-    const nextMessages = [...activeChat.messages, { role: "user" as const, content: input.trim() }];
+    const promptSent = input.trim();
+    if (!promptSent || !activeChat) return;
+
+    const nextMessages: Message[] = [
+      ...activeChat.messages,
+      { role: "user", content: promptSent },
+    ];
     setInput("");
     setSending(true);
     setPendingChatId(activeChat._id);
     setPendingStatus("⏳ Đang phân tích yêu cầu...");
-    let statusIdx = 0;
+
     const statusSteps = [
       "⏳ Đang phân tích yêu cầu...",
       "🔍 Đang tìm kiếm thông tin pháp lý...",
       "🧠 Đang tổng hợp và lập luận...",
       "✍️ Đang soạn câu trả lời...",
     ];
+    let sIdx = 0;
     const statusTimer = setInterval(() => {
-      statusIdx = Math.min(statusIdx + 1, statusSteps.length - 1);
-      setPendingStatus(statusSteps[statusIdx]);
+      sIdx = Math.min(sIdx + 1, statusSteps.length - 1);
+      setPendingStatus(statusSteps[sIdx]);
     }, 1200);
+
+    await patchChat(activeChat._id, {
+      messages: nextMessages,
+      title: autoTitle(nextMessages, activeChat.title),
+    });
+
+    let fullText     = "";
+    let metaPassages: Passage[] = [];
+
     try {
-      await patchChat(activeChat._id, { messages: nextMessages, title: autoTitle(nextMessages, activeChat.title) });
-      const ragRes = await fetch("/api/rag", {
+      const res = await fetch("/api/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: input.trim(), history: nextMessages, query_mode: queryMode }),
+        body: JSON.stringify({ prompt: promptSent, history: nextMessages, query_mode: queryMode }),
       });
-      const ragData = (await ragRes.json().catch(() => ({}))) as { answer?: string; error?: string; detail?: string };
-      const assistant = {
-        role: "assistant" as const,
-        content: ragData.answer?.trim() ||
-          `Mình chưa thể lấy phản hồi từ RAG backend.\n\n${ragData.error ?? ""}\n${ragData.detail ?? ""}`.trim(),
-      };
+      if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
+
       clearInterval(statusTimer);
       setPendingStatus(null);
       setPendingChatId(null);
       setStreamingChatId(activeChat._id);
       setStreamingText("");
-      const full = assistant.content;
-      const chunkSize = 3;
-      for (let i = 0; i < full.length; i += chunkSize) {
-        setStreamingText(full.slice(0, i + chunkSize));
-        await new Promise((resolve) => setTimeout(resolve, 15));
+
+      const reader  = res.body.getReader();
+      const decoder = new TextDecoder();
+      let   buffer  = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const raw = line.slice(6).trim();
+          if (!raw) continue;
+          try {
+            const evt = JSON.parse(raw) as {
+              type: "meta" | "token" | "done" | "error";
+              text?: string; passages?: Passage[]; message?: string;
+            };
+            if (evt.type === "meta")        metaPassages = evt.passages ?? [];
+            else if (evt.type === "token")  { fullText += evt.text ?? ""; setStreamingText(fullText); }
+            else if (evt.type === "error")  { fullText += `\n\n⚠️ ${evt.message}`; setStreamingText(fullText); }
+            else if (evt.type === "done")   break;
+          } catch { /* ignore */ }
+        }
       }
-      await patchChat(activeChat._id, { messages: [...nextMessages, assistant] });
-      setStreamingText("");
-      setStreamingChatId(null);
+
+      await patchChat(activeChat._id, {
+        messages: [...nextMessages, {
+          role: "assistant",
+          content: fullText || "Mình chưa thể tạo câu trả lời. Vui lòng thử lại.",
+          passages: metaPassages,
+          tts_url: null,
+        }],
+      });
+
+    } catch (err) {
+      console.error("[onSend]", err);
+      await patchChat(activeChat._id, {
+        messages: [...nextMessages, { role: "assistant", content: "Mình gặp lỗi kết nối. Vui lòng thử lại sau.", passages: [], tts_url: null }],
+      });
     } finally {
       clearInterval(statusTimer);
       setSending(false);
@@ -175,71 +228,131 @@ export default function Home() {
     }
   }
 
-  const filtered = chats.filter((c) => (c.title ?? "").toLowerCase().includes(search.toLowerCase()));
-  const pinnedChats = filtered.filter((c) => c.pinned);
+  const sendVoice = async () => {
+    if (!audioBlob) return;
+    setSending(true);
+    const formData = new FormData();
+    formData.append("file", audioBlob, "audio.webm");
+    try {
+      const res  = await fetch("/api/stt", { method: "POST", body: formData });
+      const data = await res.json() as { text: string };
+      if (data.text) { setInput(data.text); clearBlob(); }
+    } catch (err) {
+      console.error("[STT]", err);
+    } finally {
+      setSending(false);
+      clearBlob();
+    }
+  };
+
+  const filtered      = chats.filter((c) => (c.title ?? "").toLowerCase().includes(search.toLowerCase()));
+  const pinnedChats   = filtered.filter((c) => c.pinned);
   const unpinnedChats = filtered.filter((c) => !c.pinned);
 
-  /* ─── Shared menu dropdown ─── */
+  // ── Sidebar content (dùng chung desktop & mobile drawer) ──────────────────
+  const SidebarContent = () => (
+    <>
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-lg font-semibold" style={{ color: "var(--text-primary)" }}>
+            <Image src="/logo.png" alt="VNLaw Logo" width={52} height={52} className="rounded" />
+            <span className="text-base">Chatbot VNLaw</span>
+          </div>
+          {/* Nút đóng chỉ hiện trên mobile */}
+          <button
+            className="flex h-8 w-8 items-center justify-center rounded-lg md:hidden"
+            style={{ background: "var(--bg-hover)", color: "var(--text-muted)" }}
+            onClick={() => setMobileSidebarOpen(false)}
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <button
+          className="mb-3 w-full rounded-lg px-3 py-2 text-left text-sm transition"
+          style={{ background: "var(--bg-surface)", color: "var(--text-secondary)", border: "0.5px solid var(--border)" }}
+          onClick={createChat}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-hover)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "var(--bg-surface)")}
+        >
+          <div className="flex items-center gap-2"><Plus size={16} />Đoạn chat mới</div>
+        </button>
+
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Tìm kiếm đoạn chat"
+          className="mb-3 w-full rounded-lg px-3 py-2 text-sm outline-none"
+          style={{ background: "var(--bg-input)", border: "0.5px solid var(--border)", color: "var(--text-primary)" }}
+        />
+
+        {error && (
+          <div className="mb-3 rounded-lg px-3 py-2 text-xs"
+            style={{ background: "var(--danger-bg)", border: "0.5px solid var(--danger-border)", color: "var(--danger-text)" }}>
+            {error}
+          </div>
+        )}
+      </div>
+
+      <div className="flex-1 space-y-1 overflow-y-auto pr-1">
+        {pinnedChats.length > 0 && (
+          <>
+            <div className="flex items-center gap-1 mb-1 px-2">
+              <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+                <div className="flex items-center gap-1"><Pin size={14} /><span>Đã ghim</span></div>
+              </span>
+            </div>
+            {pinnedChats.map((chat) => <ChatItem key={chat._id} chat={chat} />)}
+            {unpinnedChats.length > 0 && <div className="my-2" style={{ borderTop: "0.5px solid var(--border)" }} />}
+          </>
+        )}
+        {unpinnedChats.length > 0 && (
+          <>
+            <div className="flex items-center gap-1 mb-1 px-2">
+              <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
+                <div className="flex items-center gap-1"><Clock size={14} /><span>Gần đây</span></div>
+              </span>
+            </div>
+            {unpinnedChats.map((chat) => <ChatItem key={chat._id} chat={chat} />)}
+          </>
+        )}
+      </div>
+    </>
+  );
+
   const ChatMenu = ({ chat }: { chat: Chat }) =>
     openMenuChatId === chat._id ? (
-      <div
-        ref={menuRef}
-        style={{ 
-          position: "absolute", 
-          right: "-200px", 
-          top: "2.5rem",
-          background: "var(--bg-surface)",
-          border: "0.5px solid var(--border-strong)", 
-        }}
+      <div ref={menuRef}
         className="z-30 w-52 rounded-xl p-1 shadow-2xl"
-      >
-        <button
-          onClick={() => { setRenameChatId(chat._id); setRenameValue(chat.title ?? ""); setOpenMenuChatId(null); }}
-          className="w-full rounded-lg px-3 py-2 text-left text-sm"
-          style={{ color: "var(--text-primary)" }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-hover)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-        >
-          <div className="flex items-center gap-2">
-            <Pencil size={16} />
-            Đổi tên
-          </div>
-        </button>
-        <button
-          onClick={async () => { await patchChat(chat._id, { pinned: !chat.pinned }); setOpenMenuChatId(null); }}
-          className="w-full rounded-lg px-3 py-2 text-left text-sm"
-          style={{ color: "var(--text-primary)" }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-hover)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-        >
-          <div className="flex items-center gap-2">
-            <Pin size={16} />
-            Ghim / Bỏ ghim
-          </div>
-        </button>
+        style={{ position: "absolute", right: "-200px", top: "2.5rem",
+          background: "var(--bg-surface)", border: "0.5px solid var(--border-strong)" }}>
+        {[
+          { label: "Đổi tên", icon: <Pencil size={16} />, action: () => { setRenameChatId(chat._id); setRenameValue(chat.title ?? ""); setOpenMenuChatId(null); } },
+          { label: "Ghim / Bỏ ghim", icon: <Pin size={16} />, action: async () => { await patchChat(chat._id, { pinned: !chat.pinned }); setOpenMenuChatId(null); } },
+        ].map(({ label, icon, action }) => (
+          <button key={label} onClick={action}
+            className="w-full rounded-lg px-3 py-2 text-left text-sm"
+            style={{ color: "var(--text-primary)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-hover)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
+            <div className="flex items-center gap-2">{icon}{label}</div>
+          </button>
+        ))}
         <button
           onClick={async () => { await removeChat(chat._id); setOpenMenuChatId(null); }}
           className="w-full rounded-lg px-3 py-2 text-left text-sm"
           style={{ color: "var(--danger-text)", background: "transparent" }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = "var(--danger-bg)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-        >
-          <div className="flex items-center gap-2">
-            <Trash2 size={16} />
-            Xóa
-          </div>
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--danger-bg)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
+          <div className="flex items-center gap-2"><Trash2 size={16} />Xóa</div>
         </button>
       </div>
     ) : null;
 
-  /* ─── Chat list item ─── */
   const ChatItem = ({ chat }: { chat: Chat }) => (
     <div
       className="group relative flex items-center gap-1 rounded-lg"
-      style={{
-        background: activeId === chat._id ? "var(--bg-surface)" : "transparent",
-        overflow: "visible",
-      }}
+      style={{ background: activeId === chat._id ? "var(--bg-surface)" : "transparent", overflow: "visible" }}
       onMouseEnter={(e) => { if (activeId !== chat._id) (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; }}
       onMouseLeave={(e) => { if (activeId !== chat._id) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
     >
@@ -263,66 +376,81 @@ export default function Home() {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-base)", color: "var(--text-primary)" }}>
-      <div className="mx-auto flex h-screen">
+      <div className="mx-auto flex h-screen overflow-hidden">
 
-        {/* ── Sidebar ── */}
+        {/* ══════════════════════════════════════════════
+            MOBILE SIDEBAR OVERLAY (drawer)
+        ══════════════════════════════════════════════ */}
+        {mobileSidebarOpen && (
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 z-40 md:hidden"
+              style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(2px)" }}
+              onClick={() => setMobileSidebarOpen(false)}
+            />
+            {/* Drawer */}
+            <aside
+              className="fixed left-0 top-0 z-50 flex h-full flex-col gap-3 md:hidden"
+              style={{
+                width: "min(85vw, 320px)",
+                padding: 14,
+                background: "var(--bg-sidebar)",
+                borderRight: "0.5px solid var(--border)",
+                overflowY: "auto",
+                animation: "slideInLeft 0.22s ease",
+              }}
+            >
+              <SidebarContent />
+            </aside>
+          </>
+        )}
+
+        {/* ══════════════════════════════════════════════
+            DESKTOP SIDEBAR
+        ══════════════════════════════════════════════ */}
         <aside
-          className="relative transition-all duration-200"
+          className="relative hidden md:flex flex-col gap-3 transition-all duration-200"
           style={{
-            width: sidebarOpen ? 340 : 56,
+            width: sidebarOpen ? 300 : 56,
             padding: sidebarOpen ? 12 : 8,
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
             height: "100vh",
             overflow: "visible",
             background: "var(--bg-sidebar)",
             borderRight: "0.5px solid var(--border)",
+            flexShrink: 0,
           }}
         >
-          {/* Collapse toggle */}
+          {/* Toggle collapse */}
           <button
-            onClick={() => setSidebarOpen((prev) => !prev)}
+            onClick={() => setSidebarOpen((p) => !p)}
             className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-lg text-sm transition"
-            style={{
-              background: "var(--bg-surface)",
-              border: "0.5px solid var(--border-strong)",
-              color: "var(--text-secondary)",
-            }}
+            style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border-strong)", color: "var(--text-secondary)" }}
             title={sidebarOpen ? "Ẩn sidebar" : "Hiện sidebar"}
           >
             {sidebarOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
           </button>
 
-          {/* Collapsed sidebar */}
+          {/* Collapsed state */}
           {!sidebarOpen && (
             <div className="flex flex-col items-center gap-3 mt-2">
               <div className="h-9 w-9" />
-              <button
-                onClick={createChat}
-                className="flex h-9 w-9 items-center justify-center rounded-lg"
-                style={{ background: "var(--bg-surface)", color: "var(--text-secondary)" }}
-                title="Đoạn chat mới"
-              >
-                <Plus size={18} />
-              </button>
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="flex h-9 w-9 items-center justify-center rounded-lg"
-                style={{ background: "var(--bg-surface)", color: "var(--text-secondary)" }}
-                title="Tìm kiếm"
-              >
-                <Search size={18} />
-              </button>
+              {[
+                { icon: <Plus size={18} />, title: "Đoạn chat mới", action: createChat },
+                { icon: <Search size={18} />, title: "Tìm kiếm", action: () => setSidebarOpen(true) },
+              ].map(({ icon, title, action }) => (
+                <button key={title} onClick={action} title={title}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg"
+                  style={{ background: "var(--bg-surface)", color: "var(--text-secondary)" }}>
+                  {icon}
+                </button>
+              ))}
               <div className="mt-2 flex flex-col gap-2">
                 {chats.slice(0, 5).map((chat) => (
-                  <button
-                    key={chat._id}
-                    onClick={() => chatActions.setActiveChat(chat._id)}
+                  <button key={chat._id} onClick={() => chatActions.setActiveChat(chat._id)}
                     className="h-9 w-9 rounded-lg text-xs flex items-center justify-center"
                     style={{ background: activeId === chat._id ? "var(--bg-msgbtn)" : "var(--bg-surface)" }}
-                    title={chat.title ?? "Chat"}
-                  >
+                    title={chat.title ?? "Chat"}>
                     <MessageCircle size={16} />
                   </button>
                 ))}
@@ -330,293 +458,308 @@ export default function Home() {
             </div>
           )}
 
-          {/* Expanded sidebar */}
+          {/* Expanded state */}
           {sidebarOpen && (
-            <>
-              <div>
-                {/* Title + theme toggle */}
-                <div className="mb-3 flex items-center justify-between pr-10">
-                  <div className="flex items-center gap-2 text-lg font-semibold" style={{ color: "var(--text-primary)" }}>
-                    <Image
-                      src="/logo.png"
-                      alt="VNLaw Logo"
-                      width={65}
-                      height={65}
-                      className="rounded"
-                    />
-                    <span>Chatbot VNLaw</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {/* Sun icon */}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      className="h-4 w-4"
-                      style={{ color: !darkMode ? "#f59e0b" : "var(--text-muted)" }}
-                    >
-                      <path
-                        fill="currentColor"
-                        d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.45-1.79l-1.79 1.79 1.41 1.42 1.8-1.8-1.42-1.41zM12 4V1h-1v3h1zm0 19v-3h-1v3h1zm8-11h3v-1h-3v1zM4 12H1v-1h3v1zm12.24 7.16l1.8 1.79 1.41-1.41-1.79-1.8-1.42 1.42zM4.22 19.54l1.79-1.8-1.41-1.41-1.8 1.79 1.42 1.42zM12 6a6 6 0 100 12 6 6 0 000-12z"
-                      />
-                    </svg>
-
-                    {/* Switch */}
-                    <button
-                      onClick={() => setDarkMode((p) => !p)}
-                      className="relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300"
-                      style={{
-                        background: darkMode ? "#534AB7" : "var(--bg-input)",
-                        border: "0.5px solid var(--border)",
-                      }}
-                    >
-                      <span
-                        className="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-all duration-300"
-                        style={{
-                          transform: darkMode ? "translateX(20px)" : "translateX(4px)",
-                        }}
-                      />
-                    </button>
-
-                    {/* Moon icon */}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      className="h-4 w-4"
-                      style={{ color: darkMode ? "#6366f1" : "var(--text-muted)" }}
-                    >
-                      <path
-                        fill="currentColor"
-                        d="M21 12.79A9 9 0 0111.21 3c0-.34.02-.67.05-1A9 9 0 1021 12.79z"
-                      />
-                    </svg>
-                  </div>
-                </div>
-
-                <button
-                  className="mb-3 w-full rounded-lg px-3 py-2 text-left text-sm transition"
-                  style={{ background: "var(--bg-surface)", color: "var(--text-secondary)", border: "0.5px solid var(--border)" }}
-                  onClick={createChat}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-hover)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "var(--bg-surface)")}
-                >
-                  <div className="flex items-center gap-2">
-                    <Plus size={16} />
-                    Đoạn chat mới
-                  </div>
-                </button>
-
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Tìm kiếm đoạn chat"
-                  className="mb-3 w-full rounded-lg px-3 py-2 text-sm outline-none"
-                  style={{
-                    background: "var(--bg-input)",
-                    border: "0.5px solid var(--border)",
-                    color: "var(--text-primary)",
-                  }}
-                />
-
-                {error && (
-                  <div
-                    className="mb-3 rounded-lg px-3 py-2 text-xs"
-                    style={{
-                      background: "var(--danger-bg)",
-                      border: "0.5px solid var(--danger-border)",
-                      color: "var(--danger-text)",
-                    }}
-                  >
-                    {error}
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-1 overflow-y-auto pr-1" style={{ height: "calc(100vh - 220px)", overflow: "visible" }}>
-                {/* Pinned */}
-                {pinnedChats.length > 0 && (
-                  <>
-                    <div className="flex items-center gap-1 mb-1 px-2">
-                      <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-                        <div className="flex items-center gap-1">
-                          <Pin size={14} />
-                          <span>Đã ghim</span>
-                        </div>
-                      </span>
-                    </div>
-                    {pinnedChats.map((chat) => <ChatItem key={chat._id} chat={chat} />)}
-                    {unpinnedChats.length > 0 && (
-                      <div className="my-2" style={{ borderTop: "0.5px solid var(--border)" }} />
-                    )}
-                  </>
-                )}
-
-                {/* Recent */}
-                {unpinnedChats.length > 0 && (
-                  <>
-                    <div className="flex items-center gap-1 mb-1 px-2">
-                      <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-                        <div className="flex items-center gap-1">
-                          <Clock size={14} />
-                          <span>Gần đây</span>
-                        </div>
-                      </span>
-                    </div>
-                    {unpinnedChats.map((chat) => <ChatItem key={chat._id} chat={chat} />)}
-                  </>
-                )}
-              </div>
-            </>
+            <div className="flex flex-col gap-3 h-full overflow-hidden">
+              <SidebarContent />
+            </div>
           )}
         </aside>
 
-        {/* ── Main chat area ── */}
-        <main
-          className="flex flex-1 flex-col"
-          style={{ background: "var(--bg-main)" }}
-        >
-          {/* Topbar */}
-          <div
-            className="px-6 py-4 text-base font-semibold"
-            style={{
-              borderBottom: "0.5px solid var(--border)",
-              color: "var(--text-primary)",
-              background: "var(--bg-main)",
-            }}
-          >
-            {activeChat?.title ?? "Hệ thống hỏi đáp pháp luật Việt Nam"}
-          </div>
+        {/* ══════════════════════════════════════════════
+            MAIN CONTENT
+        ══════════════════════════════════════════════ */}
+        <main className="flex flex-1 flex-col overflow-hidden" style={{ background: "var(--bg-main)", minWidth: 0 }}>
+          <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1 flex-col overflow-hidden min-w-0">
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-6 py-4">
-            {activeChat?.messages?.length ? (
-              <div className="space-y-4">
-                {activeChat.messages.map((m, idx) => (
-                  <MessageRow key={idx} m={m} />
-                ))}
+              {/* ── Topbar ── */}
+              <div
+                className="flex items-center justify-between px-3 py-3 md:px-6 md:py-4"
+                style={{ borderBottom: "0.5px solid var(--border)" }}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  {/* Hamburger — chỉ mobile */}
+                  <button
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg md:hidden"
+                    style={{ background: "var(--bg-surface)", color: "var(--text-secondary)", border: "0.5px solid var(--border)" }}
+                    onClick={() => setMobileSidebarOpen(true)}
+                  >
+                    <Menu size={16} />
+                  </button>
 
-                {/* Streaming bubble */}
-                {streamingChatId === activeChat._id && streamingText && (
-                  <div className="flex items-end gap-2">
-                    <Avatar type="bot" />
-                    <BotBubble content={streamingText} />
+                  <div className="truncate text-sm font-semibold md:text-base" style={{ color: "var(--text-primary)" }}>
+                    {activeChat?.title ?? "Hệ thống hỏi đáp pháp luật"}
+                    {selectedPassages && (
+                      <span className="ml-2 hidden text-xs font-normal italic md:inline" style={{ color: "var(--text-muted)" }}>
+                        — {selectedPassages.length} văn bản liên quan
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Dark mode toggle */}
+                <div className="flex shrink-0 items-center gap-1 md:gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                    className="hidden h-4 w-4 md:block"
+                    style={{ color: !darkMode ? "#f59e0b" : "var(--text-muted)" }}>
+                    <path fill="currentColor" d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.45-1.79l-1.79 1.79 1.41 1.42 1.8-1.8-1.42-1.41zM12 4V1h-1v3h1zm0 19v-3h-1v3h1zm8-11h3v-1h-3v1zM4 12H1v-1h3v1zm12.24 7.16l1.8 1.79 1.41-1.41-1.79-1.8-1.42 1.42zM4.22 19.54l1.79-1.8-1.41-1.41-1.8 1.79 1.42 1.42zM12 6a6 6 0 100 12 6 6 0 000-12z"/>
+                  </svg>
+                  <button
+                    onClick={() => setDarkMode((p) => !p)}
+                    className="relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300"
+                    style={{ background: darkMode ? "#534AB7" : "var(--bg-input)", border: "0.5px solid var(--border)" }}
+                  >
+                    <span
+                      className="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-all duration-300"
+                      style={{ transform: darkMode ? "translateX(20px)" : "translateX(4px)" }}
+                    />
+                  </button>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                    className="hidden h-4 w-4 md:block"
+                    style={{ color: darkMode ? "#6366f1" : "var(--text-muted)" }}>
+                    <path fill="currentColor" d="M21 12.79A9 9 0 0111.21 3c0-.34.02-.67.05-1A9 9 0 1021 12.79z"/>
+                  </svg>
+                </div>
+              </div>
+
+              {/* ── Messages ── */}
+              <div className="flex-1 overflow-y-auto px-3 py-3 md:px-6 md:py-4">
+                {activeChat?.messages?.length ? (
+                  <div className="space-y-3 md:space-y-4">
+                    {activeChat.messages.map((m, idx) => (
+                      <MessageRow
+                        key={idx} m={m} idx={idx} chatId={activeChat._id}
+                        isSelected={selectedMsgIdx === idx}
+                        onSelect={(passages) => {
+                          if (selectedMsgIdx === idx) { setSelectedPassages(null); setSelectedMsgIdx(null); }
+                          else { setSelectedPassages(passages); setSelectedMsgIdx(idx); }
+                        }}
+                        onSpeak={speak}
+                        isSpeaking={speakingIdx === idx}
+                        isLoadingTTS={loadingIdx === idx}
+                        onSaveTtsUrl={saveTtsUrl}
+                        isAnyTTSActive={speakingIdx !== null || loadingIdx !== null}
+                      />
+                    ))}
+                    {streamingChatId === activeChat._id && streamingText && (
+                      <div className="flex items-end gap-2">
+                        <Avatar type="bot" />
+                        <BotBubble content={streamingText} />
+                      </div>
+                    )}
+                    {pendingChatId === activeChat._id && pendingStatus && (
+                      <div className="flex items-end gap-2">
+                        <Avatar type="bot" />
+                        <div
+                          className="rounded-2xl rounded-bl-md px-3 py-2 text-xs md:px-4 md:py-3 md:text-sm animate-pulse"
+                          style={{ background: "var(--status-bg)", color: "var(--status-text)" }}
+                        >
+                          {pendingStatus}
+                        </div>
+                      </div>
+                    )}
+                    <div ref={bottomRef} />
+                  </div>
+                ) : (
+                  <div className="mt-16 text-center text-sm md:mt-24" style={{ color: "var(--text-muted)" }}>
+                    Bắt đầu một đoạn chat mới...
                   </div>
                 )}
+              </div>
 
-                {/* Pending status bubble */}
-                {pendingChatId === activeChat._id && pendingStatus && (
-                  <div className="flex items-end gap-2">
-                    <Avatar type="bot" />
-                    <div
-                      className="rounded-2xl rounded-bl-md px-4 py-3 text-sm"
+              {/* ── Input form ── */}
+              <form
+                onSubmit={onSend}
+                className="p-2 md:p-4"
+                style={{ borderTop: "0.5px solid var(--border)" }}
+              >
+                {/* Mode toggle */}
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setQueryMode((m) => m === "normal" ? "situation" : "normal")}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      padding: "4px 10px", borderRadius: 20, fontSize: 12, fontWeight: 500,
+                      border: queryMode === "situation" ? "1.5px solid #534AB7" : "0.5px solid var(--border)",
+                      background: queryMode === "situation" ? "#EEEDFE" : "transparent",
+                      color: queryMode === "situation" ? "#3C3489" : "var(--text-muted)",
+                      cursor: "pointer", transition: "all 0.15s",
+                    }}
+                  >
+                    <span style={{
+                      width: 7, height: 7, borderRadius: "50%", flexShrink: 0, transition: "background 0.15s",
+                      background: queryMode === "situation" ? "#534AB7" : "var(--border-strong)"
+                    }} />
+                    {queryMode === "situation" ? "Phân tích tình huống" : "Hỏi đáp thường"}
+                  </button>
+                  {queryMode === "situation" && (
+                    <span className="hidden text-xs sm:inline" style={{ color: "var(--text-muted)" }}>
+                      Mô tả đầy đủ: ai · làm gì · hoàn cảnh · hậu quả
+                    </span>
+                  )}
+                </div>
+
+                {/* Input row */}
+                <div className="flex items-center gap-1.5 md:gap-2">
+                  {/* Text input */}
+                  {!recording && !audioBlob && (
+                    <input
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(e as any); } }}
+                      placeholder={
+                        queryMode === "situation"
+                          ? "Mô tả tình huống..."
+                          : "Nhập câu hỏi..."
+                      }
+                      className="flex-1 rounded-xl px-3 py-2.5 text-sm outline-none transition md:px-4 md:py-3"
                       style={{
-                        background: "var(--status-bg)",
-                        border: "0.5px solid var(--status-border)",
-                        color: "var(--status-text)",
+                        background: "var(--bg-input)",
+                        border: queryMode === "situation" ? "0.5px solid #534AB7" : "0.5px solid var(--border)",
+                        color: "var(--text-primary)",
+                        minWidth: 0,
                       }}
+                    />
+                  )}
+
+                  {/* Recording bar */}
+                  {recording && (
+                    <>
+                      <div
+                        className="flex flex-1 items-center gap-2 rounded-xl px-2 py-2 md:gap-3 md:px-3"
+                        style={{ background: "var(--bg-input)", border: "1px solid #ef4444", minHeight: 44 }}
+                      >
+                        <span className="shrink-0 relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500" />
+                        </span>
+                        <LiveWaveform recording={recording} />
+                        <span className="shrink-0 text-xs font-mono tabular-nums" style={{ color: "#ef4444" }}>
+                          {String(Math.floor(duration / 60)).padStart(2, "0")}:{String(duration % 60).padStart(2, "0")}
+                        </span>
+                      </div>
+                      <button
+                        type="button" onClick={stopRecording} title="Dừng ghi âm"
+                        className="shrink-0 flex items-center justify-center rounded-full w-10 h-10 transition"
+                        style={{ background: "#ef4444", color: "#fff" }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                          <rect x="5" y="5" width="14" height="14" rx="2" />
+                        </svg>
+                      </button>
+                    </>
+                  )}
+
+                  {/* Voice preview */}
+                  {!recording && audioBlob && (
+                    <div
+                      className="flex flex-1 items-center gap-2 rounded-xl px-2 py-2 md:px-3"
+                      style={{ background: "var(--bg-input)", border: "0.5px solid #534AB7", minHeight: 44 }}
                     >
-                      <span className="animate-pulse">{pendingStatus}</span>
+                      <VoiceMessage audioBlob={audioBlob} onCancel={cancelRecording} />
                     </div>
+                  )}
+
+                  {/* Mic button */}
+                  {sttSupported && !recording && !audioBlob && (
+                    <button
+                      type="button" onClick={startRecording} title="Ghi âm"
+                      className="shrink-0 flex items-center justify-center rounded-xl transition"
+                      style={{ width: 42, height: 42, background: "var(--bg-surface)", border: "0.5px solid var(--border)", color: "var(--text-muted)" }}
+                    >
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="23"/>
+                        <line x1="8" y1="23" x2="16" y2="23"/>
+                      </svg>
+                    </button>
+                  )}
+
+                  {/* Send */}
+                  <button
+                    type={audioBlob ? "button" : "submit"}
+                    onClick={audioBlob ? sendVoice : undefined}
+                    disabled={loading || sending}
+                    className="shrink-0 rounded-xl text-sm font-medium transition disabled:opacity-60"
+                    style={{ height: 42, width: 42, background: "#534AB7", color: "var(--text-on-accent)", display: "flex", alignItems: "center", justifyContent: "center" }}
+                  >
+                    {sending ? (
+                      <span className="text-xs">{loadingDots}</span>
+                    ) : (
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* ── Passage panel — ẩn trên mobile, dùng modal thay thế ── */}
+            {selectedPassages && (
+              <>
+                {/* Desktop panel */}
+                <div className="hidden md:flex">
+                  <PassagePanel
+                    passages={selectedPassages}
+                    onClose={() => { setSelectedPassages(null); setSelectedMsgIdx(null); }}
+                  />
+                </div>
+
+                {/* Mobile: full-screen modal */}
+                <div
+                  className="fixed inset-0 z-50 flex flex-col md:hidden"
+                  style={{ background: "var(--bg-sidebar)" }}
+                >
+                  <div
+                    className="flex items-center justify-between px-4 py-3"
+                    style={{ borderBottom: "0.5px solid var(--border)" }}
+                  >
+                    <div className="flex items-center gap-2 text-base font-bold" style={{ color: "var(--text-primary)" }}>
+                      <BookOpen className="h-5 w-5" style={{ color: "#534AB7" }} />
+                      Căn cứ pháp lý
+                    </div>
+                    <button
+                      onClick={() => { setSelectedPassages(null); setSelectedMsgIdx(null); }}
+                      className="rounded-lg px-2 py-1 text-sm"
+                      style={{ background: "var(--bg-hover)", color: "var(--text-muted)" }}
+                    >
+                      <X size={18} />
+                    </button>
                   </div>
-                )}
-              </div>
-            ) : (
-              <div className="mt-24 text-center text-sm" style={{ color: "var(--text-muted)" }}>
-                Bắt đầu một đoạn chat mới...
-              </div>
+                  <div className="flex-1 overflow-y-auto">
+                    <PassagePanel
+                      passages={selectedPassages}
+                      onClose={() => { setSelectedPassages(null); setSelectedMsgIdx(null); }}
+                      mobileEmbedded
+                    />
+                  </div>
+                </div>
+              </>
             )}
           </div>
-
-          {/* Input */}
-          <form onSubmit={onSend} className="p-4" style={{ borderTop: "0.5px solid var(--border)" }}>
-
-          {/* ── Mode toggle ── */}
-          <div className="mx-auto mb-2 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setQueryMode((m) => m === "normal" ? "situation" : "normal")}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "4px 12px",
-                borderRadius: 20,
-                fontSize: 12,
-                fontWeight: 500,
-                border: queryMode === "situation"
-                  ? "1.5px solid #534AB7"
-                  : "0.5px solid var(--border)",
-                background: queryMode === "situation" ? "#EEEDFE" : "transparent",
-                color: queryMode === "situation" ? "#3C3489" : "var(--text-muted)",
-                cursor: "pointer",
-                transition: "all 0.15s",
-              }}
-            >
-              {/* dot indicator */}
-              <span style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                background: queryMode === "situation" ? "#534AB7" : "var(--border-strong)",
-                flexShrink: 0,
-                transition: "background 0.15s",
-              }} />
-              {queryMode === "situation" ? "Phân tích tình huống" : "Hỏi đáp thường"}
-            </button>
-
-            {queryMode === "situation" && (
-              <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
-                Mô tả đầy đủ: ai · làm gì · hoàn cảnh · hậu quả
-              </span>
-            )}
-          </div>
-
-          {/* ── Input row (giữ nguyên) ── */}
-          <div className="mx-auto flex gap-3">
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={
-                queryMode === "situation"
-                  ? "Mô tả tình huống: ai làm gì, với ai, hoàn cảnh, hậu quả..."
-                  : "Nhập câu hỏi..."
-              }
-              className="flex-1 rounded-xl px-4 py-3 text-sm outline-none transition"
-              style={{
-                background: "var(--bg-input)",
-                border: queryMode === "situation"
-                  ? "0.5px solid #534AB7"
-                  : "0.5px solid var(--border)",
-                color: "var(--text-primary)",
-              }}
-              onFocus={(e) => (e.currentTarget.style.border =
-                queryMode === "situation" ? "1px solid #534AB7" : "0.5px solid var(--accent)")}
-              onBlur={(e) => (e.currentTarget.style.border =
-                queryMode === "situation" ? "0.5px solid #534AB7" : "0.5px solid var(--border)")}
-            />
-            <button
-              type="submit"
-              disabled={loading || sending}
-              className="rounded-xl px-5 py-3 text-sm font-medium transition disabled:opacity-60"
-              style={{ background: "#534AB7", color: "var(--text-on-accent)", minWidth: 60 }}
-              onMouseEnter={(e) => { if (!loading && !sending) (e.currentTarget as HTMLElement).style.background = "var(--accent-hover)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--accent)"; }}
-            >
-              {sending ? `${loadingDots}` : "Gửi"}
-            </button>
-          </div>
-          </form>
         </main>
+
+        {fullViewPassage && (
+          <PassageFullModal passage={fullViewPassage} onClose={() => setFullViewPassage(null)} />
+        )}
       </div>
 
-      {/* ── Rename modal ── */}
+      {/* Rename modal */}
       {renameChatId && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: "rgba(0,0,0,0.5)" }}
           onClick={(e) => { if (e.target === e.currentTarget) setRenameChatId(null); }}
         >
           <div
-            className="w-[400px] rounded-xl p-4 shadow-xl"
+            className="w-full max-w-sm rounded-xl p-4 shadow-xl md:max-w-md"
             style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border-strong)" }}
           >
             <div className="mb-3 text-base font-semibold" style={{ color: "var(--text-primary)" }}>
@@ -627,11 +770,7 @@ export default function Home() {
               onChange={(e) => setRenameValue(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleRename(); } }}
               className="w-full rounded-lg px-3 py-2 text-sm outline-none"
-              style={{
-                background: "var(--bg-input)",
-                border: "0.5px solid var(--border)",
-                color: "var(--text-primary)",
-              }}
+              style={{ background: "var(--bg-input)", border: "0.5px solid var(--border)", color: "var(--text-primary)" }}
               placeholder="Nhập tên mới..."
               autoFocus
             />
@@ -640,91 +779,24 @@ export default function Home() {
                 onClick={() => { setRenameChatId(null); setRenameValue(""); }}
                 className="rounded-lg px-3 py-2 text-sm transition"
                 style={{ background: "var(--bg-hover)", color: "var(--text-secondary)" }}
-              >
-                Hủy
-              </button>
+              >Hủy</button>
               <button
                 onClick={handleRename}
                 className="rounded-lg px-3 py-2 text-sm font-medium transition"
                 style={{ background: "var(--accent)", color: "var(--text-on-accent)" }}
-              >
-                Lưu
-              </button>
+              >Lưu</button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Animation keyframes */}
+      <style>{`
+        @keyframes slideInLeft {
+          from { transform: translateX(-100%); opacity: 0; }
+          to   { transform: translateX(0);    opacity: 1; }
+        }
+      `}</style>
     </div>
   );
-}
-
-/* ─────────────────────────────────────────────
-   Sub-components
-───────────────────────────────────────────── */
-function Avatar({ type }: { type: "bot" | "user" }) {
-  const src = type === "bot" ? BOT_AVATAR_SRC : USER_AVATAR_SRC;
-  return (
-    <Image
-      src={src}
-      alt={type}
-      width={32}
-      height={32}
-      className="h-8 w-8 shrink-0 rounded-full object-cover"
-    />
-  );
-}
-
-function BotBubble({ content }: { content: string }) {
-  return (
-    <div
-      className="w-fit max-w-[min(82%,760px)] rounded-2xl rounded-bl-md px-4 py-3 text-sm leading-7 shadow-sm"
-      style={{
-        background: "var(--bg-msg-bot)",
-        border: "0.5px solid var(--border)",
-        color: "var(--text-primary)",
-      }}
-    >
-      <div className="[&_a]:underline [&_code]:rounded [&_code]:px-1 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:p-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_p]:my-2 [&_blockquote]:border-l-4 [&_blockquote]:pl-3"
-        style={{ ["--tw-prose-a" as string]: "var(--accent)" }}
-      >
-        <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
-          {content}
-        </ReactMarkdown>
-      </div>
-    </div>
-  );
-}
-
-function MessageRow({ m }: { m: Message }) {
-  const isUser = m.role === "user";
-  return (
-    <div className={`flex items-end gap-2 ${isUser ? "justify-end" : "justify-start"}`}>
-      {!isUser && <Avatar type="bot" />}
-      {isUser ? (
-        <div
-          className="w-fit max-w-[min(82%,760px)] rounded-2xl rounded-br-md px-4 py-3 text-sm leading-7"
-          style={{ background: "#534AB7" , color: "#ffffff" }}
-        >
-          <div className="whitespace-pre-wrap break-words">{m.content}</div>
-        </div>
-      ) : (
-        <BotBubble content={m.content} />
-      )}
-      {isUser && <Avatar type="user" />}
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────
-   Helpers
-───────────────────────────────────────────── */
-function autoTitle(messages: Message[], currentTitle: string) {
-  if (!currentTitle.startsWith("Cuộc trò chuyện")) return currentTitle;
-  const firstUser = messages.find((m) => m.role === "user")?.content?.trim();
-  if (!firstUser) return currentTitle;
-  return firstUser.length > 40 ? `${firstUser.slice(0, 40)}...` : firstUser;
-}
-
-function toSvgDataUri(svg: string) {
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }

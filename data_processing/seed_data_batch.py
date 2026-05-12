@@ -178,7 +178,7 @@ def insert_batch(records, global_offset, error_rows):
                 "tendemuc": rec.get("tendemuc") or None,
                 "tenchuong": rec.get("tenchuong") or None,
                 "tendieu": rec.get("tendieu") or None,
-                "noidung": body[:500],  # vẫn lưu thô để debug
+                "noidung": body
             }
             metadatas.append(meta)
 

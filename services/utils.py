@@ -7,6 +7,8 @@ from openai import OpenAI
 import asyncio
 import json
 
+from typing import Iterator
+
 load_dotenv()
 
 ES_ENDPOINT = os.getenv("ES_ENDPOINT")
@@ -605,3 +607,101 @@ Nếu không đủ thông tin cho vi phạm nào, ghi rõ "Cần thêm thông ti
     except Exception as e:
         return f"Lỗi tạo câu trả lời: {e}"
 
+def generate_response_stream(
+    noidung_texts: list[str],
+    current_query: str,
+    sentiment: str,
+    chat_history: list[dict],
+) -> Iterator[str]:
+    """Streaming version — yield từng chunk text."""
+    context  = "\n\n---\n\n".join(noidung_texts[:20])
+    history_formatted = "\n".join(
+        f"{m['role'].capitalize()}: {m['content']}" for m in chat_history
+    )
+    system_prompt = (
+        "Bạn là trợ lý pháp luật Việt Nam. "
+        "Trả lời chính xác, ngắn gọn, đúng luật, trích dẫn điều luật nếu cần.\n\n"
+        "Nguồn [Pháp Điển]: ưu tiên cao nhất.\n"
+        "[Web]: ghi rõ nguồn.\n"
+        "[Web - tham khảo]: thêm cảnh báo chưa xác minh.\n"
+        "Nếu [Pháp Điển] và [Web] mâu thuẫn, ưu tiên [Pháp Điển]."
+    )
+    resolved  = resolve_sentiment(sentiment)
+    tone      = SENTIMENT_TONE_MAP.get(resolved, SENTIMENT_TONE_MAP["neutral_info"])
+
+    user_prompt = (
+        f"Truy vấn: {current_query}\n\n"
+        f"Lịch sử:\n{history_formatted}\n\n"
+        f"Văn bản pháp luật:\n{context}\n\n"
+        f"Giọng điệu: {tone}\n\n"
+        "Trả lời trực tiếp, in đậm thông tin quan trọng, "
+        "chốt căn cứ pháp lý cuối câu trả lời. "
+        "Nếu không biết, nói rõ chưa đủ dữ liệu."
+    )
+
+    stream = client.chat.completions.create(
+        model=OPENAI_MODEL,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user",   "content": user_prompt},
+        ],
+        temperature=0.2,
+        max_tokens=1000,
+        stream=True,
+    )
+    for chunk in stream:
+        delta = chunk.choices[0].delta.content
+        if delta:
+            yield delta
+
+
+def generate_structured_response_stream(
+    noidung_texts: list[str],
+    prompt: str,
+    situation_analysis: dict,
+    sentiment: str,
+    chat_history: list[dict],
+) -> Iterator[str]:
+    """Streaming version cho tình huống phức tạp."""
+    context = "\n\n---\n\n".join(noidung_texts[:20])
+    history_formatted = "\n".join(
+        f"{m['role'].capitalize()}: {m['content']}" for m in chat_history
+    )
+    vi_pham_list = situation_analysis.get("cac_vi_pham", [])
+    vi_pham_text = "\n".join(
+        f"- Vi phạm {v['id']}: {v.get('chu_the','')} — {v.get('hanh_vi','')} [{v.get('nhom_luat','')}]"
+        for v in vi_pham_list
+    )
+    resolved = resolve_sentiment(sentiment)
+    tone     = SENTIMENT_TONE_MAP.get(resolved, SENTIMENT_TONE_MAP["neutral_info"])
+
+    system_prompt = (
+        "Bạn là trợ lý pháp luật Việt Nam chuyên xử lý tình huống phức tạp.\n"
+        "[Pháp Điển]: ưu tiên, trích điều khoản cụ thể.\n"
+        "[Web]: ghi rõ nguồn. [Web - tham khảo]: thêm cảnh báo."
+    )
+    user_prompt = (
+        f"Tình huống: {prompt}\n\n"
+        f"Tóm tắt pháp lý: {situation_analysis.get('tom_tat','')}\n\n"
+        f"Các vi phạm:\n{vi_pham_text}\n\n"
+        f"Văn bản pháp luật:\n{context}\n\n"
+        f"Lịch sử: {history_formatted}\n\n"
+        f"Giọng điệu: {tone}\n\n"
+        "Trả lời theo cấu trúc: mỗi vi phạm có căn cứ pháp lý + chế tài + hướng xử lý. "
+        "Kết luận tổng hợp + liệt kê căn cứ pháp lý cuối."
+    )
+
+    stream = client.chat.completions.create(
+        model=OPENAI_MODEL,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user",   "content": user_prompt},
+        ],
+        temperature=0.2,
+        max_tokens=1500,
+        stream=True,
+    )
+    for chunk in stream:
+        delta = chunk.choices[0].delta.content
+        if delta:
+            yield delta

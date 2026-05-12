@@ -1,4 +1,7 @@
 import os
+from dotenv import load_dotenv  # thêm dòng này
+
+load_dotenv()  # load trước khi getenv
 from urllib.parse import urlparse
 from tavily import TavilyClient
 
