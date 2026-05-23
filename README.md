@@ -1,16 +1,16 @@
 # Chatbot RAG — Hỏi đáp pháp luật (Pháp Điển)
 
-Hệ thống hỏi–đáp pháp luật tiếng Việt dựa trên **Retrieval-Augmented Generation (RAG)** và **agentic tool-calling**: truy xuất vector (Milvus), mở rộng đồ thị (Neo4j), tùy chọn web (Tavily), rồi tổng hợp câu trả lời bằng LLM.
+Hệ thống hỏi–đáp pháp luật tiếng Việt dựa trên **Retrieval-Augmented Generation (RAG)** và **agentic tool-calling**: lớp pre-retrieve (quick / spam / sentiment), truy xuất vector (Milvus), mở rộng đồ thị (Neo4j), tùy chọn web (Tavily), rồi tổng hợp câu trả lời bằng LLM.
 
 ## Kiến trúc tổng quan
 
 ```
 ┌─────────────────┐     SSE / REST      ┌──────────────────┐
 │  Next.js UI     │ ◄──────────────────►│  rag_api.py      │
-│  (frontend/)    │                     │  FastAPI :8001   │
-└────────┬────────┘                     └────────┬─────────┘
-         │ MongoDB (lịch sử chat)                │
-         │                                       ├── agents (pre-retrieve)
+│  (frontend/)    │   /api/stream       │  FastAPI :8001   │
+│  MongoDB chats  │   /api/chats        └────────┬─────────┘
+└────────┬────────┘                              │
+         │                                       ├── agents/pipeline (pre-retrieve)
          │                                       ├── services/agentic_rag.py
          │                                       └── retrieve/GraphRAGRetriever
          │                                              ├── Milvus (vector)
@@ -28,7 +28,7 @@ Hệ thống hỏi–đáp pháp luật tiếng Việt dựa trên **Retrieval-A
 | **Milvus** | Embedding + tìm kiếm semantic (`phapdien_simple_tendieu`) |
 | **Neo4j** | Đồ thị điều luật, quan hệ `LIEN_QUAN` / `THAM_CHIEU`, nội dung full cho agent |
 | **rag_api** | API RAG, stream SSE, TTS/STT (Firebase tùy chọn) |
-| **frontend** | Giao diện chat, markdown, passages, TTS, STT |
+| **frontend** | Chat UI (dark mode), markdown, passages, TTS/STT, lịch sử MongoDB |
 | **app.py** | Giao diện Streamlit (luồng cũ, tùy chọn) |
 
 > Docker dùng cho **MySQL** (`law-crawler/`), **Milvus + Neo4j** (`test_raptor/`). Code Python và Next.js chạy trên host (venv + `npm`).
@@ -40,8 +40,8 @@ Hệ thống hỏi–đáp pháp luật tiếng Việt dựa trên **Retrieval-A
 - Python ≥ 3.10
 - Node.js ≥ 20 (frontend Next.js 16)
 - Docker & Docker Compose
-- `OPENAI_API_KEY` (embedding, chat, rerank LLM tùy chọn)
-- Tuỳ chọn: `TAVILY_API_KEY`, MongoDB (lịch sử chat), Firebase (TTS lưu file)
+- `OPENAI_API_KEY` (embedding `text-embedding-3-small`, chat, rerank LLM tùy chọn)
+- Tuỳ chọn: `TAVILY_API_KEY`, MongoDB (lịch sử chat), Firebase (TTS lưu file công khai)
 
 ---
 
@@ -52,15 +52,17 @@ cd project2-chatbot-rag
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+pip install pymysql           # seed Milvus từ MySQL
+pip install firebase-admin    # tùy chọn — TTS upload Firebase
 ```
 
-Tạo file `.env` ở thư mục gốc (tham khảo các biến bên dưới).
+Tạo file `.env` ở thư mục gốc (tham khảo các biến ở mục 3).
 
 ---
 
-## 2. Chuẩn bị dữ liệu MySQL
+## 2. Chuẩn bị dữ liệu
 
-### 2.1 Crawl Pháp Điển
+### 2.1 Crawl Pháp Điển → MySQL
 
 Tải dữ liệu từ [Pháp Điển](https://phapdien.moj.gov.vn/), giải nén vào `law-crawler/phap-dien/` (`chude.json`, `demuc.json`, `treeNode.json`, thư mục `demuc/`).
 
@@ -88,10 +90,12 @@ cd ..
 source .venv/bin/activate
 cd data_processing
 python seed_data_batch.py              # ingest mới (drop collection cũ)
-# python seed_data_batch.py --resume   # tiếp tục nếu bị gián đoạn
+python seed_data_batch.py --resume     # tiếp tục nếu bị gián đoạn
 ```
 
-Collection: `phapdien_simple_tendieu` — embed theo **tên điều** (`tendieu`), metadata JSON (có `mapc`, `noidung` đã cắt nếu quá dài giới hạn Milvus).
+- Collection: `phapdien_simple_tendieu`
+- Embed theo **tên điều** (`tendieu`), metadata JSON (có `mapc`, `noidung` tự cắt nếu vượt ~64KB Milvus)
+- Lỗi embed ghi vào `embed_errors.csv`
 
 ### 2.3 Build đồ thị Neo4j
 
@@ -116,22 +120,57 @@ uvicorn rag_api:app --host 0.0.0.0 --port 8001 --reload
 |----------|--------|
 | `GET /health` | Health check |
 | `POST /rag/chat` | Chat đồng bộ (JSON) |
-| `POST /rag/stream` | Chat SSE (`meta`, `status`, `token`, `done`) |
-| `POST /tts` | Text-to-speech |
-| `POST /stt` | Speech-to-text |
+| `POST /rag/stream` | Chat SSE (xem bảng sự kiện bên dưới) |
+| `POST /tts` | Text-to-speech (MP3 stream hoặc URL Firebase) |
+| `POST /stt` | Speech-to-text (upload audio) |
 
-### Luồng agentic (`services/agentic_rag.py`)
+**Body chung** (`RagChatRequest`):
 
-1. **Pre-retrieve** (`agents/`): quick / spam / sentiment → có thể trả lời ngay hoặc `proceed`.
-2. **Rewrite** (`rewrite_query_v2`) + **intent**.
-3. **Agent** gọi tool:
-   - `vector_search` — Milvus → `mapc` → Neo4j (full nội dung) → **rerank** (`GraphRAGRetriever._rerank`, overlap từ khóa).
-   - `graph_traverse` — mở rộng Neo4j theo `mapcs` → rerank.
-   - `web_search` — Tavily.
-   - `get_full_article` — full một điều theo `mapc`.
-4. LLM tổng hợp câu trả lời; passages đưa vào panel UI (full text từ Neo4j, không phụ thuộc snippet Milvus).
+```json
+{
+  "prompt": "Điều kiện ly hôn?",
+  "history": [{"role": "user", "content": "..."}],
+  "query_mode": "normal"
+}
+```
 
-**Rerank:** mặc định overlap + thứ tự Milvus; bật LLM rerank top-12: `RAG_AGENT_LLM_RERANK=1`.
+`query_mode`: `"normal"` (rewrite + intent) hoặc `"situation"` (mô tả tình huống — agent dùng prompt gốc, system prompt chế độ tình huống).
+
+### Luồng xử lý
+
+**Bước 1 — Pre-retrieve** (`agents/pipeline.py` → `AgentsManager`):
+
+| Action | Ý nghĩa |
+|--------|---------|
+| `quick` | Câu hỏi FAQ — trả lời ngay, không RAG |
+| `spam` | Từ chối spam |
+| `escalate` | Sentiment tiêu cực — đề xuất chuyển cán bộ |
+| `proceed` | Tiếp tục agentic RAG |
+
+**Bước 2 — Khi `proceed`:** `rewrite_query_v2` + `detect_intent`. Nếu intent ngoài phạm vi → trả lời từ chối.
+
+**Bước 3 — Agentic loop** (`services/agentic_rag.py`, tối đa 6 vòng):
+
+| Tool | Mô tả |
+|------|--------|
+| `vector_search` | Milvus → `mapc` → hydrate Neo4j (full nội dung) → **rerank** |
+| `graph_traverse` | Mở rộng Neo4j theo `LIEN_QUAN` / `THAM_CHIEU` → rerank |
+| `web_search` | Tavily (khi có `TAVILY_API_KEY`) |
+| `get_full_article` | Full một điều theo `mapc` |
+
+Passages trả về UI lấy **full text từ Neo4j** (bucket agent), không phụ thuộc snippet Milvus. MySQL là fallback khi Neo4j thiếu node.
+
+**Rerank:** mặc định overlap từ khóa + thứ tự Milvus; bật LLM rerank: `RAG_AGENT_LLM_RERANK=1`.
+
+### Sự kiện SSE (`POST /rag/stream`)
+
+| `type` | Nội dung |
+|--------|----------|
+| `status` | Tiến trình agent (`text`, `iteration`, `max`) |
+| `meta` | `action`, `normalized_query`, `passages`, `sources`, `iterations`, `agentic` |
+| `token` | Đoạn text câu trả lời |
+| `done` | Kết thúc stream |
+| `error` | Lỗi (`message`) |
 
 ### Biến môi trường (backend)
 
@@ -182,15 +221,23 @@ Mở `http://localhost:3000`.
 ### `.env.local` (frontend)
 
 ```bash
+# Chỉ gốc host:port — route API tự nối /rag/stream, /rag/chat, /tts, /stt
 RAG_BACKEND_URL=http://127.0.0.1:8001
+
 MONGODB_URI=                    # tùy chọn; không có thì lưu chat trong RAM
 MONGODB_DB=chatbot_rag
 MONGODB_COLLECTION=conversations
 ```
 
-- Chat gọi `POST /api/stream` → proxy tới `RAG_BACKEND_URL/rag/stream`.
-- Sau khi nhận **đủ** câu trả lời, UI **gõ dần từng ký tự** (markdown qua `react-markdown`).
-- Passages: panel bên phải, full `noidung` từ bucket agent.
+### Tính năng UI
+
+- **Hỏi đáp thường** / **Phân tích tình huống** (`query_mode`)
+- Chat qua `POST /api/stream` → proxy SSE tới backend
+- Sau khi nhận **đủ** câu trả lời: hiển thị **typewriter** (markdown qua `react-markdown`)
+- Panel **passages** bên phải (full `noidung` từ meta SSE)
+- **TTS** / **STT** (proxy `/api/tts`, `/api/stt`); ghi âm + waveform
+- Lịch sử hội thoại: `GET/POST /api/chats`, `PATCH/DELETE /api/chats/[id]` (MongoDB hoặc RAM)
+- Dark mode, sidebar pin/rename/delete
 
 ---
 
@@ -202,7 +249,7 @@ pip install streamlit
 streamlit run app.py
 ```
 
-`http://localhost:8501` — luồng RAG/graph tương tự nhưng giao diện Streamlit, không dùng agentic API mới.
+`http://localhost:8501` — luồng graph/RAG cũ hơn (có `analyze_complex_situation` cho chế độ tình huống), không dùng agentic API mới.
 
 ---
 
@@ -213,19 +260,28 @@ project2-chatbot-rag/
 ├── rag_api.py                 # FastAPI entry
 ├── app.py                     # Streamlit UI
 ├── services/
-│   ├── agentic_rag.py         # Tool-calling + rerank passages
+│   ├── agentic_rag.py         # Tool-calling, hydrate Neo4j, rerank, SSE helpers
 │   ├── utils.py               # rewrite, intent, generate
 │   └── history.py             # Mongo / SQLite / JSON chat
 ├── retrieve/
 │   ├── build_graph.py         # MySQL → Neo4j + GraphRAGRetriever
-│   ├── two_stage_search.py    # Milvus module (import lúc start API)
+│   ├── two_stage_search.py    # Milvus client + collection
 │   └── tavily_fallback.py
-├── agents/                    # Pre-retrieve agents
+├── agents/
+│   ├── pipeline.py            # run_pre_retrieve
+│   ├── agents_manager.py      # quick, spam, sentiment
+│   └── *_agent.py
 ├── data_processing/
 │   └── seed_data_batch.py     # MySQL → Milvus
 ├── law-crawler/               # Crawl + MySQL docker
 ├── test_raptor/               # Milvus + Neo4j docker-compose
-└── frontend/                  # Next.js 16
+├── evaluation/                # benchmark retrieval
+└── frontend/                  # Next.js 16 + Tailwind 4
+    └── src/
+        ├── app/api/stream/    # SSE proxy
+        ├── app/api/chats/     # MongoDB chat CRUD
+        ├── components/chat/   # MessageRow, PassagePanel, VoiceMessage
+        └── store/chat-store.ts
 ```
 
 ---
@@ -239,8 +295,9 @@ project2-chatbot-rag/
 | Neo4j crash / transaction log | Reset volume: stop neo4j, xóa `test_raptor/volumes/neo4j/databases` + `transactions`, `up -d`, chạy lại `build_graph.py` |
 | `etcd` exited | `docker compose up -d` lại stack Milvus; có thể `docker rm` container etcd kẹt rồi tạo mới |
 | API import lỗi `retrieve` | Chạy từ root repo; `build_graph.py` đã thêm `sys.path` khi chạy trực tiếp |
-| Seed lỗi JSON > 65536 byte | Script tự cắt `noidung` trong metadata; dùng `--resume` nếu ingest gián đoạn |
-| Frontend không stream chữ | Kiểm tra `RAG_BACKEND_URL` và `uvicorn` port 8001 |
+| Seed lỗi JSON > 65536 byte | Script tự cắt `noidung`; dùng `--resume` nếu ingest gián đoạn |
+| Frontend không có câu trả lời | `RAG_BACKEND_URL` phải là `http://127.0.0.1:8001` (không thêm `/rag/chat`); kiểm tra `uvicorn` port 8001 |
+| Stream không hiện status | Kiểm tra proxy `/api/stream` và CORS/network local |
 
 ---
 
@@ -248,10 +305,11 @@ project2-chatbot-rag/
 
 ```bash
 cd evaluation
+pip install -r requirements.txt
 python run_evaluation.py
 ```
 
-Các chiến lược retrieval cũ nằm trong `retrieve/retrieval_strategies.py` (dùng cho benchmark, không phải luồng agentic mặc định).
+Các chiến lược retrieval benchmark nằm trong `retrieve/retrieval_strategies.py` (không phải luồng agentic mặc định).
 
 ---
 
