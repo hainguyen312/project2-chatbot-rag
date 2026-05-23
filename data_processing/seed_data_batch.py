@@ -4,9 +4,13 @@ from pymilvus import (
     Collection, utility
 )
 from openai import OpenAI
+import argparse
 import json
 import pandas as pd  # vẫn dùng cho error_rows -> csv
 import pymysql
+
+# Milvus giới hạn độ dài chuỗi JSON cho mỗi field metadata
+MAX_METADATA_JSON_BYTES = 64_000
 
 # ----------------- OpenAI EMBEDDING -----------------
 client = OpenAI()
@@ -27,9 +31,6 @@ def embed_text(text: str):
     return resp.data[0].embedding
 
 # ----------------- MILVUS -----------------
-connections.connect("default", host="localhost", port="19530")
-print("Connected to Milvus")
-
 collection_name = "phapdien_simple_tendieu"
 embedding_dim = 1536
 
@@ -52,22 +53,57 @@ fields = [
 ]
 schema = CollectionSchema(fields, description="Phapdien: vector + metadata JSON")
 
-# Nếu collection đã tồn tại thì drop để ingest mới
-if utility.has_collection(collection_name):
-    utility.drop_collection(collection_name)
+def _noidung_text(rec: dict) -> str:
+    nd = rec.get("noidung") or []
+    if isinstance(nd, list):
+        body = "\n".join(nd)
+    else:
+        body = str(nd)
+    return body.strip()
 
-collection = Collection(collection_name, schema)
-collection.create_index(
-    "embedding",
-    {
-        "index_type": "HNSW",
-        "metric_type": "COSINE",
-        "params": {"M": 16, "efConstruction": 200}
-    },
-)
-collection.load()
 
-print("Created collection:", collection_name)
+def build_metadata(rec: dict) -> dict:
+    """Metadata JSON phải < 65536 byte; cắt noidung nếu cần."""
+    meta = {
+        "mapc": rec.get("mapc") or None,
+        "tenchude": rec.get("tenchude") or None,
+        "tendemuc": rec.get("tendemuc") or None,
+        "tenchuong": rec.get("tenchuong") or None,
+        "tendieu": rec.get("tendieu") or None,
+        "noidung": _noidung_text(rec),
+    }
+    while meta["noidung"]:
+        size = len(json.dumps(meta, ensure_ascii=False).encode("utf-8"))
+        if size <= MAX_METADATA_JSON_BYTES:
+            break
+        meta["noidung"] = meta["noidung"][: max(0, len(meta["noidung"]) - 4000)]
+    return meta
+
+
+def setup_collection(*, resume: bool) -> tuple[Collection, int]:
+    """Tạo collection mới hoặc tiếp tục ingest (offset = số bản ghi đã có)."""
+    if resume and utility.has_collection(collection_name):
+        col = Collection(collection_name)
+        col.load()
+        offset = col.num_entities
+        print(f"Resume collection '{collection_name}', offset={offset}")
+        return col, offset
+
+    if utility.has_collection(collection_name):
+        utility.drop_collection(collection_name)
+
+    col = Collection(collection_name, schema)
+    col.create_index(
+        "embedding",
+        {
+            "index_type": "HNSW",
+            "metric_type": "COSINE",
+            "params": {"M": 16, "efConstruction": 200},
+        },
+    )
+    col.load()
+    print("Created collection:", collection_name)
+    return col, 0
 
 
 # ----------------- DATA: đọc từ JSON -----------------
@@ -162,25 +198,7 @@ def insert_batch(records, global_offset, error_rows):
         # id tăng đều theo offset
         ids = list(range(global_offset + 1, global_offset + len(records) + 1))
 
-        metadatas = []
-        for rec in records:
-            nd = rec.get("noidung") or []
-            if isinstance(nd, list):
-                body = "\n".join(nd)
-            else:
-                body = str(nd)
-
-            body = body.strip()
-
-            meta = {
-                "mapc":     rec.get("mapc") or None,
-                "tenchude": rec.get("tenchude") or None,
-                "tendemuc": rec.get("tendemuc") or None,
-                "tenchuong": rec.get("tenchuong") or None,
-                "tendieu": rec.get("tendieu") or None,
-                "noidung": body
-            }
-            metadatas.append(meta)
+        metadatas = [build_metadata(rec) for rec in records]
 
         collection.insert([
             ids,
@@ -214,22 +232,7 @@ def insert_batch(records, global_offset, error_rows):
                 print(f"❌ Lỗi embed id={this_id}, tendieu={rec.get('tendieu')}, len={len(text)}: {e}")
                 continue
             
-            nd = rec.get("noidung") or []
-            if isinstance(nd, list):
-                body = "\n".join(nd)
-            else:
-                body = str(nd)
-
-            body = body.strip()
-
-            meta = {
-                "mapc":     rec.get("mapc") or None,
-                "tenchude": rec.get("tenchude") or None,
-                "tendemuc": rec.get("tendemuc") or None,
-                "tenchuong": rec.get("tenchuong") or None,
-                "tendieu": rec.get("tendieu") or None,
-                "noidung": body[:500],
-            }
+            meta = build_metadata(rec)
 
             ids.append(this_id)
             metadatas.append(meta)
@@ -243,6 +246,18 @@ def insert_batch(records, global_offset, error_rows):
 
 # ----------------- MAIN -----------------
 def main():
+    global collection
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Tiếp tục ingest vào collection hiện có (không drop).",
+    )
+    args = parser.parse_args()
+
+    collection, offset = setup_collection(resume=args.resume)
+
     data = load_data_from_mysql()
     total = len(data)
     batch_size = 200
@@ -250,14 +265,17 @@ def main():
     num_batches = (total + batch_size - 1) // batch_size
     print("Total:", total)
     print("Total batches:", num_batches)
+    if offset:
+        print(f"Bỏ qua {offset} bản ghi đã ingest.")
 
     error_rows = []
 
-    offset = 0
     while offset < total:
         batch_records = select_batch(data, batch_size, offset)
         insert_batch(batch_records, offset, error_rows)
         offset += batch_size
+
+    collection.flush()
 
     if error_rows:
         errors_df = pd.DataFrame(error_rows)
@@ -268,5 +286,9 @@ def main():
 
     print("🎉 DONE - Ingest xong tất cả bản ghi.")
 
+collection = None  # gán trong main()
+
 if __name__ == "__main__":
+    connections.connect("default", host="localhost", port="19530")
+    print("Connected to Milvus")
     main()

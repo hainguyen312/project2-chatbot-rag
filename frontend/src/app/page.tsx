@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { chatActions, Chat, Message, useChatStore, Passage } from "@/store/chat-store";
 import {
@@ -30,10 +31,6 @@ if (typeof CanvasRenderingContext2D !== "undefined" &&
   };
 }
 
-function toSvgDataUri(svg: string) {
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-}
-
 function autoTitle(messages: Message[], currentTitle: string) {
   if (!currentTitle.startsWith("Cuộc trò chuyện")) return currentTitle;
   const firstUser = messages.find((m) => m.role === "user")?.content?.trim();
@@ -41,29 +38,60 @@ function autoTitle(messages: Message[], currentTitle: string) {
   return firstUser.length > 40 ? `${firstUser.slice(0, 40)}...` : firstUser;
 }
 
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Sau khi đã có đủ chuỗi trả lời: hiển thị dần (mặc định từng ký tự) để Markdown render theo prefix.
+ */
+async function revealAnswerProgressively(
+  text: string,
+  setShown: (s: string) => void,
+  opts?: { charStep?: number; delayMs?: number }
+): Promise<void> {
+  const t = text || "";
+  const charStep = Math.max(1, opts?.charStep ?? 1);
+  const delayMs = Math.max(0, opts?.delayMs ?? 11);
+  let n = 0;
+  while (n < t.length) {
+    n = Math.min(t.length, n + charStep);
+    setShown(t.slice(0, n));
+    if (n < t.length) await sleep(delayMs);
+  }
+}
+
 export default function Home() {
   const { chats, activeId, loading, error } = useChatStore((s) => s);
   const [search, setSearch]               = useState("");
   const [input, setInput]                 = useState("");
   const [sidebarOpen, setSidebarOpen]     = useState(true);
-  // Mobile: sidebar dạng drawer overlay
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [openMenuChatId, setOpenMenuChatId] = useState<string | null>(null);
+  // Stores the pixel position of the "..." button so we can portal the menu there
+  const [menuAnchor, setMenuAnchor] = useState<{ top: number; left: number } | null>(null);
   const [sending, setSending]             = useState(false);
   const [renameChatId, setRenameChatId]   = useState<string | null>(null);
   const [renameValue, setRenameValue]     = useState("");
   const [loadingDots, setLoadingDots]     = useState(".");
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [pendingChatId, setPendingChatId] = useState<string | null>(null);
-  const [streamingText, setStreamingText] = useState("");
+  const [agentStep, setAgentStep] = useState<{ cur: number; max: number } | null>(null);
   const [streamingChatId, setStreamingChatId] = useState<string | null>(null);
+  /** Đang gõ dần câu trả lời đã nhận đủ (Markdown qua BotBubble). */
+  const [revealedStreamText, setRevealedStreamText] = useState("");
+  /** true trong lúc reveal (kể cả chưa có ký tự nào — hiện bubble chờ). */
+  const [postStreamReveal, setPostStreamReveal] = useState(false);
   const [darkMode, setDarkMode]           = useState(true);
   const [queryMode, setQueryMode]         = useState<"normal" | "situation">("normal");
   const [selectedPassages, setSelectedPassages] = useState<Passage[] | null>(null);
   const [selectedMsgIdx, setSelectedMsgIdx]     = useState<number | null>(null);
   const [fullViewPassage, setFullViewPassage]   = useState<Passage | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  // ref for the portal menu div — used to detect outside clicks
   const menuRef   = useRef<HTMLDivElement | null>(null);
+  // tracks whether the current open-gesture already "consumed" a pointerdown
+  const openingRef = useRef(false);
 
   const activeChat = useMemo(
     () => chats.find((c) => c._id === activeId) ?? null,
@@ -84,17 +112,25 @@ export default function Home() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [activeChat?.messages, streamingText]);
+  }, [activeChat?.messages, revealedStreamText]);
 
+  // ── Outside-click logic: close the portal menu on any tap/click outside it ──
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node))
-        setOpenMenuChatId(null);
+    if (!openMenuChatId) return;
+
+    function handleOutside(e: PointerEvent) {
+      // If this is the same gesture that opened the menu, ignore it
+      if (openingRef.current) {
+        openingRef.current = false;
+        return;
+      }
+      if (menuRef.current && menuRef.current.contains(e.target as Node)) return;
+      setOpenMenuChatId(null);
+      setMenuAnchor(null);
     }
-    if (openMenuChatId) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
+
+    document.addEventListener("pointerdown", handleOutside);
+    return () => document.removeEventListener("pointerdown", handleOutside);
   }, [openMenuChatId]);
 
   useEffect(() => {
@@ -105,10 +141,7 @@ export default function Home() {
     return () => clearInterval(t);
   }, [sending]);
 
-  // Đóng mobile sidebar khi đổi chat
-  useEffect(() => {
-    setMobileSidebarOpen(false);
-  }, [activeId]);
+  useEffect(() => { setMobileSidebarOpen(false); }, [activeId]);
 
   async function createChat() { await chatActions.createChat(); }
   async function patchChat(id: string, patch: Partial<Chat>) { await chatActions.patchChat(id, patch); }
@@ -141,26 +174,14 @@ export default function Home() {
     setInput("");
     setSending(true);
     setPendingChatId(activeChat._id);
-    setPendingStatus("⏳ Đang phân tích yêu cầu...");
-
-    const statusSteps = [
-      "⏳ Đang phân tích yêu cầu...",
-      "🔍 Đang tìm kiếm thông tin pháp lý...",
-      "🧠 Đang tổng hợp và lập luận...",
-      "✍️ Đang soạn câu trả lời...",
-    ];
-    let sIdx = 0;
-    const statusTimer = setInterval(() => {
-      sIdx = Math.min(sIdx + 1, statusSteps.length - 1);
-      setPendingStatus(statusSteps[sIdx]);
-    }, 1200);
+    setPendingStatus(null);
 
     await patchChat(activeChat._id, {
       messages: nextMessages,
       title: autoTitle(nextMessages, activeChat.title),
     });
 
-    let fullText     = "";
+    let fullText = "";
     let metaPassages: Passage[] = [];
 
     try {
@@ -170,12 +191,6 @@ export default function Home() {
         body: JSON.stringify({ prompt: promptSent, history: nextMessages, query_mode: queryMode }),
       });
       if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
-
-      clearInterval(statusTimer);
-      setPendingStatus(null);
-      setPendingChatId(null);
-      setStreamingChatId(activeChat._id);
-      setStreamingText("");
 
       const reader  = res.body.getReader();
       const decoder = new TextDecoder();
@@ -193,38 +208,73 @@ export default function Home() {
           if (!raw) continue;
           try {
             const evt = JSON.parse(raw) as {
-              type: "meta" | "token" | "done" | "error";
+              type: "meta" | "token" | "done" | "error" | "status";
               text?: string; passages?: Passage[]; message?: string;
+              iteration?: number; max?: number;
             };
-            if (evt.type === "meta")        metaPassages = evt.passages ?? [];
-            else if (evt.type === "token")  { fullText += evt.text ?? ""; setStreamingText(fullText); }
-            else if (evt.type === "error")  { fullText += `\n\n⚠️ ${evt.message}`; setStreamingText(fullText); }
-            else if (evt.type === "done")   break;
+            if (evt.type === "status") {
+              setPendingStatus(evt.text ?? "");
+              if (evt.iteration != null && evt.max != null)
+                setAgentStep({ cur: evt.iteration, max: evt.max });
+            } else if (evt.type === "meta") {
+              setPendingStatus(null); setPendingChatId(null); setAgentStep(null);
+              setStreamingChatId(activeChat._id);
+              metaPassages = evt.passages ?? [];
+            } else if (evt.type === "token") {
+              fullText += evt.text ?? "";
+            } else if (evt.type === "error") {
+              setPendingStatus(null); setPendingChatId(null); setAgentStep(null);
+              setStreamingChatId(activeChat._id);
+              fullText += `\n\n⚠️ ${evt.message}`;
+              break;
+            } else if (evt.type === "done") {
+              break;
+            }
           } catch { /* ignore */ }
         }
       }
 
+      const answer =
+        fullText.trim() ||
+        "Mình chưa thể tạo câu trả lời. Vui lòng thử lại.";
+
+      setStreamingChatId(activeChat._id);
+      setRevealedStreamText("");
+      setPostStreamReveal(true);
+      await revealAnswerProgressively(answer, setRevealedStreamText, {
+        charStep: 2,
+        delayMs: 8,
+      });
+      setPostStreamReveal(false);
+      setRevealedStreamText("");
+      setStreamingChatId(null);
+
       await patchChat(activeChat._id, {
         messages: [...nextMessages, {
           role: "assistant",
-          content: fullText || "Mình chưa thể tạo câu trả lời. Vui lòng thử lại.",
+          content: answer,
           passages: metaPassages,
           tts_url: null,
         }],
       });
-
     } catch (err) {
       console.error("[onSend]", err);
+      const errMsg = "Mình gặp lỗi kết nối. Vui lòng thử lại sau.";
+      setStreamingChatId(activeChat._id);
+      setRevealedStreamText("");
+      setPostStreamReveal(true);
+      await revealAnswerProgressively(errMsg, setRevealedStreamText, { charStep: 1, delayMs: 11 });
+      setPostStreamReveal(false);
+      setRevealedStreamText("");
+      setStreamingChatId(null);
       await patchChat(activeChat._id, {
-        messages: [...nextMessages, { role: "assistant", content: "Mình gặp lỗi kết nối. Vui lòng thử lại sau.", passages: [], tts_url: null }],
+        messages: [...nextMessages, { role: "assistant", content: errMsg, passages: [], tts_url: null }],
       });
     } finally {
-      clearInterval(statusTimer);
-      setSending(false);
-      setPendingStatus(null);
-      setPendingChatId(null);
-      setStreamingText("");
-      setStreamingChatId(null);
+      setSending(false); setPendingStatus(null); setPendingChatId(null);
+      setAgentStep(null); setStreamingChatId(null);
+      setRevealedStreamText("");
+      setPostStreamReveal(false);
     }
   }
 
@@ -240,8 +290,7 @@ export default function Home() {
     } catch (err) {
       console.error("[STT]", err);
     } finally {
-      setSending(false);
-      clearBlob();
+      setSending(false); clearBlob();
     }
   };
 
@@ -249,8 +298,141 @@ export default function Home() {
   const pinnedChats   = filtered.filter((c) => c.pinned);
   const unpinnedChats = filtered.filter((c) => !c.pinned);
 
-  // ── Sidebar content (dùng chung desktop & mobile drawer) ──────────────────
-  const SidebarContent = () => (
+  // ── Portal-based ChatMenu ────────────────────────────────────────────────────
+  // Renders into document.body so it is never clipped by overflow:hidden parents.
+  function ChatMenuPortal({ chat }: { chat: Chat }) {
+    if (openMenuChatId !== chat._id || !menuAnchor) return null;
+
+    const menuContent = (
+      <div
+        ref={menuRef}
+        style={{
+          position: "fixed",
+          top: menuAnchor.top,
+          left: menuAnchor.left,
+          width: 200,
+          borderRadius: 12,
+          padding: 4,
+          background: "var(--bg-surface)",
+          border: "0.5px solid var(--border-strong)",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.35)",
+          zIndex: 9000,
+        }}
+      >
+        {/* Đổi tên */}
+        <button
+          className="w-full rounded-lg px-3 py-2 text-left text-sm"
+          style={{ color: "var(--text-primary)" }}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            setRenameChatId(chat._id);
+            setRenameValue(chat.title ?? "");
+            setOpenMenuChatId(null);
+            setMenuAnchor(null);
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-hover)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          <div className="flex items-center gap-2"><Pencil size={16} />Đổi tên</div>
+        </button>
+
+        {/* Ghim / Bỏ ghim */}
+        <button
+          className="w-full rounded-lg px-3 py-2 text-left text-sm"
+          style={{ color: "var(--text-primary)" }}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={async (e) => {
+            e.stopPropagation();
+            await patchChat(chat._id, { pinned: !chat.pinned });
+            setOpenMenuChatId(null);
+            setMenuAnchor(null);
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-hover)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          <div className="flex items-center gap-2"><Pin size={16} />Ghim / Bỏ ghim</div>
+        </button>
+
+        {/* Xóa */}
+        <button
+          className="w-full rounded-lg px-3 py-2 text-left text-sm"
+          style={{ color: "var(--danger-text)", background: "transparent" }}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={async (e) => {
+            e.stopPropagation();
+            await removeChat(chat._id);
+            setOpenMenuChatId(null);
+            setMenuAnchor(null);
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--danger-bg)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          <div className="flex items-center gap-2"><Trash2 size={16} />Xóa</div>
+        </button>
+      </div>
+    );
+
+    if (typeof document === "undefined") return null;
+    return createPortal(menuContent, document.body);
+  }
+
+  function ChatItem({ chat }: { chat: Chat }) {
+    return (
+      <div
+        className="group relative flex items-center gap-1 rounded-lg"
+        style={{ background: activeId === chat._id ? "var(--bg-surface)" : "transparent" }}
+        onMouseEnter={(e) => { if (activeId !== chat._id) (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; }}
+        onMouseLeave={(e) => { if (activeId !== chat._id) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+      >
+        <button
+          onClick={() => chatActions.setActiveChat(chat._id)}
+          className="flex-1 truncate rounded-lg px-3 py-2 text-left text-sm"
+          style={{ color: activeId === chat._id ? "var(--text-primary)" : "var(--text-secondary)" }}
+        >
+          {chat.title ?? "Cuộc trò chuyện mới"}
+        </button>
+
+        {/* "..." toggle button — calculates anchor position for the portal */}
+        <button
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            // Mark this gesture as the one that opened the menu
+            // so the document-level outside-click handler ignores it
+            openingRef.current = true;
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (openMenuChatId === chat._id) {
+              // Already open → close
+              setOpenMenuChatId(null);
+              setMenuAnchor(null);
+              openingRef.current = false;
+              return;
+            }
+            // Compute position: place menu below-left of this button
+            const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+            const MENU_WIDTH = 200;
+            // Try right-aligned to button; clamp so it doesn't go off screen
+            let left = rect.right - MENU_WIDTH;
+            if (left < 8) left = 8;
+            if (left + MENU_WIDTH > window.innerWidth - 8) left = window.innerWidth - MENU_WIDTH - 8;
+            setMenuAnchor({ top: rect.bottom + 4, left });
+            setOpenMenuChatId(chat._id);
+          }}
+          className="mr-1 w-8 rounded-md py-1 text-center opacity-100 transition md:opacity-0 md:group-hover:opacity-100"
+          style={{ color: "var(--text-muted)" }}
+        >
+          <MoreHorizontal size={18} />
+        </button>
+
+        {/* Portal menu — rendered in document.body, never clipped */}
+        <ChatMenuPortal chat={chat} />
+      </div>
+    );
+  }
+
+  const sidebarContent = (
     <>
       <div>
         <div className="mb-3 flex items-center justify-between">
@@ -258,7 +440,6 @@ export default function Home() {
             <Image src="/logo.png" alt="VNLaw Logo" width={52} height={52} className="rounded" />
             <span className="text-base">Chatbot VNLaw</span>
           </div>
-          {/* Nút đóng chỉ hiện trên mobile */}
           <button
             className="flex h-8 w-8 items-center justify-center rounded-lg md:hidden"
             style={{ background: "var(--bg-hover)", color: "var(--text-muted)" }}
@@ -320,76 +501,18 @@ export default function Home() {
     </>
   );
 
-  const ChatMenu = ({ chat }: { chat: Chat }) =>
-    openMenuChatId === chat._id ? (
-      <div ref={menuRef}
-        className="z-30 w-52 rounded-xl p-1 shadow-2xl"
-        style={{ position: "absolute", right: "-200px", top: "2.5rem",
-          background: "var(--bg-surface)", border: "0.5px solid var(--border-strong)" }}>
-        {[
-          { label: "Đổi tên", icon: <Pencil size={16} />, action: () => { setRenameChatId(chat._id); setRenameValue(chat.title ?? ""); setOpenMenuChatId(null); } },
-          { label: "Ghim / Bỏ ghim", icon: <Pin size={16} />, action: async () => { await patchChat(chat._id, { pinned: !chat.pinned }); setOpenMenuChatId(null); } },
-        ].map(({ label, icon, action }) => (
-          <button key={label} onClick={action}
-            className="w-full rounded-lg px-3 py-2 text-left text-sm"
-            style={{ color: "var(--text-primary)" }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-hover)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
-            <div className="flex items-center gap-2">{icon}{label}</div>
-          </button>
-        ))}
-        <button
-          onClick={async () => { await removeChat(chat._id); setOpenMenuChatId(null); }}
-          className="w-full rounded-lg px-3 py-2 text-left text-sm"
-          style={{ color: "var(--danger-text)", background: "transparent" }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--danger-bg)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
-          <div className="flex items-center gap-2"><Trash2 size={16} />Xóa</div>
-        </button>
-      </div>
-    ) : null;
-
-  const ChatItem = ({ chat }: { chat: Chat }) => (
-    <div
-      className="group relative flex items-center gap-1 rounded-lg"
-      style={{ background: activeId === chat._id ? "var(--bg-surface)" : "transparent", overflow: "visible" }}
-      onMouseEnter={(e) => { if (activeId !== chat._id) (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; }}
-      onMouseLeave={(e) => { if (activeId !== chat._id) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
-    >
-      <button
-        onClick={() => chatActions.setActiveChat(chat._id)}
-        className="flex-1 truncate rounded-lg px-3 py-2 text-left text-sm"
-        style={{ color: activeId === chat._id ? "var(--text-primary)" : "var(--text-secondary)" }}
-      >
-        {chat.title ?? "Cuộc trò chuyện mới"}
-      </button>
-      <button
-        onClick={() => setOpenMenuChatId((prev) => (prev === chat._id ? null : chat._id))}
-        className="mr-1 w-8 rounded-md py-1 text-center opacity-0 transition group-hover:opacity-100"
-        style={{ color: "var(--text-muted)" }}
-      >
-        <MoreHorizontal size={18} />
-      </button>
-      <ChatMenu chat={chat} />
-    </div>
-  );
-
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-base)", color: "var(--text-primary)" }}>
-      <div className="mx-auto flex h-screen overflow-hidden">
+      <div className="mx-auto flex h-screen">
 
-        {/* ══════════════════════════════════════════════
-            MOBILE SIDEBAR OVERLAY (drawer)
-        ══════════════════════════════════════════════ */}
+        {/* MOBILE SIDEBAR OVERLAY */}
         {mobileSidebarOpen && (
           <>
-            {/* Backdrop */}
             <div
               className="fixed inset-0 z-40 md:hidden"
               style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(2px)" }}
               onClick={() => setMobileSidebarOpen(false)}
             />
-            {/* Drawer */}
             <aside
               className="fixed left-0 top-0 z-50 flex h-full flex-col gap-3 md:hidden"
               style={{
@@ -401,27 +524,24 @@ export default function Home() {
                 animation: "slideInLeft 0.22s ease",
               }}
             >
-              <SidebarContent />
+              {sidebarContent}
             </aside>
           </>
         )}
 
-        {/* ══════════════════════════════════════════════
-            DESKTOP SIDEBAR
-        ══════════════════════════════════════════════ */}
+        {/* DESKTOP SIDEBAR */}
         <aside
           className="relative hidden md:flex flex-col gap-3 transition-all duration-200"
           style={{
             width: sidebarOpen ? 300 : 56,
             padding: sidebarOpen ? 12 : 8,
             height: "100vh",
-            overflow: "visible",
+            overflow: "hidden",
             background: "var(--bg-sidebar)",
             borderRight: "0.5px solid var(--border)",
             flexShrink: 0,
           }}
         >
-          {/* Toggle collapse */}
           <button
             onClick={() => setSidebarOpen((p) => !p)}
             className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-lg text-sm transition"
@@ -431,9 +551,8 @@ export default function Home() {
             {sidebarOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
           </button>
 
-          {/* Collapsed state */}
           {!sidebarOpen && (
-            <div className="flex flex-col items-center gap-3 mt-2">
+            <div className="flex h-full flex-col items-center gap-3 mt-2">
               <div className="h-9 w-9" />
               {[
                 { icon: <Plus size={18} />, title: "Đoạn chat mới", action: createChat },
@@ -445,8 +564,8 @@ export default function Home() {
                   {icon}
                 </button>
               ))}
-              <div className="mt-2 flex flex-col gap-2">
-                {chats.slice(0, 5).map((chat) => (
+              <div className="mt-2 flex w-full flex-1 flex-col items-center gap-2 overflow-y-auto pb-2" style={{ scrollbarWidth: "none" as any }}>
+                {filtered.map((chat) => (
                   <button key={chat._id} onClick={() => chatActions.setActiveChat(chat._id)}
                     className="h-9 w-9 rounded-lg text-xs flex items-center justify-center"
                     style={{ background: activeId === chat._id ? "var(--bg-msgbtn)" : "var(--bg-surface)" }}
@@ -458,28 +577,18 @@ export default function Home() {
             </div>
           )}
 
-          {/* Expanded state */}
-          {sidebarOpen && (
-            <div className="flex flex-col gap-3 h-full overflow-hidden">
-              <SidebarContent />
-            </div>
-          )}
+          {sidebarOpen && <div className="flex flex-col gap-3 h-full">{sidebarContent}</div>}
         </aside>
 
-        {/* ══════════════════════════════════════════════
-            MAIN CONTENT
-        ══════════════════════════════════════════════ */}
+        {/* MAIN CONTENT */}
         <main className="flex flex-1 flex-col overflow-hidden" style={{ background: "var(--bg-main)", minWidth: 0 }}>
           <div className="flex flex-1 overflow-hidden">
             <div className="flex flex-1 flex-col overflow-hidden min-w-0">
 
-              {/* ── Topbar ── */}
-              <div
-                className="flex items-center justify-between px-3 py-3 md:px-6 md:py-4"
-                style={{ borderBottom: "0.5px solid var(--border)" }}
-              >
+              {/* Topbar */}
+              <div className="flex items-center justify-between px-3 py-3 md:px-6 md:py-4"
+                style={{ borderBottom: "0.5px solid var(--border)" }}>
                 <div className="flex items-center gap-2 min-w-0">
-                  {/* Hamburger — chỉ mobile */}
                   <button
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg md:hidden"
                     style={{ background: "var(--bg-surface)", color: "var(--text-secondary)", border: "0.5px solid var(--border)" }}
@@ -487,7 +596,6 @@ export default function Home() {
                   >
                     <Menu size={16} />
                   </button>
-
                   <div className="truncate text-sm font-semibold md:text-base" style={{ color: "var(--text-primary)" }}>
                     {activeChat?.title ?? "Hệ thống hỏi đáp pháp luật"}
                     {selectedPassages && (
@@ -497,11 +605,8 @@ export default function Home() {
                     )}
                   </div>
                 </div>
-
-                {/* Dark mode toggle */}
                 <div className="flex shrink-0 items-center gap-1 md:gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                    className="hidden h-4 w-4 md:block"
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="hidden h-4 w-4 md:block"
                     style={{ color: !darkMode ? "#f59e0b" : "var(--text-muted)" }}>
                     <path fill="currentColor" d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.45-1.79l-1.79 1.79 1.41 1.42 1.8-1.8-1.42-1.41zM12 4V1h-1v3h1zm0 19v-3h-1v3h1zm8-11h3v-1h-3v1zM4 12H1v-1h3v1zm12.24 7.16l1.8 1.79 1.41-1.41-1.79-1.8-1.42 1.42zM4.22 19.54l1.79-1.8-1.41-1.41-1.8 1.79 1.42 1.42zM12 6a6 6 0 100 12 6 6 0 000-12z"/>
                   </svg>
@@ -510,20 +615,17 @@ export default function Home() {
                     className="relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300"
                     style={{ background: darkMode ? "#534AB7" : "var(--bg-input)", border: "0.5px solid var(--border)" }}
                   >
-                    <span
-                      className="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-all duration-300"
-                      style={{ transform: darkMode ? "translateX(20px)" : "translateX(4px)" }}
-                    />
+                    <span className="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-all duration-300"
+                      style={{ transform: darkMode ? "translateX(20px)" : "translateX(4px)" }} />
                   </button>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                    className="hidden h-4 w-4 md:block"
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="hidden h-4 w-4 md:block"
                     style={{ color: darkMode ? "#6366f1" : "var(--text-muted)" }}>
                     <path fill="currentColor" d="M21 12.79A9 9 0 0111.21 3c0-.34.02-.67.05-1A9 9 0 1021 12.79z"/>
                   </svg>
                 </div>
               </div>
 
-              {/* ── Messages ── */}
+              {/* Messages */}
               <div className="flex-1 overflow-y-auto px-3 py-3 md:px-6 md:py-4">
                 {activeChat?.messages?.length ? (
                   <div className="space-y-3 md:space-y-4">
@@ -542,20 +644,23 @@ export default function Home() {
                         isAnyTTSActive={speakingIdx !== null || loadingIdx !== null}
                       />
                     ))}
-                    {streamingChatId === activeChat._id && streamingText && (
+                    {streamingChatId === activeChat._id && (postStreamReveal || revealedStreamText.length > 0) && (
                       <div className="flex items-end gap-2">
                         <Avatar type="bot" />
-                        <BotBubble content={streamingText} />
+                        <BotBubble content={revealedStreamText || "\u00a0"} />
                       </div>
                     )}
                     {pendingChatId === activeChat._id && pendingStatus && (
                       <div className="flex items-end gap-2">
                         <Avatar type="bot" />
-                        <div
-                          className="rounded-2xl rounded-bl-md px-3 py-2 text-xs md:px-4 md:py-3 md:text-sm animate-pulse"
-                          style={{ background: "var(--status-bg)", color: "var(--status-text)" }}
-                        >
-                          {pendingStatus}
+                        <div className="rounded-2xl rounded-bl-md px-3 py-2 text-xs md:px-4 md:py-3 md:text-sm animate-pulse"
+                          style={{ background: "var(--status-bg)", color: "var(--status-text)" }}>
+                          <div>{pendingStatus}</div>
+                          {agentStep != null && (
+                            <div className="mt-1 text-[10px] opacity-85 md:text-xs">
+                              Vòng suy luận {agentStep.cur}/{agentStep.max}
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
@@ -568,13 +673,8 @@ export default function Home() {
                 )}
               </div>
 
-              {/* ── Input form ── */}
-              <form
-                onSubmit={onSend}
-                className="p-2 md:p-4"
-                style={{ borderTop: "0.5px solid var(--border)" }}
-              >
-                {/* Mode toggle */}
+              {/* Input form */}
+              <form onSubmit={onSend} className="p-2 md:p-4" style={{ borderTop: "0.5px solid var(--border)" }}>
                 <div className="mb-2 flex flex-wrap items-center gap-2">
                   <button
                     type="button"
@@ -601,36 +701,25 @@ export default function Home() {
                   )}
                 </div>
 
-                {/* Input row */}
                 <div className="flex items-center gap-1.5 md:gap-2">
-                  {/* Text input */}
                   {!recording && !audioBlob && (
                     <input
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(e as any); } }}
-                      placeholder={
-                        queryMode === "situation"
-                          ? "Mô tả tình huống..."
-                          : "Nhập câu hỏi..."
-                      }
+                      placeholder={queryMode === "situation" ? "Mô tả tình huống..." : "Nhập câu hỏi..."}
                       className="flex-1 rounded-xl px-3 py-2.5 text-sm outline-none transition md:px-4 md:py-3"
                       style={{
                         background: "var(--bg-input)",
                         border: queryMode === "situation" ? "0.5px solid #534AB7" : "0.5px solid var(--border)",
-                        color: "var(--text-primary)",
-                        minWidth: 0,
+                        color: "var(--text-primary)", minWidth: 0,
                       }}
                     />
                   )}
-
-                  {/* Recording bar */}
                   {recording && (
                     <>
-                      <div
-                        className="flex flex-1 items-center gap-2 rounded-xl px-2 py-2 md:gap-3 md:px-3"
-                        style={{ background: "var(--bg-input)", border: "1px solid #ef4444", minHeight: 44 }}
-                      >
+                      <div className="flex flex-1 items-center gap-2 rounded-xl px-2 py-2 md:gap-3 md:px-3"
+                        style={{ background: "var(--bg-input)", border: "1px solid #ef4444", minHeight: 44 }}>
                         <span className="shrink-0 relative flex h-3 w-3">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
                           <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500" />
@@ -640,35 +729,25 @@ export default function Home() {
                           {String(Math.floor(duration / 60)).padStart(2, "0")}:{String(duration % 60).padStart(2, "0")}
                         </span>
                       </div>
-                      <button
-                        type="button" onClick={stopRecording} title="Dừng ghi âm"
+                      <button type="button" onClick={stopRecording} title="Dừng ghi âm"
                         className="shrink-0 flex items-center justify-center rounded-full w-10 h-10 transition"
-                        style={{ background: "#ef4444", color: "#fff" }}
-                      >
+                        style={{ background: "#ef4444", color: "#fff" }}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                           <rect x="5" y="5" width="14" height="14" rx="2" />
                         </svg>
                       </button>
                     </>
                   )}
-
-                  {/* Voice preview */}
                   {!recording && audioBlob && (
-                    <div
-                      className="flex flex-1 items-center gap-2 rounded-xl px-2 py-2 md:px-3"
-                      style={{ background: "var(--bg-input)", border: "0.5px solid #534AB7", minHeight: 44 }}
-                    >
+                    <div className="flex flex-1 items-center gap-2 rounded-xl px-2 py-2 md:px-3"
+                      style={{ background: "var(--bg-input)", border: "0.5px solid #534AB7", minHeight: 44 }}>
                       <VoiceMessage audioBlob={audioBlob} onCancel={cancelRecording} />
                     </div>
                   )}
-
-                  {/* Mic button */}
                   {sttSupported && !recording && !audioBlob && (
-                    <button
-                      type="button" onClick={startRecording} title="Ghi âm"
+                    <button type="button" onClick={startRecording} title="Ghi âm"
                       className="shrink-0 flex items-center justify-center rounded-xl transition"
-                      style={{ width: 42, height: 42, background: "var(--bg-surface)", border: "0.5px solid var(--border)", color: "var(--text-muted)" }}
-                    >
+                      style={{ width: 42, height: 42, background: "var(--bg-surface)", border: "0.5px solid var(--border)", color: "var(--text-muted)" }}>
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
@@ -678,8 +757,6 @@ export default function Home() {
                       </svg>
                     </button>
                   )}
-
-                  {/* Send */}
                   <button
                     type={audioBlob ? "button" : "submit"}
                     onClick={audioBlob ? sendVoice : undefined}
@@ -701,44 +778,25 @@ export default function Home() {
               </form>
             </div>
 
-            {/* ── Passage panel — ẩn trên mobile, dùng modal thay thế ── */}
+            {/* Passage panel */}
             {selectedPassages && (
               <>
-                {/* Desktop panel */}
                 <div className="hidden md:flex">
-                  <PassagePanel
-                    passages={selectedPassages}
-                    onClose={() => { setSelectedPassages(null); setSelectedMsgIdx(null); }}
-                  />
+                  <PassagePanel passages={selectedPassages} onClose={() => { setSelectedPassages(null); setSelectedMsgIdx(null); }} />
                 </div>
-
-                {/* Mobile: full-screen modal */}
-                <div
-                  className="fixed inset-0 z-50 flex flex-col md:hidden"
-                  style={{ background: "var(--bg-sidebar)" }}
-                >
-                  <div
-                    className="flex items-center justify-between px-4 py-3"
-                    style={{ borderBottom: "0.5px solid var(--border)" }}
-                  >
+                <div className="fixed inset-0 z-50 flex flex-col md:hidden" style={{ background: "var(--bg-sidebar)" }}>
+                  <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "0.5px solid var(--border)" }}>
                     <div className="flex items-center gap-2 text-base font-bold" style={{ color: "var(--text-primary)" }}>
-                      <BookOpen className="h-5 w-5" style={{ color: "#534AB7" }} />
-                      Căn cứ pháp lý
+                      <BookOpen className="h-5 w-5" style={{ color: "#534AB7" }} />Căn cứ pháp lý
                     </div>
-                    <button
-                      onClick={() => { setSelectedPassages(null); setSelectedMsgIdx(null); }}
+                    <button onClick={() => { setSelectedPassages(null); setSelectedMsgIdx(null); }}
                       className="rounded-lg px-2 py-1 text-sm"
-                      style={{ background: "var(--bg-hover)", color: "var(--text-muted)" }}
-                    >
+                      style={{ background: "var(--bg-hover)", color: "var(--text-muted)" }}>
                       <X size={18} />
                     </button>
                   </div>
                   <div className="flex-1 overflow-y-auto">
-                    <PassagePanel
-                      passages={selectedPassages}
-                      onClose={() => { setSelectedPassages(null); setSelectedMsgIdx(null); }}
-                      mobileEmbedded
-                    />
+                    <PassagePanel passages={selectedPassages} onClose={() => { setSelectedPassages(null); setSelectedMsgIdx(null); }} mobileEmbedded />
                   </div>
                 </div>
               </>
@@ -746,22 +804,18 @@ export default function Home() {
           </div>
         </main>
 
-        {fullViewPassage && (
-          <PassageFullModal passage={fullViewPassage} onClose={() => setFullViewPassage(null)} />
-        )}
+        {fullViewPassage && <PassageFullModal passage={fullViewPassage} onClose={() => setFullViewPassage(null)} />}
       </div>
 
       {/* Rename modal */}
       {renameChatId && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: "rgba(0,0,0,0.5)" }}
-          onClick={(e) => { if (e.target === e.currentTarget) setRenameChatId(null); }}
+          className="fixed inset-0 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.5)", zIndex: 300 }}
+          onClick={(e) => { if (e.target === e.currentTarget) { setRenameChatId(null); } }}
         >
-          <div
-            className="w-full max-w-sm rounded-xl p-4 shadow-xl md:max-w-md"
-            style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border-strong)" }}
-          >
+          <div className="w-full max-w-sm rounded-xl p-4 shadow-xl md:max-w-md"
+            style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border-strong)" }}>
             <div className="mb-3 text-base font-semibold" style={{ color: "var(--text-primary)" }}>
               Đổi tên cuộc trò chuyện
             </div>
@@ -790,7 +844,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Animation keyframes */}
       <style>{`
         @keyframes slideInLeft {
           from { transform: translateX(-100%); opacity: 0; }

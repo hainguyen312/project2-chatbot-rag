@@ -1,4 +1,3 @@
-import asyncio
 import os
 import re
 import tempfile
@@ -6,7 +5,6 @@ import uuid as _uuid
 from typing import Any, Dict, List, Literal, Optional
 
 import firebase_admin
-import nest_asyncio
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
@@ -34,12 +32,18 @@ if not firebase_admin._apps:
 from agents.pipeline import Action, run_pre_retrieve
 from retrieve.build_graph import GraphRAGRetriever, get_neo4j
 from retrieve.two_stage_search import client, collection
+from services.agentic_rag import (
+    RAG_AGENT_TOOLS,
+    agent_chat_model,
+    agent_system_prompt,
+    apply_agent_tool_result,
+    assistant_message_to_dict,
+    execute_agent_tool,
+    run_agentic_rag_sync,
+)
 from services.utils import (
-    analyze_complex_situation,
+    client as oai_client,
     detect_intent,
-    generate_response,
-    generate_structured_response,
-    retrieve_parallel,
     rewrite_query_v2,
 )
 
@@ -51,6 +55,9 @@ two_stage_retriever = GraphRAGRetriever(
     milvus_collection=collection,
     openai_client=client,
 )
+
+# Agentic RAG — OpenAI function tools (bản đầy đủ trong services/agentic_rag.py)
+TOOLS = RAG_AGENT_TOOLS
 
 
 # ── Pydantic models ───────────────────────────────────────────────────────────
@@ -74,17 +81,6 @@ class RagChatResponse(BaseModel):
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
-def _run_retrieve_parallel(all_queries: List[str]) -> List[Dict[str, Any]]:
-    nest_asyncio.apply()
-    loop = asyncio.new_event_loop()
-    try:
-        return loop.run_until_complete(
-            retrieve_parallel(two_stage_retriever, all_queries, top_k_each=8)
-        )
-    finally:
-        loop.close()
-
-
 def _web_sources_markdown(web_sources: List[Dict[str, str]]) -> str:
     if not web_sources:
         return ""
@@ -110,8 +106,23 @@ def _build_passages(results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             "score":     round(float(hit.get("score", 0)), 4),
             "source":    hit.get("source", "phapdien"),
             "url":       hit.get("url", ""),
+            "trust_level": hit.get("trust_level", "medium"),
+            "source_label": hit.get("source_label", "[Web]"),
         })
     return passages
+
+
+def _web_sources_from_passages(passages: List[Dict[str, Any]]) -> List[Dict[str, str]]:
+    web_sources: List[Dict[str, str]] = []
+    for p in passages:
+        if p.get("source") in ("web", "web_realtime") and p.get("url"):
+            web_sources.append({
+                "title": str(p.get("ten", "")),
+                "url":   str(p.get("url", "")),
+                "level": str(p.get("trust_level", "medium")),
+                "label": str(p.get("source_label", "[Web]")),
+            })
+    return web_sources
 
 
 def _dedup_results(raw_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -127,6 +138,36 @@ def _dedup_results(raw_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         else:
             pd_r.append(hit)
     return (web_r + pd_r)[:20]
+
+
+def _chunk_stream_text(text: str, max_chars: int = 32):
+    """
+    Tách văn bản thành nhiều SSE nhỏ (theo từ / dòng) để client hiển thị mượt,
+    thay vì gửi một lần ~400 ký tự.
+    """
+    rest = text or ""
+    if not rest:
+        return
+    while rest:
+        if rest[0] == "\n":
+            n = 1
+            while n < len(rest) and rest[n] == "\n":
+                n += 1
+            yield rest[:n]
+            rest = rest[n:]
+            continue
+        m = re.match(r"(\S+)(\s*)", rest)
+        if m:
+            piece = m.group(0)
+            if len(piece) > max_chars:
+                yield piece[:max_chars]
+                rest = rest[max_chars:]
+            else:
+                yield piece
+                rest = rest[len(piece) :]
+        else:
+            yield rest[0]
+            rest = rest[1:]
 
 
 def _strip_markdown(text: str) -> str:
@@ -195,57 +236,30 @@ def rag_chat(req: RagChatRequest) -> RagChatResponse:
         )
 
     is_situation = req.query_mode == "situation"
-    if is_situation:
-        situation  = analyze_complex_situation(prompt, latest_history)
-        violations = situation.get("cac_vi_pham", []) if isinstance(situation, dict) else []
-        all_queries: List[str] = [q for v in violations for q in v.get("queries", [])]
-        if not all_queries:
-            all_queries = [normalized_query]
-    else:
-        situation, violations, all_queries = {}, [], [normalized_query]
+    user_for_agent = prompt if is_situation else normalized_query
 
-    raw_results = _run_retrieve_parallel(all_queries)
-    results     = _dedup_results(raw_results)
-
-    if not results:
+    try:
+        agent_out = run_agentic_rag_sync(
+            openai_client=oai_client,
+            retriever=two_stage_retriever,
+            neo4j_driver=neo4j_driver,
+            user_prompt=user_for_agent,
+            history=latest_history,
+            situation_mode=is_situation,
+            rerank_query=normalized_query,
+        )
+    except Exception as e:
         return RagChatResponse(
             action="proceed",
             normalized_query=normalized_query,
-            answer=(
-                "Mình rất tiếc vì chưa đủ thông tin để trả lời câu hỏi này. "
-                "Bạn hãy cung cấp rõ tình huống và vấn đề pháp lý bạn gặp phải nhé. "
-                "Nếu vấn đề nằm ngoài khả năng xử lý, mình sẽ hỗ trợ bạn chuyển tiếp cho cán bộ xử lý!"
-            ),
+            answer=f"Mình gặp lỗi khi chạy tác tử tìm kiếm: {e}",
+            passages=[],
         )
 
-    context_parts: List[str]       = []
-    web_sources:   List[Dict[str, str]] = []
-
-    for hit in results:
-        label = (
-            hit.get("source_label", "[Web]")
-            if hit.get("source") in ("web", "web_realtime")
-            else "[Pháp Điển]"
-        )
-        context_parts.append(f"{label}\n{hit.get('passage', '')}")
-        if hit.get("source") in ("web", "web_realtime") and hit.get("url"):
-            web_sources.append({
-                "title": str(hit.get("ten", "")),
-                "url":   str(hit.get("url", "")),
-                "level": str(hit.get("trust_level", "medium")),
-                "label": str(label),
-            })
-
-    if is_situation and violations:
-        raw_response = generate_structured_response(
-            context_parts, prompt, situation, decision.sentiment, latest_history
-        )
-    else:
-        raw_response = generate_response(
-            context_parts, normalized_query, decision.sentiment, latest_history
-        )
-
-    raw_response = (raw_response or "").strip() or (
+    hits = _dedup_results(agent_out.get("passage_hits") or [])
+    passages = _build_passages(hits)
+    web_sources = _web_sources_from_passages(passages)
+    raw_response = (agent_out.get("answer") or "").strip() or (
         "Mình chưa thể tạo câu trả lời lúc này do lỗi dịch vụ AI. "
         "Bạn vui lòng thử lại sau ít phút."
     )
@@ -256,7 +270,7 @@ def rag_chat(req: RagChatRequest) -> RagChatResponse:
         normalized_query=normalized_query,
         answer=raw_response,
         sources=web_sources,
-        passages=_build_passages(results),
+        passages=passages,
     )
 
 
@@ -264,7 +278,8 @@ def rag_chat(req: RagChatRequest) -> RagChatResponse:
 def rag_stream(req: RagChatRequest):
     """
     Server-Sent Events stream.
-      data: {"type":"meta",  "action":"...", "normalized_query":"...", "passages":[...]}
+      data: {"type":"status", "text":"...", "iteration"?: n, "max"?: m}
+      data: {"type":"meta",  "action":"...", "normalized_query":"...", "passages":[...], "iterations"?: n}
       data: {"type":"token", "text":"..."}
       data: {"type":"done"}
       data: {"type":"error", "message":"..."}
@@ -283,7 +298,8 @@ def rag_stream(req: RagChatRequest):
             else:
                 answer = "Mình rất tiếc. Bạn có muốn mình chuyển tiếp cho cán bộ xử lý không?"
             yield f"data: {_json.dumps({'type':'meta','action':decision.action.value,'passages':[]}, ensure_ascii=False)}\n\n"
-            yield f"data: {_json.dumps({'type':'token','text':answer}, ensure_ascii=False)}\n\n"
+            for part in _chunk_stream_text(answer):
+                yield f"data: {_json.dumps({'type':'token','text':part}, ensure_ascii=False)}\n\n"
             yield f"data: {_json.dumps({'type':'done'}, ensure_ascii=False)}\n\n"
             return
 
@@ -303,66 +319,109 @@ def rag_stream(req: RagChatRequest):
                 "Mình hỗ trợ tìm kiếm và giải thích pháp luật Việt Nam."
             )
             yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':[]}, ensure_ascii=False)}\n\n"
-            yield f"data: {_json.dumps({'type':'token','text':answer}, ensure_ascii=False)}\n\n"
+            for part in _chunk_stream_text(answer):
+                yield f"data: {_json.dumps({'type':'token','text':part}, ensure_ascii=False)}\n\n"
             yield f"data: {_json.dumps({'type':'done'}, ensure_ascii=False)}\n\n"
             return
 
         is_situation = req.query_mode == "situation"
-        if is_situation:
-            situation   = analyze_complex_situation(prompt, latest_history)
-            violations  = situation.get("cac_vi_pham", []) if isinstance(situation, dict) else []
-            all_queries = [q for v in violations for q in v.get("queries", [])] or [normalized_query]
-        else:
-            situation, violations, all_queries = {}, [], [normalized_query]
+        user_for_agent = prompt if is_situation else normalized_query
+        system_prompt = agent_system_prompt(situation_mode=is_situation)
+        messages: List[Any] = [
+            {"role": "system", "content": system_prompt},
+            *[{"role": m["role"], "content": m["content"]} for m in latest_history[-8:]],
+            {"role": "user", "content": user_for_agent},
+        ]
+        bucket: List[Dict[str, Any]] = []
+        max_it = 6
+        model = agent_chat_model()
 
-        raw_results = _run_retrieve_parallel(all_queries)
-        results     = _dedup_results(raw_results)
-
-        if not results:
-            yield f"data: {_json.dumps({'type':'meta','action':'proceed','passages':[]}, ensure_ascii=False)}\n\n"
-            yield f"data: {_json.dumps({'type':'token','text':'Chưa đủ thông tin để trả lời. Bạn hãy mô tả rõ hơn vấn đề pháp lý.'}, ensure_ascii=False)}\n\n"
-            yield f"data: {_json.dumps({'type':'done'}, ensure_ascii=False)}\n\n"
-            return
-
-        context_parts: List[str]            = []
-        web_sources:   List[Dict[str, str]] = []
-
-        for hit in results:
-            label = (
-                hit.get("source_label", "[Web]")
-                if hit.get("source") in ("web", "web_realtime") else "[Pháp Điển]"
-            )
-            context_parts.append(f"{label}\n{hit.get('passage', '')}")
-            if hit.get("source") in ("web", "web_realtime") and hit.get("url"):
-                web_sources.append({
-                    "title": str(hit.get("ten", "")),
-                    "url":   str(hit.get("url", "")),
-                    "level": str(hit.get("trust_level", "medium")),
-                    "label": str(label),
-                })
-
-        passages = _build_passages(results)
-
-        # Gửi metadata trước
-        yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':passages,'sources':web_sources}, ensure_ascii=False)}\n\n"
-
-        # Stream tokens từ LLM
         try:
-            from services.utils import (
-                generate_response_stream,
-                generate_structured_response_stream,
-            )
-            gen = (
-                generate_structured_response_stream(
-                    context_parts, prompt, situation, decision.sentiment, latest_history
+            for iteration in range(max_it):
+                response = oai_client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    tools=RAG_AGENT_TOOLS,
+                    tool_choice="auto",
+                    temperature=0.1,
                 )
-                if is_situation and violations
-                else generate_response_stream(
-                    context_parts, normalized_query, decision.sentiment, latest_history
-                )
+                msg = response.choices[0].message
+                messages.append(assistant_message_to_dict(msg))
+
+                if not msg.tool_calls:
+                    ded = _dedup_results(bucket)
+                    passages = _build_passages(ded)
+                    web_sources = _web_sources_from_passages(passages)
+                    yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':passages,'sources':web_sources,'iterations':iteration + 1,'agentic':True}, ensure_ascii=False)}\n\n"
+
+                    content = (msg.content or "").strip()
+                    if content:
+                        for part in _chunk_stream_text(content):
+                            yield f"data: {_json.dumps({'type':'token','text':part}, ensure_ascii=False)}\n\n"
+                    else:
+                        stream = oai_client.chat.completions.create(
+                            model=model,
+                            messages=messages,
+                            temperature=0.2,
+                            max_tokens=1200,
+                            stream=True,
+                        )
+                        for chunk in stream:
+                            delta = chunk.choices[0].delta.content
+                            if delta:
+                                yield f"data: {_json.dumps({'type':'token','text':delta}, ensure_ascii=False)}\n\n"
+
+                    if web_sources:
+                        footer = "\n\n---\n**Nguồn tham khảo từ web:**\n" + "\n".join(
+                            f"{'✅' if s['level'] == 'high' else '⚠️'} {s['label']} [{s['title']}]({s['url']})"
+                            for s in web_sources
+                        )
+                        yield f"data: {_json.dumps({'type':'token','text':footer}, ensure_ascii=False)}\n\n"
+
+                    yield f"data: {_json.dumps({'type':'done'}, ensure_ascii=False)}\n\n"
+                    return
+
+                for tc in msg.tool_calls:
+                    tname = tc.function.name
+                    yield f"data: {_json.dumps({'type':'status','text':f'🔍 Đang gọi {tname}...','iteration':iteration + 1,'max':max_it}, ensure_ascii=False)}\n\n"
+                    try:
+                        args = _json.loads(tc.function.arguments or "{}")
+                    except Exception:
+                        args = {}
+                    tool_content, full_hits = execute_agent_tool(
+                        tname,
+                        args,
+                        retriever=two_stage_retriever,
+                        neo4j_driver=neo4j_driver,
+                        rerank_query=normalized_query,
+                    )
+                    apply_agent_tool_result(tname, tool_content, full_hits, bucket)
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": tc.id,
+                        "content": tool_content,
+                    })
+
+            ded = _dedup_results(bucket)
+            passages = _build_passages(ded)
+            web_sources = _web_sources_from_passages(passages)
+            yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':passages,'sources':web_sources,'iterations':max_it,'agentic':True}, ensure_ascii=False)}\n\n"
+
+            stream = oai_client.chat.completions.create(
+                model=model,
+                messages=messages
+                + [{
+                    "role": "user",
+                    "content": "Hãy tổng hợp câu trả lời dựa trên thông tin đã thu thập (tiếng Việt).",
+                }],
+                temperature=0.2,
+                max_tokens=1200,
+                stream=True,
             )
-            for token in gen:
-                yield f"data: {_json.dumps({'type':'token','text':token}, ensure_ascii=False)}\n\n"
+            for chunk in stream:
+                delta = chunk.choices[0].delta.content
+                if delta:
+                    yield f"data: {_json.dumps({'type':'token','text':delta}, ensure_ascii=False)}\n\n"
 
             if web_sources:
                 footer = "\n\n---\n**Nguồn tham khảo từ web:**\n" + "\n".join(

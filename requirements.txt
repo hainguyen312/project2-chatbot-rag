@@ -24,5 +24,5 @@ markdown
 pymongo
 
 neo4j
-tavily
+tavily-python
 nest_asyncio

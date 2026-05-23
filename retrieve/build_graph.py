@@ -1,9 +1,16 @@
+import sys
+from pathlib import Path
+
+# Cho phép chạy: python retrieve/build_graph.py (từ thư mục gốc repo)
+_ROOT = Path(__file__).resolve().parents[1]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
 import re
 import pymysql
 from neo4j import GraphDatabase
 from tqdm import tqdm
 
-# Sửa dòng import ở đầu file
 from retrieve.tavily_fallback import (
     is_context_sufficient,
     search_tavily,
