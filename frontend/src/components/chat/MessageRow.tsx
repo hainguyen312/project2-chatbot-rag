@@ -76,6 +76,7 @@ export function MessageRow({
   chatId,
   onSaveTtsUrl,
   isAnyTTSActive,
+  onSaveFeedback,
 }: {
   m: Message;
   idx: number;
@@ -93,9 +94,22 @@ export function MessageRow({
   chatId: string;
   onSaveTtsUrl: (msgIdx: number, url: string) => void;
   isAnyTTSActive: boolean;
+  onSaveFeedback?: (msgIdx: number, rating: "up" | "down") => void;
 }) {
   const isUser      = m.role === "user";
   const hasPassages = !isUser && (m.passages?.length ?? 0) > 0;
+
+  const confidencePct = m.confidence_score != null ? Math.round(m.confidence_score * 100) : null;
+  const confidenceColor =
+    confidencePct == null ? null :
+    confidencePct >= 70 ? "#16a34a" :
+    confidencePct >= 40 ? "#d97706" :
+    "#dc2626";
+  const confidenceBg =
+    confidencePct == null ? null :
+    confidencePct >= 70 ? "rgba(22,163,74,0.08)" :
+    confidencePct >= 40 ? "rgba(217,119,6,0.08)" :
+    "rgba(220,38,38,0.08)";
 
   return (
     <div className={`flex items-end gap-1.5 md:gap-2 ${isUser ? "justify-end" : "justify-start"}`}>
@@ -117,6 +131,19 @@ export function MessageRow({
         // ── Bot bubble ───────────────────────────────────────────────────────
         <div className="relative min-w-0">
           <BotBubble content={m.content} isSelected={isSelected} />
+
+          {/* Hallucination warning */}
+          {m.hallucination_warning && (
+            <div className="mt-1.5 flex items-start gap-1.5 rounded-lg px-2.5 py-2 text-xs"
+              style={{ background: "rgba(220,38,38,0.07)", border: "0.5px solid rgba(220,38,38,0.25)", color: "#b91c1c" }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2" strokeLinecap="round" className="mt-0.5 shrink-0">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <span>Câu trả lời này có thể chưa có đủ cơ sở pháp lý. Hãy kiểm tra lại từ nguồn chính thức.</span>
+            </div>
+          )}
 
           {/* Action buttons */}
           <div className="mt-1 flex flex-wrap items-center gap-1">
@@ -218,6 +245,68 @@ export function MessageRow({
                 <span>📄</span>
                 <span>{m.passages!.length} tài liệu</span>
               </button>
+            )}
+
+            {/* Confidence score badge */}
+            {confidencePct != null && (
+              <span className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs"
+                style={{ background: confidenceBg!, border: `0.5px solid ${confidenceColor}30`, color: confidenceColor! }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <span>{confidencePct}%</span>
+              </span>
+            )}
+
+            {/* Cache hit badge */}
+            {m.cache_hit && (
+              <span className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs"
+                style={{ background: "rgba(83,74,183,0.07)", border: "0.5px solid rgba(83,74,183,0.25)", color: "#534AB7" }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <span>Từ cache</span>
+              </span>
+            )}
+
+            {/* Thumbs up / down feedback */}
+            {onSaveFeedback && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onSaveFeedback(idx, "up")}
+                  title="Câu trả lời hữu ích"
+                  className="flex items-center justify-center rounded-lg px-2 py-1 text-xs transition"
+                  style={{
+                    background: m.feedback === "up" ? "rgba(22,163,74,0.10)" : "var(--bg-surface)",
+                    border: m.feedback === "up" ? "0.5px solid #16a34a" : "0.5px solid var(--border)",
+                    color: m.feedback === "up" ? "#16a34a" : "var(--text-muted)",
+                  }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill={m.feedback === "up" ? "currentColor" : "none"}
+                    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
+                    <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSaveFeedback(idx, "down")}
+                  title="Câu trả lời chưa hữu ích"
+                  className="flex items-center justify-center rounded-lg px-2 py-1 text-xs transition"
+                  style={{
+                    background: m.feedback === "down" ? "rgba(220,38,38,0.10)" : "var(--bg-surface)",
+                    border: m.feedback === "down" ? "0.5px solid #dc2626" : "0.5px solid var(--border)",
+                    color: m.feedback === "down" ? "#dc2626" : "var(--text-muted)",
+                  }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill={m.feedback === "down" ? "currentColor" : "none"}
+                    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/>
+                    <path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/>
+                  </svg>
+                </button>
+              </>
             )}
           </div>
         </div>

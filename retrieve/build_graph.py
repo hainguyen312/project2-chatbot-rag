@@ -264,6 +264,9 @@ class GraphRAGRetriever:
  
     def _vector_search(self, query: str, top_k: int) -> list[str]:
         """Trả về list mapc của các Dieu gần nhất về ngữ nghĩa."""
+        if self.collection is None:
+            print("[GraphRAG] Milvus collection chưa sẵn sàng, bỏ qua vector search")
+            return []
         try:
             vec = self._embed(query)
             results = self.collection.search(

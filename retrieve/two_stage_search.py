@@ -23,9 +23,14 @@ connections.connect("default", host="localhost", port="19530")
 print("Connected to Milvus")
 
 collection_name = "phapdien_simple_tendieu"
-collection = Collection(collection_name)
-collection.load()
-print("Loaded collection:", collection_name)
+try:
+    collection = Collection(collection_name)
+    collection.load()
+    print("Loaded collection:", collection_name)
+except Exception as _col_err:
+    print(f"[Milvus] Collection '{collection_name}' chưa tồn tại hoặc chưa load được: {_col_err}")
+    print("[Milvus] Server vẫn khởi động — chức năng vector search sẽ không hoạt động cho đến khi collection được tạo.")
+    collection = None  # type: ignore
 
 
 class TwoStageRetriever:

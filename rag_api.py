@@ -44,8 +44,10 @@ from services.agentic_rag import (
 from services.utils import (
     client as oai_client,
     detect_intent,
+    embed_batch,
     rewrite_query_v2,
 )
+from services.semantic_cache import semantic_cache
 
 app = FastAPI(title="RAG Backend API", version="1.0.0")
 
@@ -78,6 +80,15 @@ class RagChatResponse(BaseModel):
     normalized_query: Optional[str] = None
     sources: List[Dict[str, str]] = Field(default_factory=list)
     passages: List[Dict[str, Any]] = Field(default_factory=list)
+    confidence_score: float = 0.0
+    hallucination_warning: bool = False
+    cache_hit: bool = False
+
+
+class FeedbackRequest(BaseModel):
+    chat_id: str
+    msg_idx: int
+    rating: Literal["up", "down"]
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -140,6 +151,31 @@ def _dedup_results(raw_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return (web_r + pd_r)[:20]
 
 
+def _compute_confidence(passages: List[Dict[str, Any]], iterations: int) -> tuple:
+    """
+    Tính confidence score (0.0–1.0) và hallucination_warning dựa trên:
+    - Điểm trung bình của top-5 passages
+    - Phạt nếu toàn nguồn web, ít passages, hoặc agent hết vòng lặp
+    """
+    if not passages:
+        return 0.0, True
+
+    phapdien = [p for p in passages if p.get("source", "") not in ("web", "web_realtime")]
+    top_scores = [p.get("score", 0.5) for p in passages[:5]]
+    confidence = sum(top_scores) / len(top_scores) if top_scores else 0.0
+
+    if not phapdien:
+        confidence *= 0.70   # phạt nếu toàn nguồn web
+    if len(passages) < 2:
+        confidence *= 0.80   # phạt nếu ít nguồn
+    if iterations >= 6:
+        confidence *= 0.90   # phạt nếu agent đã dùng hết vòng lặp
+
+    confidence = round(min(1.0, max(0.0, confidence)), 3)
+    hallucination = confidence < 0.40 or not phapdien
+    return confidence, hallucination
+
+
 def _chunk_stream_text(text: str, max_chars: int = 32):
     """
     Tách văn bản thành nhiều SSE nhỏ (theo từ / dòng) để client hiển thị mượt,
@@ -184,6 +220,14 @@ def _strip_markdown(text: str) -> str:
 # ── Routes ────────────────────────────────────────────────────────────────────
 @app.get("/health")
 def health() -> Dict[str, bool]:
+    return {"ok": True}
+
+
+@app.post("/rag/feedback")
+def post_feedback(req: FeedbackRequest) -> Dict[str, bool]:
+    """Lưu đánh giá thumbs up/down của người dùng cho một câu trả lời."""
+    from services.history import update_feedback
+    update_feedback(req.chat_id, req.msg_idx, req.rating)
     return {"ok": True}
 
 
@@ -238,6 +282,29 @@ def rag_chat(req: RagChatRequest) -> RagChatResponse:
     is_situation = req.query_mode == "situation"
     user_for_agent = prompt if is_situation else normalized_query
 
+    # ── Semantic cache lookup ─────────────────────────────────────────────────
+    q_embedding: list = []
+    try:
+        q_embedding = embed_batch([normalized_query])[0]
+        cached = semantic_cache.get(q_embedding)
+        if cached:
+            meta = cached.get("meta", {})
+            cached_passages = meta.get("passages", [])
+            cached_sources  = meta.get("sources", [])
+            confidence, hallucination = _compute_confidence(cached_passages, meta.get("iterations", 1))
+            return RagChatResponse(
+                action="proceed",
+                normalized_query=normalized_query,
+                answer=cached.get("answer", ""),
+                sources=cached_sources,
+                passages=cached_passages,
+                confidence_score=confidence,
+                hallucination_warning=hallucination,
+                cache_hit=True,
+            )
+    except Exception as e:
+        print(f"[Cache lookup error] {e}")
+
     try:
         agent_out = run_agentic_rag_sync(
             openai_client=oai_client,
@@ -264,6 +331,16 @@ def rag_chat(req: RagChatRequest) -> RagChatResponse:
         "Bạn vui lòng thử lại sau ít phút."
     )
     raw_response += _web_sources_markdown(web_sources)
+    confidence, hallucination = _compute_confidence(passages, agent_out.get("iterations", 1))
+
+    # ── Lưu vào semantic cache ────────────────────────────────────────────────
+    try:
+        semantic_cache.set(q_embedding, {
+            "meta":   {"passages": passages, "sources": web_sources, "iterations": agent_out.get("iterations", 1)},
+            "answer": raw_response,
+        })
+    except Exception as e:
+        print(f"[Cache set error] {e}")
 
     return RagChatResponse(
         action="proceed",
@@ -271,6 +348,9 @@ def rag_chat(req: RagChatRequest) -> RagChatResponse:
         answer=raw_response,
         sources=web_sources,
         passages=passages,
+        confidence_score=confidence,
+        hallucination_warning=hallucination,
+        cache_hit=False,
     )
 
 
@@ -326,6 +406,25 @@ def rag_stream(req: RagChatRequest):
 
         is_situation = req.query_mode == "situation"
         user_for_agent = prompt if is_situation else normalized_query
+
+        # ── Semantic cache lookup ─────────────────────────────────────────────
+        q_embedding: list = []
+        try:
+            q_embedding = embed_batch([normalized_query])[0]
+            cached = semantic_cache.get(q_embedding)
+            if cached:
+                meta = cached.get("meta", {})
+                cached_passages = meta.get("passages", [])
+                cached_sources  = meta.get("sources", [])
+                cc, hw = _compute_confidence(cached_passages, meta.get("iterations", 1))
+                yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':cached_passages,'sources':cached_sources,'iterations':meta.get('iterations',1),'agentic':True,'confidence_score':cc,'hallucination_warning':hw,'cache_hit':True}, ensure_ascii=False)}\n\n"
+                for part in _chunk_stream_text(cached.get("answer", "")):
+                    yield f"data: {_json.dumps({'type':'token','text':part}, ensure_ascii=False)}\n\n"
+                yield f"data: {_json.dumps({'type':'done'}, ensure_ascii=False)}\n\n"
+                return
+        except Exception as e:
+            print(f"[Stream cache lookup error] {e}")
+
         system_prompt = agent_system_prompt(situation_mode=is_situation)
         messages: List[Any] = [
             {"role": "system", "content": system_prompt},
@@ -335,6 +434,7 @@ def rag_stream(req: RagChatRequest):
         bucket: List[Dict[str, Any]] = []
         max_it = 6
         model = agent_chat_model()
+        stream_full_answer = ""
 
         try:
             for iteration in range(max_it):
@@ -352,10 +452,12 @@ def rag_stream(req: RagChatRequest):
                     ded = _dedup_results(bucket)
                     passages = _build_passages(ded)
                     web_sources = _web_sources_from_passages(passages)
-                    yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':passages,'sources':web_sources,'iterations':iteration + 1,'agentic':True}, ensure_ascii=False)}\n\n"
+                    cc, hw = _compute_confidence(passages, iteration + 1)
+                    yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':passages,'sources':web_sources,'iterations':iteration + 1,'agentic':True,'confidence_score':cc,'hallucination_warning':hw,'cache_hit':False}, ensure_ascii=False)}\n\n"
 
                     content = (msg.content or "").strip()
                     if content:
+                        stream_full_answer = content
                         for part in _chunk_stream_text(content):
                             yield f"data: {_json.dumps({'type':'token','text':part}, ensure_ascii=False)}\n\n"
                     else:
@@ -369,6 +471,7 @@ def rag_stream(req: RagChatRequest):
                         for chunk in stream:
                             delta = chunk.choices[0].delta.content
                             if delta:
+                                stream_full_answer += delta
                                 yield f"data: {_json.dumps({'type':'token','text':delta}, ensure_ascii=False)}\n\n"
 
                     if web_sources:
@@ -376,7 +479,17 @@ def rag_stream(req: RagChatRequest):
                             f"{'✅' if s['level'] == 'high' else '⚠️'} {s['label']} [{s['title']}]({s['url']})"
                             for s in web_sources
                         )
+                        stream_full_answer += footer
                         yield f"data: {_json.dumps({'type':'token','text':footer}, ensure_ascii=False)}\n\n"
+
+                    # Lưu vào cache
+                    try:
+                        semantic_cache.set(q_embedding, {
+                            "meta":   {"passages": passages, "sources": web_sources, "iterations": iteration + 1},
+                            "answer": stream_full_answer,
+                        })
+                    except Exception:
+                        pass
 
                     yield f"data: {_json.dumps({'type':'done'}, ensure_ascii=False)}\n\n"
                     return
@@ -405,7 +518,8 @@ def rag_stream(req: RagChatRequest):
             ded = _dedup_results(bucket)
             passages = _build_passages(ded)
             web_sources = _web_sources_from_passages(passages)
-            yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':passages,'sources':web_sources,'iterations':max_it,'agentic':True}, ensure_ascii=False)}\n\n"
+            cc, hw = _compute_confidence(passages, max_it)
+            yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':passages,'sources':web_sources,'iterations':max_it,'agentic':True,'confidence_score':cc,'hallucination_warning':hw,'cache_hit':False}, ensure_ascii=False)}\n\n"
 
             stream = oai_client.chat.completions.create(
                 model=model,
@@ -421,6 +535,7 @@ def rag_stream(req: RagChatRequest):
             for chunk in stream:
                 delta = chunk.choices[0].delta.content
                 if delta:
+                    stream_full_answer += delta
                     yield f"data: {_json.dumps({'type':'token','text':delta}, ensure_ascii=False)}\n\n"
 
             if web_sources:
@@ -428,7 +543,17 @@ def rag_stream(req: RagChatRequest):
                     f"{'✅' if s['level'] == 'high' else '⚠️'} {s['label']} [{s['title']}]({s['url']})"
                     for s in web_sources
                 )
+                stream_full_answer += footer
                 yield f"data: {_json.dumps({'type':'token','text':footer}, ensure_ascii=False)}\n\n"
+
+            # Lưu vào cache
+            try:
+                semantic_cache.set(q_embedding, {
+                    "meta":   {"passages": passages, "sources": web_sources, "iterations": max_it},
+                    "answer": stream_full_answer,
+                })
+            except Exception:
+                pass
 
         except Exception as e:
             yield f"data: {_json.dumps({'type':'error','message':str(e)}, ensure_ascii=False)}\n\n"

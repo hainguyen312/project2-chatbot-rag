@@ -18,7 +18,11 @@ export interface Message {
   role: "user" | "assistant";
   content: string;
   passages?: Passage[];
-  tts_url?: string|null;   // ← thêm
+  tts_url?: string|null;
+  feedback?: "up" | "down" | null;
+  confidence_score?: number | null;
+  hallucination_warning?: boolean;
+  cache_hit?: boolean;
 }
 
 export type Chat = {
@@ -182,6 +186,17 @@ export const chatActions = {
     dispatch({ type: "SET_ERROR", payload: null });
     await requestJson<{ ok: boolean }>(`/api/chats/${id}`, { method: "DELETE" });
     dispatch({ type: "REMOVE_CHAT", payload: id });
+  },
+
+  updateMessageFeedback(chatId: string, msgIdx: number, rating: "up" | "down") {
+    const current = getState();
+    const chat = current.chats.find((c) => c._id === chatId);
+    if (!chat) return;
+    const updatedMessages = chat.messages.map((m, i) =>
+      i === msgIdx ? { ...m, feedback: rating } : m
+    );
+    const updatedChat: Chat = { ...chat, messages: updatedMessages };
+    dispatch({ type: "UPSERT_CHAT", payload: updatedChat });
   },
 };
 

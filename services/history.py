@@ -477,3 +477,21 @@ def save_tts_url(chat_id: str, msg_idx: int, tts_url: str) -> bool:
         print(f"[TTS MongoDB] Lỗi lưu URL: {e}")
         return False
 
+
+def update_feedback(chat_id: str, msg_idx: int, rating: str) -> bool:
+    """Lưu đánh giá người dùng (up/down) vào message tương ứng trong MongoDB."""
+    col = _get_mongo_collection()
+    if col is None:
+        print("[Feedback] MongoDB không khả dụng, bỏ qua lưu feedback")
+        return False
+    try:
+        result = col.update_one(
+            {"_id": chat_id},
+            {"$set": {f"messages.{msg_idx}.feedback": rating}},
+        )
+        print(f"[Feedback] Saved rating '{rating}' to MongoDB: chat={chat_id} msg={msg_idx}")
+        return result.modified_count > 0
+    except Exception as e:
+        print(f"[Feedback MongoDB] Lỗi lưu feedback: {e}")
+        return False
+

@@ -155,6 +155,20 @@ export default function Home() {
     await patchChat(activeChat._id, { messages: updated });
   };
 
+  const handleFeedback = async (msgIdx: number, rating: "up" | "down") => {
+    if (!activeChat) return;
+    chatActions.updateMessageFeedback(activeChat._id, msgIdx, rating);
+    try {
+      await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: activeChat._id, msg_idx: msgIdx, rating }),
+      });
+    } catch (err) {
+      console.error("[Feedback]", err);
+    }
+  };
+
   const handleRename = async () => {
     if (!renameChatId || !renameValue.trim()) return;
     await patchChat(renameChatId, { title: renameValue.trim() });
@@ -183,6 +197,9 @@ export default function Home() {
 
     let fullText = "";
     let metaPassages: Passage[] = [];
+    let metaConfidence: number | null = null;
+    let metaHallucination = false;
+    let metaCacheHit = false;
 
     try {
       const res = await fetch("/api/stream", {
@@ -211,6 +228,7 @@ export default function Home() {
               type: "meta" | "token" | "done" | "error" | "status";
               text?: string; passages?: Passage[]; message?: string;
               iteration?: number; max?: number;
+              confidence_score?: number; hallucination_warning?: boolean; cache_hit?: boolean;
             };
             if (evt.type === "status") {
               setPendingStatus(evt.text ?? "");
@@ -219,7 +237,10 @@ export default function Home() {
             } else if (evt.type === "meta") {
               setPendingStatus(null); setPendingChatId(null); setAgentStep(null);
               setStreamingChatId(activeChat._id);
-              metaPassages = evt.passages ?? [];
+              metaPassages    = evt.passages ?? [];
+              metaConfidence  = evt.confidence_score ?? null;
+              metaHallucination = evt.hallucination_warning ?? false;
+              metaCacheHit    = evt.cache_hit ?? false;
             } else if (evt.type === "token") {
               fullText += evt.text ?? "";
             } else if (evt.type === "error") {
@@ -255,6 +276,9 @@ export default function Home() {
           content: answer,
           passages: metaPassages,
           tts_url: null,
+          confidence_score: metaConfidence,
+          hallucination_warning: metaHallucination,
+          cache_hit: metaCacheHit,
         }],
       });
     } catch (err) {
@@ -642,6 +666,7 @@ export default function Home() {
                         isLoadingTTS={loadingIdx === idx}
                         onSaveTtsUrl={saveTtsUrl}
                         isAnyTTSActive={speakingIdx !== null || loadingIdx !== null}
+                        onSaveFeedback={m.role === "assistant" ? handleFeedback : undefined}
                       />
                     ))}
                     {streamingChatId === activeChat._id && (postStreamReveal || revealedStreamText.length > 0) && (
