@@ -81,8 +81,15 @@ class RetrievalEvaluator:
             return json.load(f)
     
     def _extract_offsets(self, results: List[Dict[str, Any]]) -> List[int]:
-        """Trích xuất danh sách offsets từ kết quả retrieval"""
-        return [item.get("offset") for item in results if item.get("offset")]
+        offsets = []
+        for item in results:
+            val = item.get("offset")
+            if val is not None:
+                try:
+                    offsets.append(int(val))  # ← thêm int() cast
+                except (ValueError, TypeError):
+                    pass
+        return offsets
     
     def evaluate_single_query(
         self, 

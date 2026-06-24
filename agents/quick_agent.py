@@ -2,7 +2,52 @@ from typing import Any, Dict, List, Optional
 import re
 from .base_agent import BaseAgent
 
-# điều chỉnh thành so sánh cosin của embed để nâng cao chất lượng kiểm tra match
+# Pattern loại trừ câu hỏi pháp luật khỏi khớp chào hỏi mơ hồ
+_LEGAL_QUERY_RE = re.compile(
+    r"\b(luật\s+gì|điều\s+\d+|nghị\s+định|thông\s+tư|xử\s+phạt|hình\s+sự|"
+    r"dân\s+sự|hành\s+chính|thủ\s+tục|khi\s+nào|bao\s+nhiêu|"
+    r"có\s+được|bị\s+phạt|quy\s+định)\b",
+    re.IGNORECASE,
+)
+
+
+def try_quick_answer(prompt: str) -> Optional[str]:
+    """Trả lời chào hỏi / meta nếu khớp; None nếu không phải quick question."""
+    agent = QuickAgent()
+    if agent._quick_question_check(prompt):
+        return agent._quick_answer(prompt)
+    return None
+
+
+_META_CONVERSATION_RE = re.compile(
+    r"(bạn\s+(có thể|là ai|giúp)|mày\s+là ai|"
+    r"làm\s+(gì|được gì)|giúp\s+(gì|được gì|tôi)|"
+    r"chào\b|xin\s+chào|hello\b|\bhi\b|"
+    r"giới\s+thiệu|bắt\s+đầu|"
+    r"cảm\s+ơn|tạm\s+biệt)",
+    re.IGNORECASE,
+)
+
+
+def is_meta_conversation(prompt: str) -> bool:
+    """Câu chào hỏi / hỏi khả năng bot — không nên tra semantic cache RAG."""
+    agent = QuickAgent()
+    norm = agent._normalize(prompt)
+    if not norm or len(norm) > agent.max_len:
+        return False
+    if _LEGAL_QUERY_RE.search(norm):
+        return False
+    return bool(_META_CONVERSATION_RE.search(norm))
+
+
+def meta_conversation_fallback(prompt: str) -> Optional[str]:
+    """Câu meta chưa khớp key cụ thể → dùng câu trả lời giới thiệu mặc định."""
+    if not is_meta_conversation(prompt):
+        return None
+    agent = QuickAgent()
+    return agent.quick_map.get("bạn có thể làm gì")
+
+
 class QuickAgent(BaseAgent):
     """Nhận diện câu hỏi ngắn hoặc chào hỏi."""
 
@@ -50,6 +95,14 @@ class QuickAgent(BaseAgent):
                 "- 🧭 Hướng dẫn quy trình, thủ tục hành chính hoặc xử phạt hành chính\n\n"
                 "Bạn muốn mình bắt đầu với chủ đề nào?"
             ),
+            "bạn có thể giúp gì": (
+                "Mình có thể giúp bạn:\n"
+                "- 📜 Tra cứu văn bản pháp luật Việt Nam (Luật, Nghị định, Thông tư...)\n"
+                "- 💡 Giải thích điều khoản, khái niệm hoặc quy định cụ thể\n"
+                "- ⚖️ Gợi ý căn cứ pháp lý liên quan đến tình huống bạn đang hỏi\n"
+                "- 🧭 Hướng dẫn quy trình, thủ tục hành chính hoặc xử phạt hành chính\n\n"
+                "Bạn muốn mình bắt đầu với chủ đề nào?"
+            ),
             "bạn giúp được gì": (
                 "Mình có thể giúp bạn tìm kiếm các quy định, hướng dẫn hoặc mức xử phạt liên quan "
                 "đến các hành vi cụ thể trong luật Việt Nam. Ngoài ra, mình cũng có thể cung cấp trích dẫn điều luật "
@@ -83,20 +136,31 @@ class QuickAgent(BaseAgent):
 
     def _normalize(self, text: str) -> str:
         text = text.strip().lower()
-        text = re.sub(r"\s+", " ", text)
+        text = re.sub(r"[^\w\s]", " ", text, flags=re.UNICODE)
+        text = re.sub(r"\s+", " ", text).strip()
         return text
     
     def _quick_answer_lookup(self, prompt_norm: str) -> Optional[str]:
-        """Khớp theo luật: chính xác hoặc bắt đầu bằng key."""
-        for k, v in self.quick_map.items():
-            if prompt_norm == k or prompt_norm.startswith(k):
-                return v
-        # loại bỏ vài pattern dạng câu hỏi pháp luật
-        if re.search(r"\b(luật\s+gì|điều\s+\d+)\b", prompt_norm):
+        """Khớp: chính xác → prefix → chứa key (câu ngắn, không giống hỏi luật)."""
+        if _LEGAL_QUERY_RE.search(prompt_norm):
             return None
-        return None    
-    
 
+        keys_sorted = sorted(self.quick_map.keys(), key=len, reverse=True)
+        for k in keys_sorted:
+            if prompt_norm == k:
+                return self.quick_map[k]
+            if prompt_norm.startswith(k + " ") or (
+                prompt_norm.startswith(k) and len(prompt_norm) > len(k)
+            ):
+                return self.quick_map[k]
+
+        if len(prompt_norm) <= self.max_len:
+            for k in keys_sorted:
+                if len(k) < 8:
+                    continue
+                if k in prompt_norm:
+                    return self.quick_map[k]
+        return None
     def _quick_question_check(self, prompt: str) -> bool:
         """Kiểm tra xem có phải câu hỏi nhanh không."""
         prompt_norm = self._normalize(prompt)

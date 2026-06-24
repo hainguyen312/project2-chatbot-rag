@@ -2,6 +2,7 @@ import re
 from typing import Any, Dict, List, Optional
 from .agents_manager import AgentsManager
 from .types import Decision, Action
+from .quick_agent import meta_conversation_fallback, try_quick_answer
 
 _manager = AgentsManager()
 
@@ -17,6 +18,25 @@ def run_pre_retrieve(prompt: str, history: Optional[List[Any]] = None) -> Decisi
     """
     # Normalize prompt
     p_norm = prompt.strip().lower()
+
+    # Chào hỏi / meta — ưu tiên trước cache & RAG
+    quick_ans = try_quick_answer(prompt)
+    if quick_ans:
+        return Decision(
+            action=Action.QUICK_ANSWER,
+            reason="quick_question_match",
+            answer_text=quick_ans,
+            normalized_prompt=p_norm,
+        )
+    meta_ans = meta_conversation_fallback(prompt)
+    if meta_ans:
+        return Decision(
+            action=Action.QUICK_ANSWER,
+            reason="meta_conversation",
+            answer_text=meta_ans,
+            normalized_prompt=p_norm,
+        )
+
     results: Dict[str, Any] = _manager.analyze(prompt, history or [])
     action = results["action"]
 

@@ -42,8 +42,30 @@ function sleep(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
 }
 
+/** Tốc độ gõ dần theo độ dài: câu ngắn chậm hơn, câu dài nhanh hơn (~1.5–8s). */
+function getRevealTiming(textLength: number): { charStep: number; delayMs: number } {
+  const len = textLength;
+  if (len === 0) return { charStep: 1, delayMs: 0 };
+
+  const MIN_TOTAL_MS = 1500;
+  const MAX_TOTAL_MS = 8000;
+  const targetMs = Math.min(MAX_TOTAL_MS, Math.max(MIN_TOTAL_MS, len * 8));
+
+  let delayMs: number;
+  if (len < 120) delayMs = 6;
+  else if (len < 350) delayMs = 5;
+  else if (len < 800) delayMs = 3;
+  else delayMs = 2;
+
+  delayMs = Math.min(14, Math.max(5, delayMs));
+  const charStep = Math.max(1, Math.ceil(len / Math.ceil(targetMs / delayMs)));
+
+  return { charStep, delayMs };
+}
+
 /**
- * Sau khi đã có đủ chuỗi trả lời: hiển thị dần (mặc định từng ký tự) để Markdown render theo prefix.
+ * Hiển thị dần theo thời gian thực — không bị kẹt khi chuyển tab trình duyệt.
+ * Tab ẩn: hiện full text ngay.
  */
 async function revealAnswerProgressively(
   text: string,
@@ -51,14 +73,35 @@ async function revealAnswerProgressively(
   opts?: { charStep?: number; delayMs?: number }
 ): Promise<void> {
   const t = text || "";
-  const charStep = Math.max(1, opts?.charStep ?? 1);
-  const delayMs = Math.max(0, opts?.delayMs ?? 11);
-  let n = 0;
-  while (n < t.length) {
-    n = Math.min(t.length, n + charStep);
-    setShown(t.slice(0, n));
-    if (n < t.length) await sleep(delayMs);
+  if (!t) {
+    setShown("");
+    return;
   }
+  if (typeof document !== "undefined" && document.hidden) {
+    setShown(t);
+    return;
+  }
+
+  const auto = getRevealTiming(t.length);
+  const charStep = Math.max(1, opts?.charStep ?? auto.charStep);
+  const delayMs = Math.max(0, opts?.delayMs ?? auto.delayMs);
+  const totalMs = Math.max(1, Math.ceil(t.length / charStep) * delayMs);
+  const start = performance.now();
+
+  setShown("");
+  while (true) {
+    if (typeof document !== "undefined" && document.hidden) {
+      setShown(t);
+      return;
+    }
+    const elapsed = performance.now() - start;
+    const progress = Math.min(1, elapsed / totalMs);
+    const n = Math.min(t.length, Math.max(1, Math.ceil(progress * t.length)));
+    setShown(t.slice(0, n));
+    if (n >= t.length) break;
+    await sleep(Math.min(delayMs, 32));
+  }
+  setShown(t);
 }
 
 export default function Home() {
@@ -97,6 +140,14 @@ export default function Home() {
     () => chats.find((c) => c._id === activeId) ?? null,
     [chats, activeId]
   );
+
+  /** Ẩn bubble assistant vừa lưu trong lúc gõ dần (tránh hiện trùng). */
+  const revealHideIdx = useMemo(() => {
+    if (!activeChat || !postStreamReveal || streamingChatId !== activeChat._id) return -1;
+    const last = activeChat.messages.length - 1;
+    if (last < 0 || activeChat.messages[last]?.role !== "assistant") return -1;
+    return last;
+  }, [activeChat, postStreamReveal, streamingChatId]);
 
   const { speak, speakingIdx, loadingIdx } = useTTS();
   const {
@@ -181,16 +232,17 @@ export default function Home() {
     const promptSent = input.trim();
     if (!promptSent || !activeChat) return;
 
+    const chatId = activeChat._id;
     const nextMessages: Message[] = [
       ...activeChat.messages,
       { role: "user", content: promptSent },
     ];
     setInput("");
     setSending(true);
-    setPendingChatId(activeChat._id);
+    setPendingChatId(chatId);
     setPendingStatus(null);
 
-    await patchChat(activeChat._id, {
+    await patchChat(chatId, {
       messages: nextMessages,
       title: autoTitle(nextMessages, activeChat.title),
     });
@@ -200,6 +252,20 @@ export default function Home() {
     let metaConfidence: number | null = null;
     let metaHallucination = false;
     let metaCacheHit = false;
+
+    const persistAssistant = async (content: string) => {
+      await patchChat(chatId, {
+        messages: [...nextMessages, {
+          role: "assistant",
+          content,
+          passages: metaPassages,
+          tts_url: null,
+          confidence_score: metaConfidence,
+          hallucination_warning: metaHallucination,
+          cache_hit: metaCacheHit,
+        }],
+      });
+    };
 
     try {
       const res = await fetch("/api/stream", {
@@ -236,7 +302,7 @@ export default function Home() {
                 setAgentStep({ cur: evt.iteration, max: evt.max });
             } else if (evt.type === "meta") {
               setPendingStatus(null); setPendingChatId(null); setAgentStep(null);
-              setStreamingChatId(activeChat._id);
+              setStreamingChatId(chatId);
               metaPassages    = evt.passages ?? [];
               metaConfidence  = evt.confidence_score ?? null;
               metaHallucination = evt.hallucination_warning ?? false;
@@ -245,7 +311,7 @@ export default function Home() {
               fullText += evt.text ?? "";
             } else if (evt.type === "error") {
               setPendingStatus(null); setPendingChatId(null); setAgentStep(null);
-              setStreamingChatId(activeChat._id);
+              setStreamingChatId(chatId);
               fullText += `\n\n⚠️ ${evt.message}`;
               break;
             } else if (evt.type === "done") {
@@ -259,41 +325,28 @@ export default function Home() {
         fullText.trim() ||
         "Mình chưa thể tạo câu trả lời. Vui lòng thử lại.";
 
-      setStreamingChatId(activeChat._id);
+      // Lưu ngay — không phụ thuộc animation (chuyển tab / chuyển hội thoại vẫn có câu trả lời)
+      await persistAssistant(answer);
+
+      setStreamingChatId(chatId);
       setRevealedStreamText("");
       setPostStreamReveal(true);
-      await revealAnswerProgressively(answer, setRevealedStreamText, {
-        charStep: 2,
-        delayMs: 8,
-      });
+      await revealAnswerProgressively(answer, setRevealedStreamText);
       setPostStreamReveal(false);
       setRevealedStreamText("");
       setStreamingChatId(null);
-
-      await patchChat(activeChat._id, {
-        messages: [...nextMessages, {
-          role: "assistant",
-          content: answer,
-          passages: metaPassages,
-          tts_url: null,
-          confidence_score: metaConfidence,
-          hallucination_warning: metaHallucination,
-          cache_hit: metaCacheHit,
-        }],
-      });
     } catch (err) {
       console.error("[onSend]", err);
       const errMsg = "Mình gặp lỗi kết nối. Vui lòng thử lại sau.";
-      setStreamingChatId(activeChat._id);
+      metaPassages = [];
+      await persistAssistant(errMsg);
+      setStreamingChatId(chatId);
       setRevealedStreamText("");
       setPostStreamReveal(true);
-      await revealAnswerProgressively(errMsg, setRevealedStreamText, { charStep: 1, delayMs: 11 });
+      await revealAnswerProgressively(errMsg, setRevealedStreamText);
       setPostStreamReveal(false);
       setRevealedStreamText("");
       setStreamingChatId(null);
-      await patchChat(activeChat._id, {
-        messages: [...nextMessages, { role: "assistant", content: errMsg, passages: [], tts_url: null }],
-      });
     } finally {
       setSending(false); setPendingStatus(null); setPendingChatId(null);
       setAgentStep(null); setStreamingChatId(null);
@@ -653,7 +706,9 @@ export default function Home() {
               <div className="flex-1 overflow-y-auto px-3 py-3 md:px-6 md:py-4">
                 {activeChat?.messages?.length ? (
                   <div className="space-y-3 md:space-y-4">
-                    {activeChat.messages.map((m, idx) => (
+                    {activeChat.messages.map((m, idx) => {
+                      if (idx === revealHideIdx) return null;
+                      return (
                       <MessageRow
                         key={idx} m={m} idx={idx} chatId={activeChat._id}
                         isSelected={selectedMsgIdx === idx}
@@ -668,7 +723,8 @@ export default function Home() {
                         isAnyTTSActive={speakingIdx !== null || loadingIdx !== null}
                         onSaveFeedback={m.role === "assistant" ? handleFeedback : undefined}
                       />
-                    ))}
+                      );
+                    })}
                     {streamingChatId === activeChat._id && (postStreamReveal || revealedStreamText.length > 0) && (
                       <div className="flex items-end gap-2">
                         <Avatar type="bot" />

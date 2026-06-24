@@ -116,12 +116,12 @@ def format_article_block(details: Dict[str, str]) -> str:
 class SemanticSearchStrategy:
     """
     Chiến lược 1: Tìm kiếm vector similarity thuần túy
-    - Collection: phapdien_articles
+    - Collection: phapdien_simple_tendieu
     - Phương pháp: COSINE similarity
     """
     
     def __init__(self):
-        self.collection_name = "phapdien_articles"
+        self.collection_name = "phapdien_simple_tendieu"
         self.collection = Collection(self.collection_name)
         self.collection.load()
         print(f"✓ Loaded collection: {self.collection_name}")
@@ -162,13 +162,13 @@ class SemanticSearchStrategy:
 class HybridSearchStrategy:
     """
     Chiến lược 2: Vector + Lexical matching
-    - Collection: phapdien_articles
+    - Collection: phapdien_simple_tendieu
     - Phương pháp: Kết hợp vector similarity và text overlap
     - Score: alpha * vector_score + (1-alpha) * lexical_score
     """
     
     def __init__(self, candidate_multiplier: int = 2):
-        self.collection_name = "phapdien_articles"
+        self.collection_name = "phapdien_simple_tendieu"
         self.collection = Collection(self.collection_name)
         self.collection.load()
         self.candidate_multiplier = candidate_multiplier
@@ -239,14 +239,14 @@ class HybridSearchStrategy:
 class TwoStageSearchStrategy:
     """
     Chiến lược 3: Vector search trên tên điều + text overlap reranking
-    - Collection: phapdien_tendieu (chỉ tên điều)
+    - Collection: phapdien_simple_tendieu (chỉ tên điều)
     - Bước 1: Vector search trên tên điều
     - Bước 2: Lấy full context (chủ đề, đề mục, chương, nội dung)
     - Bước 3: Rerank dựa trên text overlap với full context
     """
     
     def __init__(self, candidate_multiplier: int = 2):
-        self.collection_name = "phapdien_tendieu"
+        self.collection_name = "phapdien_simple_tendieu"
         self.collection = Collection(self.collection_name)
         self.collection.load()
         self.candidate_multiplier = candidate_multiplier
@@ -306,7 +306,7 @@ class TwoStageSearchStrategy:
 class TwoStageSearchV2Strategy:
     """
     Chiến lược 3B: Vector search trên tên điều + vector similarity reranking
-    - Collection: phapdien_tendieu (chỉ tên điều)
+    - Collection: phapdien_simple_tendieu (chỉ tên điều)
     - Bước 1: Vector search trên tên điều
     - Bước 2: Lấy full context (chủ đề, đề mục, chương, nội dung)
     - Bước 3: Tạo embedding cho full context và rerank bằng vector similarity với query
@@ -317,7 +317,7 @@ class TwoStageSearchV2Strategy:
     """
     
     def __init__(self, candidate_multiplier: int = 2):
-        self.collection_name = "phapdien_tendieu"
+        self.collection_name = "phapdien_simple_tendieu"
         self.collection = Collection(self.collection_name)
         self.collection.load()
         self.candidate_multiplier = candidate_multiplier
@@ -398,14 +398,14 @@ class TwoStageSearchV2Strategy:
 class HybridRerankStrategy:
     """
     Chiến lược 4: Vector search + LLM reranking
-    - Collection: phapdien_tendieu
+    - Collection: phapdien_simple_tendieu
     - Bước 1: Vector search trên tên điều
     - Bước 2: Lấy full context
     - Bước 3: Dùng LLM (GPT-4o-mini) để chấm điểm relevance
     """
     
     def __init__(self, rerank_model: str = "gpt-4o-mini", candidate_multiplier: int = 2):
-        self.collection_name = "phapdien_tendieu"
+        self.collection_name = "phapdien_simple_tendieu"
         self.collection = Collection(self.collection_name)
         self.collection.load()
         self.rerank_model = rerank_model

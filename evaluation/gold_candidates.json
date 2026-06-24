@@ -1,0 +1,1307 @@
+[
+  {
+    "query": "Hành vi chống đối người thi hành công vụ sẽ bị xử phạt như thế nào?",
+    "old_gold_docs": [
+      21776,
+      64694,
+      63944,
+      48555
+    ],
+    "top50_candidates": [
+      {
+        "milvus_id": 58099,
+        "ten": "Điều 39.13.NĐ.102.21. Hành vi cản trở, chống lại việc thanh tra, kiểm tra, kiểm soát của người thi hành công vụ hoặc đưa hối lộ người thi hành công vụ",
+        "score": 0.6046
+      },
+      {
+        "milvus_id": 59572,
+        "ten": "Điều 39.13.PL.2.4. Đối tượng bị xử phạt vi phạm hành chính đối với hành vi cản trở hoạt động tố tụng",
+        "score": 0.5893
+      },
+      {
+        "milvus_id": 56375,
+        "ten": "Điều 39.13.TT.41.6. Buộc chấm dứt hành vi vi phạm hành chính",
+        "score": 0.5879
+      },
+      {
+        "milvus_id": 56386,
+        "ten": "Điều 39.13.TT.41.17. Chuyển vụ vi phạm hành chính để truy cứu trách nhiệm hình sự",
+        "score": 0.5876
+      },
+      {
+        "milvus_id": 57429,
+        "ten": "Điều 39.13.NĐ.16.3. Thời hiệu xử phạt hành chính trong lĩnh vực hải quan",
+        "score": 0.5843
+      },
+      {
+        "milvus_id": 41826,
+        "ten": "Điều 30.2.LQ.162. Hành vi vi phạm hành chính trong thi hành án dân sự",
+        "score": 0.5839
+      },
+      {
+        "milvus_id": 56433,
+        "ten": "Điều 39.13.LQ.55. Buộc chấm dứt hành vi vi phạm hành chính",
+        "score": 0.583
+      },
+      {
+        "milvus_id": 53849,
+        "ten": "Điều 37.6.NĐ.1.27. Xử phạt vi phạm hành chính",
+        "score": 0.5816
+      },
+      {
+        "milvus_id": 56628,
+        "ten": "Điều 39.13.NĐ.59.3. Thời hiệu xử phạt vi phạm hành chính",
+        "score": 0.5799
+      },
+      {
+        "milvus_id": 50875,
+        "ten": "Điều 34.11.TT.5.21. Xử phạt vi phạm hành chính",
+        "score": 0.5777
+      },
+      {
+        "milvus_id": 56503,
+        "ten": "Điều 39.13.LQ.86. Cưỡng chế thi hành quyết định xử phạt vi phạm hành chính",
+        "score": 0.5774
+      },
+      {
+        "milvus_id": 59611,
+        "ten": "Điều 39.13.PL.2.42. Thủ tục xử phạt vi phạm hành chính",
+        "score": 0.5773
+      },
+      {
+        "milvus_id": 56871,
+        "ten": "Điều 39.13.NĐ.66.3. Thời hiệu xử phạt vi phạm hành chính",
+        "score": 0.5746
+      },
+      {
+        "milvus_id": 56926,
+        "ten": "Điều 39.13.NĐ.60.4. Các hình thức xử phạt vi phạm hành chính",
+        "score": 0.573
+      },
+      {
+        "milvus_id": 57349,
+        "ten": "Điều 39.13.NĐ.105.6. Xử phạt hành vi chống đối hoặc cản trở người thực hiện nhiệm vụ xử phạt vi phạm hành chính về xây dựng quy định tại Nghị định này",
+        "score": 0.5728
+      },
+      {
+        "milvus_id": 57468,
+        "ten": "Điều 39.13.NĐ.16.22. Thủ tục xử phạt, thi hành quyết định xử phạt",
+        "score": 0.5698
+      },
+      {
+        "milvus_id": 57815,
+        "ten": "Điều 39.13.NĐ.65.6. Áp dụng xử phạt vi phạm hành chính",
+        "score": 0.5685
+      },
+      {
+        "milvus_id": 56770,
+        "ten": "Điều 39.13.NĐ.5.15. Xử phạt đối với hành vi vi phạm quy định về cạnh tranh",
+        "score": 0.5678
+      },
+      {
+        "milvus_id": 56755,
+        "ten": "Điều 39.13.NĐ.104.60. Thi hành các hình thức xử phạt vi phạm hành chính",
+        "score": 0.5657
+      },
+      {
+        "milvus_id": 56385,
+        "ten": "Điều 39.13.TT.41.16. Hủy quyết định xử phạt vi phạm hành chính",
+        "score": 0.5651
+      },
+      {
+        "milvus_id": 56384,
+        "ten": "Điều 39.13.TT.41.15. Thi hành quyết định xử phạt vi phạm hành chính",
+        "score": 0.5647
+      },
+      {
+        "milvus_id": 59450,
+        "ten": "Điều 39.13.NĐ.67.3. Các hình thức xử phạt vi phạm hành chính",
+        "score": 0.5644
+      },
+      {
+        "milvus_id": 56925,
+        "ten": "Điều 39.13.NĐ.60.3. Thời hiệu xử phạt vi phạm hành chính",
+        "score": 0.5639
+      },
+      {
+        "milvus_id": 57603,
+        "ten": "Điều 39.13.NĐ.18.3a. Thời hiệu xử phạt vi phạm hành chính",
+        "score": 0.5637
+      },
+      {
+        "milvus_id": 58083,
+        "ten": "Điều 39.13.NĐ.102.5. Thời hiệu xử phạt vi phạm hành chính",
+        "score": 0.5631
+      },
+      {
+        "milvus_id": 56860,
+        "ten": "Điều 39.13.NĐ.6.27. Xử lý vụ việc vi phạm khi có tranh chấp",
+        "score": 0.563
+      },
+      {
+        "milvus_id": 56753,
+        "ten": "Điều 39.13.NĐ.104.58. Thủ tục xử phạt vi phạm hành chính",
+        "score": 0.5629
+      },
+      {
+        "milvus_id": 58578,
+        "ten": "Điều 39.13.NĐ.37.3. Thời hiệu xử phạt vi phạm hành chính",
+        "score": 0.562
+      },
+      {
+        "milvus_id": 59614,
+        "ten": "Điều 39.13.PL.2.45. Thi hành quyết định xử phạt và cưỡng chế thi hành quyết định xử phạt vi phạm hành chính",
+        "score": 0.5615
+      },
+      {
+        "milvus_id": 59066,
+        "ten": "Điều 39.13.NĐ.48.2. Đối tượng bị xử phạt vi phạm hành chính",
+        "score": 0.5609
+      },
+      {
+        "milvus_id": 57348,
+        "ten": "Điều 39.13.NĐ.105.5. Thời hiệu xử phạt vi phạm hành chính",
+        "score": 0.5601
+      },
+      {
+        "milvus_id": 54334,
+        "ten": "Điều 37.7.TL.5.4. Hành vi bị nghiêm cấm",
+        "score": 0.56
+      },
+      {
+        "milvus_id": 56470,
+        "ten": "Điều 39.13.LQ.70. Gửi quyết định xử phạt vi phạm hành chính để thi hành",
+        "score": 0.5595
+      },
+      {
+        "milvus_id": 59090,
+        "ten": "Điều 39.13.NĐ.106.5. Thời hiệu xử phạt vi phạm hành chính",
+        "score": 0.5594
+      },
+      {
+        "milvus_id": 42540,
+        "ten": "Điều 30.3.LQ.129. Thủ tục thi hành án phạt cấm đảm nhiệm chức vụ, cấm hành nghề hoặc làm công việc nhất định",
+        "score": 0.5587
+      },
+      {
+        "milvus_id": 44334,
+        "ten": "Điều 33.3.LQ.16. Hành vi nghiêm cấm và xử lý vi phạm",
+        "score": 0.5585
+      },
+      {
+        "milvus_id": 8472,
+        "ten": "Điều 6.4.PL.28. Xử lý đối với người có hành vi vi phạm pháp luật khi thực hiện nhiệm vụ đấu tranh phòng, chống mại dâm",
+        "score": 0.5569
+      },
+      {
+        "milvus_id": 42542,
+        "ten": "Điều 30.3.LQ.131. Trách nhiệm thi hành án phạt cấm đảm nhiệm chức vụ, cấm hành nghề hoặc làm công việc nhất định",
+        "score": 0.5568
+      },
+      {
+        "milvus_id": 56700,
+        "ten": "Điều 39.13.NĐ.104.5. Thời hiệu xử phạt vi phạm hành chính",
+        "score": 0.5567
+      },
+      {
+        "milvus_id": 58926,
+        "ten": "Điều 39.13.NĐ.75.40. Xử phạt các hành vi vi phạm quy định về khám, sửa chữa toa xe, lập tàu, thử hãm",
+        "score": 0.5561
+      },
+      {
+        "milvus_id": 56870,
+        "ten": "Điều 39.13.NĐ.66.2. Đối tượng bị xử phạt vi phạm hành chính",
+        "score": 0.5558
+      },
+      {
+        "milvus_id": 56810,
+        "ten": "Điều 39.13.TT.35.2. Đối tượng bị xử phạt vi phạm hành chính",
+        "score": 0.5552
+      },
+      {
+        "milvus_id": 59069,
+        "ten": "Điều 39.13.NĐ.49.3b. Vi phạm hành chính nhiều lần",
+        "score": 0.5544
+      },
+      {
+        "milvus_id": 59404,
+        "ten": "Điều 39.13.NĐ.103.5. Thời hiệu xử phạt vi phạm hành chính",
+        "score": 0.5541
+      },
+      {
+        "milvus_id": 56475,
+        "ten": "Điều 39.13.LQ.73. Thi hành quyết định xử phạt vi phạm hành chính",
+        "score": 0.5534
+      },
+      {
+        "milvus_id": 58815,
+        "ten": "Điều 39.13.NĐ.99.3. Thời hiệu xử phạt vi phạm hành chính",
+        "score": 0.5533
+      },
+      {
+        "milvus_id": 42493,
+        "ten": "Điều 30.3.LQ.111. Xử lý người chấp hành án phạt cấm cư trú vi phạm nghĩa vụ",
+        "score": 0.5532
+      },
+      {
+        "milvus_id": 59617,
+        "ten": "Điều 39.13.NĐ.107.3. Thời hiệu xử phạt vi phạm hành chính",
+        "score": 0.5521
+      },
+      {
+        "milvus_id": 57257,
+        "ten": "Điều 39.13.NĐ.81.65. Hành vi vi phạm quy định của thừa phát lại trong lĩnh vực thi hành án dân sự",
+        "score": 0.552
+      },
+      {
+        "milvus_id": 57466,
+        "ten": "Điều 39.13.TT.45.18. Giao quyền xử phạt vi phạm hành chính và áp dụng biện pháp ngăn chặn và bảo đảm xử lý vi phạm hành chính",
+        "score": 0.5517
+      }
+    ]
+  },
+  {
+    "query": "Quyền và nghĩa vụ cơ bản của thanh niên theo pháp luật được quy định như thế nào?",
+    "old_gold_docs": [
+      58558,
+      58559
+    ],
+    "top50_candidates": [
+      {
+        "milvus_id": 52263,
+        "ten": "Điều 36.3.LQ.4. Vai trò, quyền và nghĩa vụ của thanh niên",
+        "score": 0.7234
+      },
+      {
+        "milvus_id": 52264,
+        "ten": "Điều 36.3.LQ.5. Nguyên tắc bảo đảm thực hiện quyền, nghĩa vụ của thanh niên và chính sách của Nhà nước đối với thanh niên",
+        "score": 0.6399
+      },
+      {
+        "milvus_id": 41272,
+        "ten": "Điều 30.1.LQ.20. Quyền và nghĩa vụ của người được đặc xá",
+        "score": 0.6244
+      },
+      {
+        "milvus_id": 52292,
+        "ten": "Điều 36.3.NĐ.1.3. Chức năng của thanh niên xung phong",
+        "score": 0.612
+      },
+      {
+        "milvus_id": 51152,
+        "ten": "Điều 34.11.NĐ.1.17. Quyền và nghĩa vụ của bên được uỷ quyền",
+        "score": 0.6052
+      },
+      {
+        "milvus_id": 22580,
+        "ten": "Điều 18.5.NĐ.1.37. Quyền và nghĩa vụ của người tố cáo",
+        "score": 0.6037
+      },
+      {
+        "milvus_id": 52293,
+        "ten": "Điều 36.3.NĐ.1.4. Nhiệm vụ của thanh niên xung phong",
+        "score": 0.6002
+      },
+      {
+        "milvus_id": 12226,
+        "ten": "Điều 12.3.TT.1.18. Quyền và nghĩa vụ của Bên được bảo lãnh",
+        "score": 0.5953
+      },
+      {
+        "milvus_id": 22745,
+        "ten": "Điều 18.5.TT.11.4. Quyền và nghĩa vụ của người được bảo vệ",
+        "score": 0.5946
+      },
+      {
+        "milvus_id": 41259,
+        "ten": "Điều 30.1.LQ.13. Quyền và nghĩa vụ của người được đề nghị đặc xá",
+        "score": 0.5888
+      },
+      {
+        "milvus_id": 1583,
+        "ten": "Điều 1.10.LQ.5. Quyền và nghĩa vụ của công dân Việt Nam",
+        "score": 0.5865
+      },
+      {
+        "milvus_id": 42087,
+        "ten": "Điều 30.3.LQ.27. Quyền và nghĩa vụ của phạm nhân",
+        "score": 0.5855
+      },
+      {
+        "milvus_id": 22748,
+        "ten": "Điều 18.5.LQ.48. Quyền và nghĩa vụ của người được bảo vệ",
+        "score": 0.5844
+      },
+      {
+        "milvus_id": 41338,
+        "ten": "Điều 30.2.LQ.7b. Quyền, nghĩa vụ của người có quyền lợi, nghĩa vụ liên quan",
+        "score": 0.5838
+      },
+      {
+        "milvus_id": 6233,
+        "ten": "Điều 4.6.NĐ.23. Quyền và nghĩa vụ của người thực hiện tư vấn pháp luật",
+        "score": 0.5832
+      },
+      {
+        "milvus_id": 5331,
+        "ten": "Điều 4.3.LQ.21. Quyền, nghĩa vụ của người trưng cầu giám định tư pháp",
+        "score": 0.5817
+      },
+      {
+        "milvus_id": 124,
+        "ten": "Điều 1.1.LQ.17. Quyền và nghĩa vụ của công dân trong bảo vệ an ninh quốc gia",
+        "score": 0.5807
+      },
+      {
+        "milvus_id": 52294,
+        "ten": "Điều 36.3.NĐ.1.5. Thẩm quyền thành lập, giải thể và quản lý thanh niên xung phong",
+        "score": 0.5806
+      },
+      {
+        "milvus_id": 11150,
+        "ten": "Điều 9.3.NĐ.40. Quyền, nghĩa vụ của các bên trong ký quỹ",
+        "score": 0.579
+      },
+      {
+        "milvus_id": 59950,
+        "ten": "Điều 39.13.NĐ.100.49. Quyền và nghĩa vụ của người chưa thành niên được áp dụng biện pháp giáo dục dựa vào cộng đồng",
+        "score": 0.5789
+      },
+      {
+        "milvus_id": 59823,
+        "ten": "Điều 39.13.NĐ.94.35. Quyền và nghĩa vụ của người được phân công giúp đỡ",
+        "score": 0.5779
+      },
+      {
+        "milvus_id": 52873,
+        "ten": "Điều 37.5.LQ.71. Quyền, nghĩa vụ của nguyên đơn",
+        "score": 0.5769
+      },
+      {
+        "milvus_id": 22579,
+        "ten": "Điều 18.5.LQ.9. Quyền và nghĩa vụ của người tố cáo",
+        "score": 0.5766
+      },
+      {
+        "milvus_id": 53827,
+        "ten": "Điều 37.6.NĐ.1.5. Quyền, nghĩa vụ của người được thi hành án",
+        "score": 0.5764
+      },
+      {
+        "milvus_id": 29871,
+        "ten": "Điều 24.1.LQ.15. Quyền và nghĩa vụ của chủ thực vật",
+        "score": 0.5746
+      },
+      {
+        "milvus_id": 54722,
+        "ten": "Điều 37.7.LQ.435. Quyền và nghĩa vụ của người đại diện theo pháp luật của pháp nhân",
+        "score": 0.5735
+      },
+      {
+        "milvus_id": 10181,
+        "ten": "Điều 8.4.LQ.70. Quyền và nghĩa vụ của con",
+        "score": 0.5673
+      },
+      {
+        "milvus_id": 12225,
+        "ten": "Điều 12.3.TT.1.17. Quyền và nghĩa vụ của Bên bảo lãnh",
+        "score": 0.5672
+      },
+      {
+        "milvus_id": 52322,
+        "ten": "Điều 36.3.NĐ.3.3. Nhiệm vụ của thanh niên xung phong và thanh niên tình nguyện",
+        "score": 0.5671
+      },
+      {
+        "milvus_id": 59942,
+        "ten": "Điều 39.13.NĐ.94.45. Quyền và nghĩa vụ của người chưa thành niên được áp dụng biện pháp quản lý tại gia đình",
+        "score": 0.5666
+      },
+      {
+        "milvus_id": 53883,
+        "ten": "Điều 37.6.LQ.338. Quyền, nghĩa vụ của người tố cáo",
+        "score": 0.566
+      },
+      {
+        "milvus_id": 24500,
+        "ten": "Điều 20.2.LQ.6. Quyền và nghĩa vụ của người sử dụng lao động",
+        "score": 0.5644
+      },
+      {
+        "milvus_id": 52875,
+        "ten": "Điều 37.5.LQ.73. Quyền, nghĩa vụ của người có quyền lợi, nghĩa vụ liên quan",
+        "score": 0.5638
+      },
+      {
+        "milvus_id": 25993,
+        "ten": "Điều 21.2.NĐ.1.10. Quyền và nghĩa vụ của hộ gia đình, cá nhân sinh sống hợp pháp trong khu bảo tồn",
+        "score": 0.5634
+      },
+      {
+        "milvus_id": 52301,
+        "ten": "Điều 36.3.TT.1.7. Thẩm quyền và căn cứ giải thể tổ chức thanh niên xung phong",
+        "score": 0.5631
+      },
+      {
+        "milvus_id": 11108,
+        "ten": "Điều 9.3.NĐ.4. Áp dụng pháp luật và thỏa thuận về bảo đảm thực hiện nghĩa vụ",
+        "score": 0.5626
+      },
+      {
+        "milvus_id": 12260,
+        "ten": "Điều 12.3.NĐ.1.28. Quyền và nghĩa vụ của bên được bảo lãnh",
+        "score": 0.5624
+      },
+      {
+        "milvus_id": 41334,
+        "ten": "Điều 30.2.LQ.7. Quyền, nghĩa vụ của người được thi hành án",
+        "score": 0.5603
+      },
+      {
+        "milvus_id": 22585,
+        "ten": "Điều 18.5.NĐ.1.38. Quyền và nghĩa vụ của người bị tố cáo và người giải quyết tố cáo",
+        "score": 0.5603
+      },
+      {
+        "milvus_id": 22584,
+        "ten": "Điều 18.5.LQ.10. Quyền và nghĩa vụ của người bị tố cáo",
+        "score": 0.5602
+      },
+      {
+        "milvus_id": 52879,
+        "ten": "Điều 37.5.LQ.76. Quyền, nghĩa vụ của người bảo vệ quyền và lợi ích hợp pháp của đương sự",
+        "score": 0.56
+      },
+      {
+        "milvus_id": 24499,
+        "ten": "Điều 20.2.LQ.5. Quyền và nghĩa vụ của người lao động",
+        "score": 0.5583
+      },
+      {
+        "milvus_id": 6202,
+        "ten": "Điều 4.6.NĐ.8. Quyền, nghĩa vụ của Trung tâm tư vấn pháp luật",
+        "score": 0.5572
+      },
+      {
+        "milvus_id": 36344,
+        "ten": "Điều 26.2.NĐ.8.5. Quyền và nghĩa vụ của người khai hải quan",
+        "score": 0.557
+      },
+      {
+        "milvus_id": 5332,
+        "ten": "Điều 4.3.LQ.22. Quyền, nghĩa vụ của người yêu cầu giám định tư pháp",
+        "score": 0.5567
+      },
+      {
+        "milvus_id": 53988,
+        "ten": "Điều 37.7.LQ.8. Tôn trọng và bảo vệ quyền con người, quyền và lợi ích hợp pháp của cá nhân",
+        "score": 0.5566
+      },
+      {
+        "milvus_id": 9959,
+        "ten": "Điều 8.3.PL.4. Quyền và nghĩa vụ của công dân về công tác dân số.",
+        "score": 0.5563
+      },
+      {
+        "milvus_id": 10294,
+        "ten": "Điều 9.1.LQ.17. Nội dung năng lực pháp luật dân sự của cá nhân",
+        "score": 0.5563
+      },
+      {
+        "milvus_id": 4624,
+        "ten": "Điều 3.3.NĐ.10.12. Quyền và nghĩa vụ của người sử dụng",
+        "score": 0.5539
+      },
+      {
+        "milvus_id": 41331,
+        "ten": "Điều 30.2.LQ.5. Bảo đảm quyền, lợi ích hợp pháp của đương sự, người có quyền lợi, nghĩa vụ liên quan",
+        "score": 0.5536
+      }
+    ]
+  },
+  {
+    "query": "Chính sách hỗ trợ phát triển kinh tế – xã hội đối với vùng dân tộc thiểu số được quy định ra sao?",
+    "old_gold_docs": [
+      42765,
+      42766,
+      42793,
+      42804
+    ],
+    "top50_candidates": [
+      {
+        "milvus_id": 30769,
+        "ten": "Điều 24.2.TT.3.2. Hỗ trợ lãi suất đối với Ngân hàng Chính sách xã hội",
+        "score": 0.6251
+      },
+      {
+        "milvus_id": 8143,
+        "ten": "Điều 6.2.LQ.18. Chính sách bảo trợ xã hội",
+        "score": 0.6226
+      },
+      {
+        "milvus_id": 12671,
+        "ten": "Điều 12.4.LQ.29. Quỹ hỗ trợ phát triển hợp tác xã",
+        "score": 0.6196
+      },
+      {
+        "milvus_id": 6531,
+        "ten": "Điều 5.2.NĐ.9.4. Cơ chế, chính sách ưu đãi, khuyến khích phát triển chung",
+        "score": 0.6073
+      },
+      {
+        "milvus_id": 8142,
+        "ten": "Điều 6.2.LQ.17. Đối tượng được hưởng chính sách bảo trợ xã hội",
+        "score": 0.6059
+      },
+      {
+        "milvus_id": 8046,
+        "ten": "Điều 6.1.NĐ.3. Nguyên tắc cơ bản về chính sách trợ giúp xã hội",
+        "score": 0.5998
+      },
+      {
+        "milvus_id": 8047,
+        "ten": "Điều 6.1.NĐ.4. Mức chuẩn trợ giúp xã hội",
+        "score": 0.5994
+      },
+      {
+        "milvus_id": 30791,
+        "ten": "Điều 24.2.NĐ.10.8. Hỗ trợ kinh phí để phát triển sinh kế, cải thiện đời sống người dân vùng đệm của các khu rừng đặc dụng",
+        "score": 0.5966
+      },
+      {
+        "milvus_id": 30833,
+        "ten": "Điều 24.2.QĐ.6.8. Hỗ trợ phát triển cộng đồng vùng đệm các khu rừng đặc dụng",
+        "score": 0.5962
+      },
+      {
+        "milvus_id": 525,
+        "ten": "Điều 1.4.NĐ.1.11. Đầu tư phát triển kinh tế - xã hội ở khu vực biên giới",
+        "score": 0.5913
+      },
+      {
+        "milvus_id": 12670,
+        "ten": "Điều 12.4.LQ.28. Chính sách hỗ trợ hoạt động trong lĩnh vực nông nghiệp",
+        "score": 0.5856
+      },
+      {
+        "milvus_id": 47876,
+        "ten": "Điều 34.3.LQ.55. Chính sách quản lý, phát triển các hoạt động hỗ trợ thương mại tại khu vực cửa khẩu biên giới trên đất liền",
+        "score": 0.5852
+      },
+      {
+        "milvus_id": 30657,
+        "ten": "Điều 24.2.LQ.70. Chính sách phát triển thị trường lâm sản",
+        "score": 0.5837
+      },
+      {
+        "milvus_id": 27042,
+        "ten": "Điều 22.4.TT.48.3. Các biện pháp hỗ trợ tổ chức tín dụng cho vay phát triển nông nghiệp, nông thôn",
+        "score": 0.5827
+      },
+      {
+        "milvus_id": 31530,
+        "ten": "Điều 24.5.NĐ.2.4. Nguyên tắc thực hiện chính sách hỗ trợ",
+        "score": 0.5802
+      },
+      {
+        "milvus_id": 9606,
+        "ten": "Điều 8.1.NĐ.1.19. Chính sách trợ giúp xã hội",
+        "score": 0.5786
+      },
+      {
+        "milvus_id": 32083,
+        "ten": "Điều 24.9.NĐ.14. Hỗ trợ phát triển làng nghề",
+        "score": 0.5774
+      },
+      {
+        "milvus_id": 32063,
+        "ten": "Điều 24.9.NĐ.12. Hỗ trợ phát triển ngành nghề nông thôn",
+        "score": 0.5774
+      },
+      {
+        "milvus_id": 31400,
+        "ten": "Điều 24.4.NĐ.1.17. Một số chính sách đặc thù hỗ trợ doanh nghiệp nhỏ, hợp tác xã, trang trại, hộ gia đình, nhóm hộ sản xuất sản phẩm hữu cơ",
+        "score": 0.5717
+      },
+      {
+        "milvus_id": 8148,
+        "ten": "Điều 6.2.NĐ.2.5. Các loại hình cơ sở trợ giúp xã hội",
+        "score": 0.5686
+      },
+      {
+        "milvus_id": 29164,
+        "ten": "Điều 23.1.LQ.6. Phục vụ phát triển kinh tế đất nước",
+        "score": 0.5671
+      },
+      {
+        "milvus_id": 31399,
+        "ten": "Điều 24.4.NĐ.1.16. Ưu tiên áp dụng các chính sách đã ban hành cho phát triển nông nghiệp hữu cơ",
+        "score": 0.5645
+      },
+      {
+        "milvus_id": 31935,
+        "ten": "Điều 24.6.LQ.49. Yêu cầu phát triển thủy lợi nhỏ, thủy lợi nội đồng",
+        "score": 0.5641
+      },
+      {
+        "milvus_id": 35044,
+        "ten": "Điều 25.13.NĐ.5.36. Hỗ trợ tài chính trong Khu kinh tế - quốc phòng",
+        "score": 0.5626
+      },
+      {
+        "milvus_id": 8077,
+        "ten": "Điều 6.1.NĐ.31. Kinh phí thực hiện chính sách trợ giúp xã hội thường xuyên",
+        "score": 0.5624
+      },
+      {
+        "milvus_id": 60450,
+        "ten": "Điều 41.5.QĐ.3.1. Thành lập Quỹ hỗ trợ phát triển du lịch",
+        "score": 0.5615
+      },
+      {
+        "milvus_id": 51696,
+        "ten": "Điều 35.8.LQ.7. Quyết định các vấn đề quan trọng về kinh tế - xã hội",
+        "score": 0.5604
+      },
+      {
+        "milvus_id": 8188,
+        "ten": "Điều 6.2.NĐ.2.34. Quy trình trợ giúp xã hội",
+        "score": 0.5598
+      },
+      {
+        "milvus_id": 30740,
+        "ten": "Điều 24.2.TT.20.6. Hỗ trợ cộng đồng dân cư vùng đệm các khu rừng đặc dụng",
+        "score": 0.5597
+      },
+      {
+        "milvus_id": 8082,
+        "ten": "Điều 6.1.NĐ.33. Quản lý kinh phí trợ giúp xã hội",
+        "score": 0.5592
+      },
+      {
+        "milvus_id": 2729,
+        "ten": "Điều 2.3.QĐ.1.8. Mức hỗ trợ từ ngân sách trung ương cho ngân sách địa phương để thực hiện hỗ trợ phí bảo hiểm nông nghiệp",
+        "score": 0.5592
+      },
+      {
+        "milvus_id": 61357,
+        "ten": "Điều 41.11.LQ.67. Quỹ hỗ trợ phát triển tài năng thể thao",
+        "score": 0.558
+      },
+      {
+        "milvus_id": 13471,
+        "ten": "Điều 13.1.TT.91.8. Hỗ trợ phát triển",
+        "score": 0.557
+      },
+      {
+        "milvus_id": 29176,
+        "ten": "Điều 23.1.NĐ.1.13. Quỹ hỗ trợ hoạt động phục vụ kinh tế",
+        "score": 0.5568
+      },
+      {
+        "milvus_id": 32119,
+        "ten": "Điều 24.9.NQ.1.2. Quan điểm và chính sách phát triển kinh tế trang trại",
+        "score": 0.5553
+      },
+      {
+        "milvus_id": 60448,
+        "ten": "Điều 41.5.LQ.70. Thành lập Quỹ hỗ trợ phát triển du lịch",
+        "score": 0.5545
+      },
+      {
+        "milvus_id": 25234,
+        "ten": "Điều 20.4.LQ.17. Hỗ trợ doanh nghiệp nhỏ và vừa, hợp tác xã, tổ hợp tác, hộ kinh doanh tạo việc làm cho người lao động ở khu vực nông thôn",
+        "score": 0.5541
+      },
+      {
+        "milvus_id": 60449,
+        "ten": "Điều 41.5.NĐ.1.30. Nguồn hình thành Quỹ hỗ trợ phát triển du lịch",
+        "score": 0.5529
+      },
+      {
+        "milvus_id": 8163,
+        "ten": "Điều 6.2.NĐ.2.9. Kinh phí hoạt động của cơ sở trợ giúp xã hội",
+        "score": 0.5519
+      },
+      {
+        "milvus_id": 61358,
+        "ten": "Điều 41.11.NĐ.1.19. Quỹ hỗ trợ phát triển tài năng thể thao",
+        "score": 0.5512
+      },
+      {
+        "milvus_id": 60453,
+        "ten": "Điều 41.5.LQ.72. Nguyên tắc hoạt động của Quỹ hỗ trợ phát triển du lịch",
+        "score": 0.55
+      },
+      {
+        "milvus_id": 33287,
+        "ten": "Điều 24.12.LQ.20. Nguồn tài chính bảo vệ và phát triển nguồn lợi thủy sản",
+        "score": 0.5496
+      },
+      {
+        "milvus_id": 35002,
+        "ten": "Điều 25.13.NĐ.1.14. Kết hợp trong thẩm định các chiến lược, quy hoạch, dự án phát triển kinh tế - xã hội có liên quan đến quốc phòng",
+        "score": 0.5492
+      },
+      {
+        "milvus_id": 25285,
+        "ten": "Điều 20.4.LQ.22. Hỗ trợ phát triển thị trường lao động",
+        "score": 0.5486
+      },
+      {
+        "milvus_id": 12380,
+        "ten": "Điều 12.3.NĐ.5.14. Hỗ trợ phát triển nguồn nhân lực cho doanh nghiệp nhỏ và vừa",
+        "score": 0.5477
+      },
+      {
+        "milvus_id": 60083,
+        "ten": "Điều 40.1.NĐ.1.4. Hỗ trợ chi phí thực hiện ủy thác tư pháp về dân sự",
+        "score": 0.5471
+      },
+      {
+        "milvus_id": 19632,
+        "ten": "Điều 16.1.LQ.115. Tội phá hoại việc thực hiện các chính sách kinh tế - xã hội",
+        "score": 0.5467
+      },
+      {
+        "milvus_id": 29170,
+        "ten": "Điều 23.1.NĐ.1.7. Tạo điều kiện thuận lợi để cộng đồng người Việt Nam ở nước ngoài đóng góp vào sự nghiệp phát triển kinh tế - xã hội của đất nước",
+        "score": 0.5463
+      },
+      {
+        "milvus_id": 8146,
+        "ten": "Điều 6.2.NĐ.2.3. Chính sách khuyến khích xã hội hóa",
+        "score": 0.5453
+      },
+      {
+        "milvus_id": 30785,
+        "ten": "Điều 24.2.NĐ.4.88. Chính sách hỗ trợ đầu tư",
+        "score": 0.5447
+      }
+    ]
+  },
+  {
+    "query": "Người nghiện ma túy bị áp dụng biện pháp cai nghiện bắt buộc trong trường hợp nào?",
+    "old_gold_docs": [
+      62626,
+      62617,
+      62596,
+      62676
+    ],
+    "top50_candidates": [
+      {
+        "milvus_id": 56132,
+        "ten": "Điều 39.7.TT.4.5. Chi thực hiện chế độ đối với người cai nghiện bị áp dụng biện pháp đưa vào cơ sở cai nghiện ma túy bắt buộc (sau đây viết tắt là người cai nghiện bắt buộc) trong thời gian cai nghiện tại cơ sở cai nghiện ma túy bắt buộc",
+        "score": 0.6434
+      },
+      {
+        "milvus_id": 56082,
+        "ten": "Điều 39.7.LQ.38. Cai nghiện ma túy cho người bị tạm giam, phạm nhân, trại viên cơ sở giáo dục bắt buộc, học sinh trường giáo dưỡng",
+        "score": 0.6108
+      },
+      {
+        "milvus_id": 56001,
+        "ten": "Điều 39.7.LQ.28. Các biện pháp cai nghiện ma túy",
+        "score": 0.5961
+      },
+      {
+        "milvus_id": 56066,
+        "ten": "Điều 39.7.NĐ.6.66. Chế độ cai nghiện ma túy",
+        "score": 0.5923
+      },
+      {
+        "milvus_id": 56131,
+        "ten": "Điều 39.7.TT.4.4. Chi thực hiện thủ tục áp dụng biện pháp đưa vào cơ sở cai nghiện ma túy bắt buộc",
+        "score": 0.5869
+      },
+      {
+        "milvus_id": 56043,
+        "ten": "Điều 39.7.NĐ.6.56. Truy tìm đối tượng bị áp dụng biện pháp đưa vào cơ sở cai nghiện bắt buộc bỏ trốn",
+        "score": 0.5808
+      },
+      {
+        "milvus_id": 56031,
+        "ten": "Điều 39.7.LQ.33. Cai nghiện ma túy cho người từ đủ 12 tuổi đến dưới 18 tuổi",
+        "score": 0.5791
+      },
+      {
+        "milvus_id": 59832,
+        "ten": "Điều 39.13.NĐ.92.56. Truy tìm đối tượng bị áp dụng biện pháp đưa vào cơ sở cai nghiện bắt buộc bỏ trốn",
+        "score": 0.5783
+      },
+      {
+        "milvus_id": 59848,
+        "ten": "Điều 39.13.NĐ.92.66. Chế độ cai nghiện ma túy",
+        "score": 0.5711
+      },
+      {
+        "milvus_id": 59867,
+        "ten": "Điều 39.13.LQ.118. Xử lý trường hợp một người vừa thuộc đối tượng đưa vào cơ sở giáo dục bắt buộc vừa thuộc đối tượng đưa vào cơ sở cai nghiện bắt buộc",
+        "score": 0.5709
+      },
+      {
+        "milvus_id": 56081,
+        "ten": "Điều 39.7.LQ.37. Áp dụng biện pháp cai nghiện ma túy cho người Việt Nam bị nước ngoài trục xuất về nước do có hành vi sử dụng trái phép chất ma túy, nghiện ma túy; người nước ngoài nghiện ma túy sinh sống tại Việt Nam",
+        "score": 0.5678
+      },
+      {
+        "milvus_id": 19801,
+        "ten": "Điều 16.1.LQ.257. Tội cưỡng bức người khác sử dụng trái phép chất ma túy",
+        "score": 0.5576
+      },
+      {
+        "milvus_id": 56093,
+        "ten": "Điều 39.7.LQ.43. Lập danh sách người nghiện ma túy, người bị quản lý sau cai nghiện ma túy",
+        "score": 0.5539
+      },
+      {
+        "milvus_id": 54144,
+        "ten": "Điều 37.7.TL.11.15. Áp dụng biện pháp giữ người trong trường hợp khẩn cấp, bắt người bị giữ trong trường hợp khẩn cấp",
+        "score": 0.5531
+      },
+      {
+        "milvus_id": 42454,
+        "ten": "Điều 30.3.TL.12.11. Thi hành án trong trường hợp người chấp hành án bị đưa vào trường giáo dưỡng, cơ sở giáo dục bắt buộc, cơ sở chữa bệnh bắt buộc, cơ sở cai nghiện bắt buộc trong thời gian chấp hành án",
+        "score": 0.5517
+      },
+      {
+        "milvus_id": 59830,
+        "ten": "Điều 39.13.NĐ.92.54. Đưa người phải chấp hành quyết định áp dụng biện pháp đưa vào cơ sở cai nghiện bắt buộc, quyết định đưa vào cơ sở cai nghiện bắt buộc đối với người từ đủ 12 tuổi đến dưới 18 tuổi (sau đây gọi chung là quyết định đưa vào cơ sở cai nghiện bắt buộc)",
+        "score": 0.5487
+      },
+      {
+        "milvus_id": 56041,
+        "ten": "Điều 39.7.NĐ.6.54. Đưa người phải chấp hành quyết định áp dụng biện pháp đưa vào cơ sở cai nghiện bắt buộc, quyết định đưa vào cơ sở cai nghiện bắt buộc đối với người từ đủ 12 tuổi đến dưới 18 tuổi (sau đây gọi chung là quyết định đưa vào cơ sở cai nghiện bắt buộc)",
+        "score": 0.548
+      },
+      {
+        "milvus_id": 56048,
+        "ten": "Điều 39.7.NĐ.6.61. Giải quyết trường hợp người cai nghiện chết trong thời gian chấp hành quyết định tại cơ sở cai nghiện bắt buộc",
+        "score": 0.5467
+      },
+      {
+        "milvus_id": 54046,
+        "ten": "Điều 37.7.LQ.58. Người bị giữ trong trường hợp khẩn cấp, người bị bắt",
+        "score": 0.5464
+      },
+      {
+        "milvus_id": 59845,
+        "ten": "Điều 39.13.LQ.113. Quản lý người được hoãn hoặc được tạm đình chỉ chấp hành quyết định áp dụng biện pháp đưa vào trường giáo dưỡng, đưa vào cơ sở giáo dục bắt buộc, đưa vào cơ sở cai nghiện bắt buộc",
+        "score": 0.5458
+      },
+      {
+        "milvus_id": 59837,
+        "ten": "Điều 39.13.NĐ.92.61. Giải quyết trường hợp người cai nghiện chết trong thời gian chấp hành quyết định tại cơ sở cai nghiện bắt buộc",
+        "score": 0.5419
+      },
+      {
+        "milvus_id": 19932,
+        "ten": "Điều 16.1.LQ.378. Tội tha trái pháp luật người bị bắt, người đang bị tạm giữ, tạm giam, người đang chấp hành án phạt tù",
+        "score": 0.541
+      },
+      {
+        "milvus_id": 62371,
+        "ten": "Điều 44.8.LQ.21. Phổ biến, giáo dục pháp luật cho người đang chấp hành hình phạt tù, người đang bị áp dụng biện pháp đưa vào trường giáo dưỡng, cơ sở giáo dục bắt buộc, cơ sở cai nghiện bắt buộc",
+        "score": 0.5405
+      },
+      {
+        "milvus_id": 19941,
+        "ten": "Điều 16.1.LQ.387. Tội đánh tháo người bị bắt, bị tạm giữ, tạm giam, người đang bị áp giải, xét xử, chấp hành án phạt tù",
+        "score": 0.5399
+      },
+      {
+        "milvus_id": 59928,
+        "ten": "Điều 39.13.LQ.132. Truy tìm đối tượng đã có quyết định đưa vào trường giáo dưỡng, đưa vào cơ sở giáo dục bắt buộc, đưa vào cơ sở cai nghiện bắt buộc trong trường hợp bỏ trốn",
+        "score": 0.5386
+      },
+      {
+        "milvus_id": 56083,
+        "ten": "Điều 39.7.LQ.39. Miễn chấp hành thời gian còn lại trong quyết định đưa vào cơ sở cai nghiện bắt buộc đối với người từ đủ 14 tuổi đến dưới 18 tuổi đang cai nghiện ma túy bắt buộc",
+        "score": 0.5363
+      },
+      {
+        "milvus_id": 56022,
+        "ten": "Điều 39.7.NĐ.6.33. Xử lý đối với các trường hợp vi phạm pháp luật về điều trị, cai nghiện ma túy tự nguyện",
+        "score": 0.5344
+      },
+      {
+        "milvus_id": 59833,
+        "ten": "Điều 39.13.NĐ.92.57. Hoãn hoặc miễn chấp hành quyết định áp dụng biện pháp đưa vào cơ sở cai nghiện bắt buộc",
+        "score": 0.531
+      },
+      {
+        "milvus_id": 56145,
+        "ten": "Điều 39.7.NĐ.6.4. Nguyên tắc tổ chức cai nghiện ma túy, quản lý sau cai nghiện ma túy",
+        "score": 0.5304
+      },
+      {
+        "milvus_id": 55996,
+        "ten": "Điều 39.7.NĐ.5.7. Hồ sơ, trình tự, thủ tục xác định tình trạng nghiện ma túy đối với người không bị tạm giữ theo thủ tục hành chính quy định tại điểm b Khoản 2 Điều 2 Nghị định này",
+        "score": 0.5293
+      },
+      {
+        "milvus_id": 59813,
+        "ten": "Điều 39.13.LQ.107. Gửi quyết định áp dụng biện pháp đưa vào trường giáo dưỡng, đưa vào cơ sở giáo dục bắt buộc và đưa vào cơ sở cai nghiện bắt buộc để thi hành",
+        "score": 0.5286
+      },
+      {
+        "milvus_id": 56084,
+        "ten": "Điều 39.7.LQ.40. Quản lý sau cai nghiện ma túy tại nơi cư trú",
+        "score": 0.5271
+      },
+      {
+        "milvus_id": 59835,
+        "ten": "Điều 39.13.NĐ.92.59. Tạm thời đưa người cai nghiện ra khỏi cơ sở cai nghiện bắt buộc theo yêu cầu của cơ quan tiến hành tố tụng hình sự",
+        "score": 0.5267
+      },
+      {
+        "milvus_id": 59706,
+        "ten": "Điều 39.13.LQ.95. Biện pháp đưa vào cơ sở cai nghiện bắt buộc",
+        "score": 0.5263
+      },
+      {
+        "milvus_id": 56044,
+        "ten": "Điều 39.7.NĐ.6.57. Hoãn hoặc miễn chấp hành quyết định áp dụng biện pháp đưa vào cơ sở cai nghiện bắt buộc",
+        "score": 0.5257
+      },
+      {
+        "milvus_id": 54127,
+        "ten": "Điều 37.7.LQ.95. Lời khai của người bị giữ trong trường hợp khẩn cấp, người bị tố giác, người bị kiến nghị khởi tố, người phạm tội tự thú, đầu thú, người bị bắt, bị tạm giữ",
+        "score": 0.5239
+      },
+      {
+        "milvus_id": 19902,
+        "ten": "Điều 16.1.LQ.350. Tội cưỡng ép người khác trốn đi nước ngoài hoặc ở lại nước ngoài trái phép",
+        "score": 0.5229
+      },
+      {
+        "milvus_id": 19537,
+        "ten": "Điều 16.1.NQ.4.10. Trường hợp người được hưởng án treo bị buộc phải chấp hành hình phạt tù của bản án đã cho hưởng án treo do cố ý vi phạm nghĩa vụ",
+        "score": 0.5227
+      },
+      {
+        "milvus_id": 59861,
+        "ten": "Điều 39.13.LQ.115. Tạm thời đưa người đang chấp hành biện pháp đưa vào trường giáo dưỡng, đưa vào cơ sở giáo dục bắt buộc, đưa vào cơ sở cai nghiện bắt buộc ra khỏi nơi chấp hành biện pháp xử lý hành chính theo yêu cầu của cơ quan tiến hành tố tụng hình sự",
+        "score": 0.5212
+      },
+      {
+        "milvus_id": 55999,
+        "ten": "Điều 39.7.TT.3.4. Quy trình chuyên môn để xác định tình trạng nghiện ma túy",
+        "score": 0.5202
+      },
+      {
+        "milvus_id": 34398,
+        "ten": "Điều 25.9.NĐ.1.23. Các trường hợp giải ngạch sĩ quan dự bị",
+        "score": 0.5196
+      },
+      {
+        "milvus_id": 56046,
+        "ten": "Điều 39.7.NĐ.6.59. Tạm thời đưa người cai nghiện ra khỏi cơ sở cai nghiện bắt buộc theo yêu cầu của cơ quan tiến hành tố tụng hình sự",
+        "score": 0.5191
+      },
+      {
+        "milvus_id": 56072,
+        "ten": "Điều 39.7.NĐ.6.75. Điều kiện bảo đảm cho việc áp dụng, thi hành biện pháp đưa vào cơ sở cai nghiện bắt buộc",
+        "score": 0.5165
+      },
+      {
+        "milvus_id": 59707,
+        "ten": "Điều 39.13.LQ.96. Đối tượng áp dụng biện pháp đưa vào cơ sở cai nghiện bắt buộc",
+        "score": 0.5157
+      },
+      {
+        "milvus_id": 59864,
+        "ten": "Điều 39.13.NĐ.100.5. Chuyển hồ sơ của người bị áp dụng biện pháp đưa vào trường giáo dưỡng, cơ sở giáo dục bắt buộc có dấu hiệu của tội phạm để truy cứu trách nhiệm hình sự",
+        "score": 0.5144
+      },
+      {
+        "milvus_id": 42188,
+        "ten": "Điều 30.3.TL.4.16. Giải quyết trường hợp người bị truy nã ra đầu thú",
+        "score": 0.5144
+      },
+      {
+        "milvus_id": 56027,
+        "ten": "Điều 39.7.NĐ.6.37. Thực hiện hợp đồng dịch vụ cai nghiện ma túy",
+        "score": 0.5141
+      },
+      {
+        "milvus_id": 55991,
+        "ten": "Điều 39.7.NĐ.5.2. Địa điểm xác định tình trạng nghiện ma túy",
+        "score": 0.5135
+      },
+      {
+        "milvus_id": 55233,
+        "ten": "Điều 37.10.TT.3.5. Các trường hợp người bị tạm giữ, người bị tạm giam không được gặp thân nhân",
+        "score": 0.513
+      },
+      {
+        "milvus_id": 55984,
+        "ten": "Điều 39.7.NĐ.4.47. Quản lý người sử dụng trái phép chất ma túy trong trường hợp chuyển đi khỏi nơi cư trú",
+        "score": 0.5109
+      }
+    ]
+  },
+  {
+    "query": "Người bị tạm giữ có những quyền gì theo quy định pháp luật?",
+    "old_gold_docs": [
+      61755,
+      60608,
+      66477,
+      69370,
+      61811,
+      66479
+    ],
+    "top50_candidates": [
+      {
+        "milvus_id": 55194,
+        "ten": "Điều 37.10.LQ.9. Quyền và nghĩa vụ của người bị tạm giữ, người bị tạm giam",
+        "score": 0.6567
+      },
+      {
+        "milvus_id": 59882,
+        "ten": "Điều 39.13.NĐ.101.27. Quyền và nghĩa vụ của người bị tạm giữ",
+        "score": 0.651
+      },
+      {
+        "milvus_id": 62754,
+        "ten": "Điều 44.13.TT.4.8. Quyền đề xuất ý kiến của người bị tạm giữ, người bị tạm giam",
+        "score": 0.6193
+      },
+      {
+        "milvus_id": 59879,
+        "ten": "Điều 39.13.NĐ.101.24. Tiếp nhận người bị tạm giữ theo thủ tục hành chính",
+        "score": 0.6157
+      },
+      {
+        "milvus_id": 59880,
+        "ten": "Điều 39.13.NĐ.101.25. Quản lý người bị tạm giữ theo thủ tục hành chính",
+        "score": 0.6119
+      },
+      {
+        "milvus_id": 53998,
+        "ten": "Điều 37.7.TT.3.8. Giải thích quyền nhờ người bảo vệ quyền và lợi ích hợp pháp của bị hại, đương sự, người bị tố giác, người bị kiến nghị khởi tố",
+        "score": 0.6108
+      },
+      {
+        "milvus_id": 54047,
+        "ten": "Điều 37.7.LQ.59. Người bị tạm giữ",
+        "score": 0.6097
+      },
+      {
+        "milvus_id": 59886,
+        "ten": "Điều 39.13.NĐ.101.17. Thẩm quyền tạm giữ người theo thủ tục hành chính",
+        "score": 0.6093
+      },
+      {
+        "milvus_id": 22584,
+        "ten": "Điều 18.5.LQ.10. Quyền và nghĩa vụ của người bị tố cáo",
+        "score": 0.6027
+      },
+      {
+        "milvus_id": 22587,
+        "ten": "Điều 18.5.NĐ.4.22. Xử lý kỷ luật đối với người có thẩm quyền giải quyết tố cáo",
+        "score": 0.5965
+      },
+      {
+        "milvus_id": 59885,
+        "ten": "Điều 39.13.LQ.123. Thẩm quyền tạm giữ người theo thủ tục hành chính",
+        "score": 0.5942
+      },
+      {
+        "milvus_id": 9637,
+        "ten": "Điều 8.1.LQ.30. Quyền được bảo vệ trong tố tụng và xử lý vi phạm hành chính",
+        "score": 0.5942
+      },
+      {
+        "milvus_id": 55250,
+        "ten": "Điều 37.10.TT.3.9. Việc giải quyết cho người bị tạm giữ, người bị tạm giam nhận quà",
+        "score": 0.5931
+      },
+      {
+        "milvus_id": 55236,
+        "ten": "Điều 37.10.LQ.23. Kỷ luật người bị tạm giữ, người bị tạm giam vi phạm nội quy của cơ sở giam giữ, chế độ quản lý giam giữ",
+        "score": 0.5902
+      },
+      {
+        "milvus_id": 55224,
+        "ten": "Điều 37.10.NĐ.1.11. Xác định quốc tịch của người bị tạm giữ, người bị tạm giam",
+        "score": 0.5892
+      },
+      {
+        "milvus_id": 55204,
+        "ten": "Điều 37.10.LQ.16. Tiếp nhận người bị tạm giữ, người bị tạm giam",
+        "score": 0.5871
+      },
+      {
+        "milvus_id": 46981,
+        "ten": "Điều 34.2.LQ.113. Thẩm quyền và hình thức xử lý vi phạm pháp luật về cạnh tranh",
+        "score": 0.5866
+      },
+      {
+        "milvus_id": 55215,
+        "ten": "Điều 37.10.LQ.18. Phân loại quản lý người bị tạm giữ, người bị tạm giam",
+        "score": 0.5864
+      },
+      {
+        "milvus_id": 5990,
+        "ten": "Điều 4.5.LQ.8. Quyền của người được trợ giúp pháp lý",
+        "score": 0.5852
+      },
+      {
+        "milvus_id": 59876,
+        "ten": "Điều 39.13.NĐ.101.21. Hủy bỏ áp dụng biện pháp tạm giữ người bị tạm giữ theo thủ tục hành chính",
+        "score": 0.5847
+      },
+      {
+        "milvus_id": 54090,
+        "ten": "Điều 37.7.LQ.83. Người bảo vệ quyền và lợi ích hợp pháp của người bị tố giác, người bị kiến nghị khởi tố",
+        "score": 0.5845
+      },
+      {
+        "milvus_id": 55308,
+        "ten": "Điều 37.10.LQ.58. Quyền và nghĩa vụ của người bị tố cáo trong quản lý, thi hành tạm giữ, tạm giam",
+        "score": 0.5805
+      },
+      {
+        "milvus_id": 55216,
+        "ten": "Điều 37.10.LQ.19. Chế độ quản lý đối với người bị tạm giữ, người bị tạm giam",
+        "score": 0.5773
+      },
+      {
+        "milvus_id": 41806,
+        "ten": "Điều 30.2.LQ.154. Người có quyền tố cáo",
+        "score": 0.575
+      },
+      {
+        "milvus_id": 11161,
+        "ten": "Điều 9.3.NĐ.47. Bảo đảm quyền cầm giữ",
+        "score": 0.5749
+      },
+      {
+        "milvus_id": 59884,
+        "ten": "Điều 39.13.NĐ.101.29. Người bị tạm giữ theo thủ tục hành chính bị bệnh hoặc chết trong thời gian tạm giữ",
+        "score": 0.5747
+      },
+      {
+        "milvus_id": 59874,
+        "ten": "Điều 39.13.NĐ.101.19. Quyết định tạm giữ người theo thủ tục hành chính",
+        "score": 0.5731
+      },
+      {
+        "milvus_id": 53884,
+        "ten": "Điều 37.6.LQ.339. Quyền, nghĩa vụ của người bị tố cáo",
+        "score": 0.5731
+      },
+      {
+        "milvus_id": 59872,
+        "ten": "Điều 39.13.NĐ.101.16. Tạm giữ người theo thủ tục hành chính",
+        "score": 0.5728
+      },
+      {
+        "milvus_id": 22603,
+        "ten": "Điều 18.5.TT.11.7. Thẩm quyền quyết định áp dụng biện pháp bảo vệ của người có thẩm quyền giải quyết tố cáo trong Công an nhân dân",
+        "score": 0.5719
+      },
+      {
+        "milvus_id": 55189,
+        "ten": "Điều 37.10.TL.2.13. Chuyển hồ sơ và người bị bắt, bị tạm giữ để giải quyết theo thẩm quyền",
+        "score": 0.5689
+      },
+      {
+        "milvus_id": 9625,
+        "ten": "Điều 8.1.LQ.18. Quyền giữ gìn, phát huy bản sắc",
+        "score": 0.5675
+      },
+      {
+        "milvus_id": 53882,
+        "ten": "Điều 37.6.LQ.337. Người có quyền tố cáo",
+        "score": 0.5669
+      },
+      {
+        "milvus_id": 62253,
+        "ten": "Điều 44.7.TT.2.3. Thẩm quyền thực hiện pháp điển",
+        "score": 0.5668
+      },
+      {
+        "milvus_id": 62250,
+        "ten": "Điều 44.7.PL.4. Thẩm quyền thực hiện pháp điển",
+        "score": 0.5644
+      },
+      {
+        "milvus_id": 55243,
+        "ten": "Điều 37.10.LQ.25. Giải quyết trường hợp người bị tạm giữ, người bị tạm giam bỏ trốn",
+        "score": 0.5641
+      },
+      {
+        "milvus_id": 22605,
+        "ten": "Điều 18.5.TT.1.11. Thẩm quyền giải quyết tố cáo",
+        "score": 0.5632
+      },
+      {
+        "milvus_id": 41808,
+        "ten": "Điều 30.2.LQ.156. Quyền và nghĩa vụ của người bị tố cáo",
+        "score": 0.5629
+      },
+      {
+        "milvus_id": 22156,
+        "ten": "Điều 18.2.NĐ.2.22. Thẩm quyền, trình tự, thủ tục xử lý kỷ luật đối với người có hành vi vi phạm quy định về kiểm soát tài sản, thu nhập",
+        "score": 0.562
+      },
+      {
+        "milvus_id": 22614,
+        "ten": "Điều 18.5.LQ.15. Thẩm quyền giải quyết tố cáo hành vi vi phạm pháp luật trong việc thực hiện nhiệm vụ, công vụ trong Viện kiểm sát nhân dân",
+        "score": 0.5619
+      },
+      {
+        "milvus_id": 54774,
+        "ten": "Điều 37.7.LQ.474. Thẩm quyền và thời hạn giải quyết khiếu nại quyết định, hành vi tố tụng trong việc giữ người trong trường hợp khẩn cấp, bắt, tạm giữ, tạm giam",
+        "score": 0.5615
+      },
+      {
+        "milvus_id": 22291,
+        "ten": "Điều 18.2.NĐ.1.86. Thẩm quyền, trình tự, thủ tục xử lý kỷ luật đối với hành vi khác vi phạm quy định về phòng, chống tham nhũng",
+        "score": 0.5611
+      },
+      {
+        "milvus_id": 22610,
+        "ten": "Điều 18.5.LQ.14. Thẩm quyền giải quyết tố cáo hành vi vi phạm pháp luật trong việc thực hiện nhiệm vụ, công vụ trong Tòa án nhân dân",
+        "score": 0.5609
+      },
+      {
+        "milvus_id": 54870,
+        "ten": "Điều 37.8.LQ.29. Khôi phục quyền, lợi ích hợp pháp khác đối với người bị thiệt hại",
+        "score": 0.56
+      },
+      {
+        "milvus_id": 9634,
+        "ten": "Điều 8.1.LQ.27. Quyền được bảo vệ để không bị bạo lực, bỏ rơi, bỏ mặc",
+        "score": 0.5598
+      },
+      {
+        "milvus_id": 10658,
+        "ten": "Điều 9.1.LQ.348. Quyền của bên cầm giữ",
+        "score": 0.5596
+      },
+      {
+        "milvus_id": 26506,
+        "ten": "Điều 22.2.LQ.41. Quyền của người thụ hưởng",
+        "score": 0.5595
+      },
+      {
+        "milvus_id": 55307,
+        "ten": "Điều 37.10.LQ.57. Quyền và nghĩa vụ của người tố cáo trong quản lý, thi hành tạm giữ, tạm giam",
+        "score": 0.5587
+      },
+      {
+        "milvus_id": 50867,
+        "ten": "Điều 34.11.TT.5.33. Áp dụng biện pháp tạm giữ tang vật, phương tiện, giấy phép, chứng chỉ hành nghề theo thủ tục hành chính, tạm giữ người theo thủ tục hành chính và áp giải người vi phạm",
+        "score": 0.5581
+      },
+      {
+        "milvus_id": 54779,
+        "ten": "Điều 37.7.LQ.478. Người có quyền tố cáo",
+        "score": 0.558
+      }
+    ]
+  }
+]

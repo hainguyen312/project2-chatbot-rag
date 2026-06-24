@@ -30,6 +30,7 @@ if not firebase_admin._apps:
         print("[Firebase] Bỏ qua init — thiếu credentials hoặc bucket")
 
 from agents.pipeline import Action, run_pre_retrieve
+from agents.quick_agent import is_meta_conversation
 from retrieve.build_graph import GraphRAGRetriever, get_neo4j
 from retrieve.two_stage_search import client, collection
 from services.agentic_rag import (
@@ -282,28 +283,29 @@ def rag_chat(req: RagChatRequest) -> RagChatResponse:
     is_situation = req.query_mode == "situation"
     user_for_agent = prompt if is_situation else normalized_query
 
-    # ── Semantic cache lookup ─────────────────────────────────────────────────
+    # ── Semantic cache lookup (bỏ qua câu chào hỏi / meta) ─────────────────
     q_embedding: list = []
-    try:
-        q_embedding = embed_batch([normalized_query])[0]
-        cached = semantic_cache.get(q_embedding)
-        if cached:
-            meta = cached.get("meta", {})
-            cached_passages = meta.get("passages", [])
-            cached_sources  = meta.get("sources", [])
-            confidence, hallucination = _compute_confidence(cached_passages, meta.get("iterations", 1))
-            return RagChatResponse(
-                action="proceed",
-                normalized_query=normalized_query,
-                answer=cached.get("answer", ""),
-                sources=cached_sources,
-                passages=cached_passages,
-                confidence_score=confidence,
-                hallucination_warning=hallucination,
-                cache_hit=True,
-            )
-    except Exception as e:
-        print(f"[Cache lookup error] {e}")
+    if not is_meta_conversation(prompt):
+        try:
+            q_embedding = embed_batch([normalized_query])[0]
+            cached = semantic_cache.get(q_embedding)
+            if cached:
+                meta = cached.get("meta", {})
+                cached_passages = meta.get("passages", [])
+                cached_sources  = meta.get("sources", [])
+                confidence, hallucination = _compute_confidence(cached_passages, meta.get("iterations", 1))
+                return RagChatResponse(
+                    action="proceed",
+                    normalized_query=normalized_query,
+                    answer=cached.get("answer", ""),
+                    sources=cached_sources,
+                    passages=cached_passages,
+                    confidence_score=confidence,
+                    hallucination_warning=hallucination,
+                    cache_hit=True,
+                )
+        except Exception as e:
+            print(f"[Cache lookup error] {e}")
 
     try:
         agent_out = run_agentic_rag_sync(
@@ -333,14 +335,15 @@ def rag_chat(req: RagChatRequest) -> RagChatResponse:
     raw_response += _web_sources_markdown(web_sources)
     confidence, hallucination = _compute_confidence(passages, agent_out.get("iterations", 1))
 
-    # ── Lưu vào semantic cache ────────────────────────────────────────────────
-    try:
-        semantic_cache.set(q_embedding, {
-            "meta":   {"passages": passages, "sources": web_sources, "iterations": agent_out.get("iterations", 1)},
-            "answer": raw_response,
-        })
-    except Exception as e:
-        print(f"[Cache set error] {e}")
+    # ── Lưu vào semantic cache (không cache câu chào hỏi / meta) ──────────
+    if q_embedding and not is_meta_conversation(prompt):
+        try:
+            semantic_cache.set(q_embedding, {
+                "meta":   {"passages": passages, "sources": web_sources, "iterations": agent_out.get("iterations", 1)},
+                "answer": raw_response,
+            })
+        except Exception as e:
+            print(f"[Cache set error] {e}")
 
     return RagChatResponse(
         action="proceed",
@@ -407,23 +410,24 @@ def rag_stream(req: RagChatRequest):
         is_situation = req.query_mode == "situation"
         user_for_agent = prompt if is_situation else normalized_query
 
-        # ── Semantic cache lookup ─────────────────────────────────────────────
+        # ── Semantic cache lookup (bỏ qua câu chào hỏi / meta) ───────────────
         q_embedding: list = []
-        try:
-            q_embedding = embed_batch([normalized_query])[0]
-            cached = semantic_cache.get(q_embedding)
-            if cached:
-                meta = cached.get("meta", {})
-                cached_passages = meta.get("passages", [])
-                cached_sources  = meta.get("sources", [])
-                cc, hw = _compute_confidence(cached_passages, meta.get("iterations", 1))
-                yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':cached_passages,'sources':cached_sources,'iterations':meta.get('iterations',1),'agentic':True,'confidence_score':cc,'hallucination_warning':hw,'cache_hit':True}, ensure_ascii=False)}\n\n"
-                for part in _chunk_stream_text(cached.get("answer", "")):
-                    yield f"data: {_json.dumps({'type':'token','text':part}, ensure_ascii=False)}\n\n"
-                yield f"data: {_json.dumps({'type':'done'}, ensure_ascii=False)}\n\n"
-                return
-        except Exception as e:
-            print(f"[Stream cache lookup error] {e}")
+        if not is_meta_conversation(prompt):
+            try:
+                q_embedding = embed_batch([normalized_query])[0]
+                cached = semantic_cache.get(q_embedding)
+                if cached:
+                    meta = cached.get("meta", {})
+                    cached_passages = meta.get("passages", [])
+                    cached_sources  = meta.get("sources", [])
+                    cc, hw = _compute_confidence(cached_passages, meta.get("iterations", 1))
+                    yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':cached_passages,'sources':cached_sources,'iterations':meta.get('iterations',1),'agentic':True,'confidence_score':cc,'hallucination_warning':hw,'cache_hit':True}, ensure_ascii=False)}\n\n"
+                    for part in _chunk_stream_text(cached.get("answer", "")):
+                        yield f"data: {_json.dumps({'type':'token','text':part}, ensure_ascii=False)}\n\n"
+                    yield f"data: {_json.dumps({'type':'done'}, ensure_ascii=False)}\n\n"
+                    return
+            except Exception as e:
+                print(f"[Stream cache lookup error] {e}")
 
         system_prompt = agent_system_prompt(situation_mode=is_situation)
         messages: List[Any] = [
@@ -483,13 +487,14 @@ def rag_stream(req: RagChatRequest):
                         yield f"data: {_json.dumps({'type':'token','text':footer}, ensure_ascii=False)}\n\n"
 
                     # Lưu vào cache
-                    try:
-                        semantic_cache.set(q_embedding, {
-                            "meta":   {"passages": passages, "sources": web_sources, "iterations": iteration + 1},
-                            "answer": stream_full_answer,
-                        })
-                    except Exception:
-                        pass
+                    if q_embedding and not is_meta_conversation(prompt):
+                        try:
+                            semantic_cache.set(q_embedding, {
+                                "meta":   {"passages": passages, "sources": web_sources, "iterations": iteration + 1},
+                                "answer": stream_full_answer,
+                            })
+                        except Exception:
+                            pass
 
                     yield f"data: {_json.dumps({'type':'done'}, ensure_ascii=False)}\n\n"
                     return
@@ -547,13 +552,14 @@ def rag_stream(req: RagChatRequest):
                 yield f"data: {_json.dumps({'type':'token','text':footer}, ensure_ascii=False)}\n\n"
 
             # Lưu vào cache
-            try:
-                semantic_cache.set(q_embedding, {
-                    "meta":   {"passages": passages, "sources": web_sources, "iterations": max_it},
-                    "answer": stream_full_answer,
-                })
-            except Exception:
-                pass
+            if q_embedding and not is_meta_conversation(prompt):
+                try:
+                    semantic_cache.set(q_embedding, {
+                        "meta":   {"passages": passages, "sources": web_sources, "iterations": max_it},
+                        "answer": stream_full_answer,
+                    })
+                except Exception:
+                    pass
 
         except Exception as e:
             yield f"data: {_json.dumps({'type':'error','message':str(e)}, ensure_ascii=False)}\n\n"
