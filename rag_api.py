@@ -766,9 +766,17 @@ def auth_claim_anonymous(req: ClaimAnonymousRequest) -> Dict[str, Any]:
     moved_chats = 0
     moved_memories = 0
 
-    # Chats: collection conversations không có user_id field hiện tại (chat history
-    # toàn bộ user share — frontend lưu tất cả) → bỏ qua chat history migration.
-    # (Nếu sau này thêm user_id cho chats, mở đoạn này.)
+    # Chats: re-tag conversations.user_id từ anon → uid.
+    if memory_manager and getattr(memory_manager, "_mongo_client", None) is not None:
+        try:
+            chats_col = memory_manager._mongo_client[memory_manager.mongo_db_name]["conversations"]
+            res = chats_col.update_many(
+                {"user_id": anon},
+                {"$set": {"user_id": uid}},
+            )
+            moved_chats = res.modified_count
+        except Exception as e:
+            print(f"[Auth] Mongo chat re-tag fail: {e}")
 
     # Memories
     if memory_manager and memory_manager.mongo_col is not None:

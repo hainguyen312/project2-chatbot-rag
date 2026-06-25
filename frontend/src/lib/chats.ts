@@ -7,6 +7,7 @@ export type ChatMessage = {
 
 export type ChatDoc = {
   _id: string;
+  user_id: string;
   title: string;
   pinned: boolean;
   messages: ChatMessage[];
@@ -56,16 +57,24 @@ function sortChats(chats: ChatDoc[]) {
   });
 }
 
-export async function listChats(): Promise<ChatDoc[]> {
+export async function listChats(userId: string): Promise<ChatDoc[]> {
   const col = await getCollection();
-  if (!col) return sortChats(Array.from(memoryStore.values()));
-  const docs = await col.find({}).toArray();
+  if (!col) {
+    return sortChats(
+      Array.from(memoryStore.values()).filter((c) => c.user_id === userId)
+    );
+  }
+  const docs = await col.find({ user_id: userId }).toArray();
   return sortChats(docs);
 }
 
-export async function createChat(title = "Cuộc trò chuyện mới"): Promise<ChatDoc> {
+export async function createChat(
+  userId: string,
+  title = "Cuộc trò chuyện mới"
+): Promise<ChatDoc> {
   const doc: ChatDoc = {
     _id: crypto.randomUUID(),
+    user_id: userId,
     title,
     pinned: false,
     messages: [],
@@ -81,14 +90,21 @@ export async function createChat(title = "Cuộc trò chuyện mới"): Promise<
   return doc;
 }
 
-export async function getChatById(id: string): Promise<ChatDoc | null> {
+export async function getChatById(
+  id: string,
+  userId: string
+): Promise<ChatDoc | null> {
   const col = await getCollection();
-  if (!col) return memoryStore.get(id) ?? null;
-  return col.findOne({ _id: id });
+  if (!col) {
+    const doc = memoryStore.get(id);
+    return doc && doc.user_id === userId ? doc : null;
+  }
+  return col.findOne({ _id: id, user_id: userId });
 }
 
 export async function updateChat(
   id: string,
+  userId: string,
   patch: Partial<Pick<ChatDoc, "title" | "pinned" | "messages">>
 ): Promise<ChatDoc | null> {
   const col = await getCollection();
@@ -99,19 +115,30 @@ export async function updateChat(
 
   if (!col) {
     const current = memoryStore.get(id);
-    if (!current) return null;
+    if (!current || current.user_id !== userId) return null;
     const next: ChatDoc = { ...current, ...safePatch, updatedAt };
     memoryStore.set(id, next);
     return next;
   }
 
-  await col.updateOne({ _id: id }, { $set: { ...safePatch, updatedAt } });
-  return col.findOne({ _id: id });
+  const result = await col.updateOne(
+    { _id: id, user_id: userId },
+    { $set: { ...safePatch, updatedAt } }
+  );
+  if (result.matchedCount === 0) return null;
+  return col.findOne({ _id: id, user_id: userId });
 }
 
-export async function deleteChatById(id: string): Promise<boolean> {
+export async function deleteChatById(
+  id: string,
+  userId: string
+): Promise<boolean> {
   const col = await getCollection();
-  if (!col) return memoryStore.delete(id);
-  const result = await col.deleteOne({ _id: id });
+  if (!col) {
+    const doc = memoryStore.get(id);
+    if (!doc || doc.user_id !== userId) return false;
+    return memoryStore.delete(id);
+  }
+  const result = await col.deleteOne({ _id: id, user_id: userId });
   return result.deletedCount > 0;
 }

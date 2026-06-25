@@ -50,6 +50,7 @@ type ChatState = {
   loading: boolean;
   initialized: boolean;
   error: string | null;
+  userId: string | null;
 };
 
 type Action =
@@ -58,7 +59,8 @@ type Action =
   | { type: "SET_ACTIVE"; payload: string | null }
   | { type: "SET_CHATS"; payload: Chat[] }
   | { type: "UPSERT_CHAT"; payload: Chat }
-  | { type: "REMOVE_CHAT"; payload: string };
+  | { type: "REMOVE_CHAT"; payload: string }
+  | { type: "RESET_FOR_USER"; payload: string | null };
 
 const initialState: ChatState = {
   chats: [],
@@ -66,6 +68,7 @@ const initialState: ChatState = {
   loading: false,
   initialized: false,
   error: null,
+  userId: null,
 };
 
 function getUpdatedValue(chat: Chat) {
@@ -116,6 +119,12 @@ function reducer(state: ChatState, action: Action): ChatState {
         activeId: state.activeId === action.payload ? (chats[0]?._id ?? null) : state.activeId,
       };
     }
+    case "RESET_FOR_USER": {
+      return {
+        ...initialState,
+        userId: action.payload,
+      };
+    }
     default:
       return state;
   }
@@ -143,7 +152,13 @@ function getState() {
 }
 
 async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
-  const res = await fetch(input, init);
+  const uid = getState().userId;
+  const userHeader: HeadersInit = uid ? { "x-user-id": uid } : {};
+  const merged: RequestInit = {
+    ...init,
+    headers: { ...userHeader, ...(init?.headers ?? {}) },
+  };
+  const res = await fetch(input, merged);
   const data = (await res.json().catch(() => ({}))) as T & { error?: string; detail?: string };
   if (!res.ok) {
     throw new Error(data.detail || data.error || `Request failed with status ${res.status}`);
@@ -156,8 +171,16 @@ export const chatActions = {
     dispatch({ type: "SET_ACTIVE", payload: id });
   },
 
+  async setUserId(userId: string | null) {
+    const current = getState();
+    if (current.userId === userId) return;
+    dispatch({ type: "RESET_FOR_USER", payload: userId });
+    if (userId) await chatActions.ensureChatsLoaded(true);
+  },
+
   async ensureChatsLoaded(force = false) {
     const current = getState();
+    if (!current.userId) return;
     if (current.initialized && !force) return;
     dispatch({ type: "SET_LOADING", payload: true });
     dispatch({ type: "SET_ERROR", payload: null });

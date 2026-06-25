@@ -182,7 +182,10 @@ export default function Home() {
     document.documentElement.classList.toggle("dark", darkMode);
   }, [darkMode]);
 
-  useEffect(() => { void chatActions.ensureChatsLoaded(); }, []);
+  useEffect(() => {
+    if (!userId) return;
+    void chatActions.setUserId(userId);
+  }, [userId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
