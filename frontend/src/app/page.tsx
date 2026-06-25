@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
-import { chatActions, Chat, Message, useChatStore, Passage } from "@/store/chat-store";
+import { chatActions, Chat, Message, useChatStore, Passage, MemoryUsed } from "@/store/chat-store";
 import {
   Plus, Search, MoreHorizontal, Pin, Trash2, Pencil,
   MessageCircle, ChevronLeft, ChevronRight, ChevronDown,
@@ -15,6 +15,9 @@ import { MessageRow, Avatar, BotBubble } from "@/components/chat/MessageRow";
 import { PassagePanel, PassageFullModal } from "@/components/chat/PassagePanel";
 import { LiveWaveform } from "@/components/chat/LiveWaveform";
 import { VoiceMessage } from "@/components/chat/VoiceMessage";
+import { MemoryPanelButton } from "@/components/chat/MemoryPanel";
+import { AuthButton } from "@/components/auth/AuthButton";
+import { useAuth } from "@/hooks/useAuth";
 
 if (typeof CanvasRenderingContext2D !== "undefined" &&
   !CanvasRenderingContext2D.prototype.roundRect) {
@@ -29,6 +32,18 @@ if (typeof CanvasRenderingContext2D !== "undefined" &&
     this.arcTo(x, y, x + w, y, r);
     this.closePath();
   };
+}
+
+/** Lấy hoặc tạo demo user_id lưu trong localStorage (sau này thay bằng auth thực). */
+function getOrCreateUserId(): string {
+  if (typeof window === "undefined") return "guest";
+  const key = "rag_user_id";
+  let id = window.localStorage.getItem(key);
+  if (!id) {
+    id = `demo_${crypto.randomUUID().slice(0, 8)}`;
+    window.localStorage.setItem(key, id);
+  }
+  return id;
 }
 
 function autoTitle(messages: Message[], currentTitle: string) {
@@ -114,6 +129,9 @@ export default function Home() {
   // Stores the pixel position of the "..." button so we can portal the menu there
   const [menuAnchor, setMenuAnchor] = useState<{ top: number; left: number } | null>(null);
   const [sending, setSending]             = useState(false);
+  // Synchronous lock chặn double-submit khi user mash Enter/click trước khi
+  // React kịp render disabled button (setSending là async).
+  const sendingRef = useRef(false);
   const [renameChatId, setRenameChatId]   = useState<string | null>(null);
   const [renameValue, setRenameValue]     = useState("");
   const [loadingDots, setLoadingDots]     = useState(".");
@@ -127,6 +145,11 @@ export default function Home() {
   const [postStreamReveal, setPostStreamReveal] = useState(false);
   const [darkMode, setDarkMode]           = useState(true);
   const [queryMode, setQueryMode]         = useState<"normal" | "situation">("normal");
+  const { user: authUser, getIdToken } = useAuth();
+  const [anonId, setAnonId]               = useState<string>("");
+  useEffect(() => { setAnonId(getOrCreateUserId()); }, []);
+  // user_id ưu tiên Firebase uid khi đã login, fallback demo id ẩn danh
+  const userId = authUser?.uid || anonId;
   const [selectedPassages, setSelectedPassages] = useState<Passage[] | null>(null);
   const [selectedMsgIdx, setSelectedMsgIdx]     = useState<number | null>(null);
   const [fullViewPassage, setFullViewPassage]   = useState<Passage | null>(null);
@@ -229,9 +252,12 @@ export default function Home() {
 
   async function onSend(e: FormEvent) {
     e.preventDefault();
+    // Chặn re-entrant: nếu đang xử lý 1 request trước đó, bỏ qua submit này.
+    if (sendingRef.current) return;
     const promptSent = input.trim();
     if (!promptSent || !activeChat) return;
 
+    sendingRef.current = true;
     const chatId = activeChat._id;
     const nextMessages: Message[] = [
       ...activeChat.messages,
@@ -252,6 +278,7 @@ export default function Home() {
     let metaConfidence: number | null = null;
     let metaHallucination = false;
     let metaCacheHit = false;
+    let metaMemoriesUsed: MemoryUsed[] = [];
 
     const persistAssistant = async (content: string) => {
       await patchChat(chatId, {
@@ -263,15 +290,25 @@ export default function Home() {
           confidence_score: metaConfidence,
           hallucination_warning: metaHallucination,
           cache_hit: metaCacheHit,
+          memories_used: metaMemoriesUsed,
         }],
       });
     };
 
     try {
+      const token = await getIdToken();
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
       const res = await fetch("/api/stream", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: promptSent, history: nextMessages, query_mode: queryMode }),
+        headers,
+        body: JSON.stringify({
+          prompt: promptSent,
+          history: nextMessages,
+          query_mode: queryMode,
+          user_id: userId,
+          chat_id: chatId,
+        }),
       });
       if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
 
@@ -295,6 +332,7 @@ export default function Home() {
               text?: string; passages?: Passage[]; message?: string;
               iteration?: number; max?: number;
               confidence_score?: number; hallucination_warning?: boolean; cache_hit?: boolean;
+              memories_used?: MemoryUsed[];
             };
             if (evt.type === "status") {
               setPendingStatus(evt.text ?? "");
@@ -307,6 +345,7 @@ export default function Home() {
               metaConfidence  = evt.confidence_score ?? null;
               metaHallucination = evt.hallucination_warning ?? false;
               metaCacheHit    = evt.cache_hit ?? false;
+              metaMemoriesUsed = evt.memories_used ?? [];
             } else if (evt.type === "token") {
               fullText += evt.text ?? "";
             } else if (evt.type === "error") {
@@ -352,6 +391,7 @@ export default function Home() {
       setAgentStep(null); setStreamingChatId(null);
       setRevealedStreamText("");
       setPostStreamReveal(false);
+      sendingRef.current = false;
     }
   }
 
@@ -683,6 +723,8 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1 md:gap-2">
+                  <AuthButton />
+                  {userId && <MemoryPanelButton userId={userId} />}
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="hidden h-4 w-4 md:block"
                     style={{ color: !darkMode ? "#f59e0b" : "var(--text-muted)" }}>
                     <path fill="currentColor" d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.45-1.79l-1.79 1.79 1.41 1.42 1.8-1.8-1.42-1.41zM12 4V1h-1v3h1zm0 19v-3h-1v3h1zm8-11h3v-1h-3v1zM4 12H1v-1h3v1zm12.24 7.16l1.8 1.79 1.41-1.41-1.79-1.8-1.42 1.42zM4.22 19.54l1.79-1.8-1.41-1.41-1.8 1.79 1.42 1.42zM12 6a6 6 0 100 12 6 6 0 000-12z"/>
@@ -787,9 +829,17 @@ export default function Home() {
                     <input
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(e as any); } }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          // Chặn double-fire khi đang xử lý request trước
+                          if (sending || sendingRef.current) return;
+                          onSend(e as any);
+                        }
+                      }}
+                      disabled={sending}
                       placeholder={queryMode === "situation" ? "Mô tả tình huống..." : "Nhập câu hỏi..."}
-                      className="flex-1 rounded-xl px-3 py-2.5 text-sm outline-none transition md:px-4 md:py-3"
+                      className="flex-1 rounded-xl px-3 py-2.5 text-sm outline-none transition md:px-4 md:py-3 disabled:opacity-70"
                       style={{
                         background: "var(--bg-input)",
                         border: queryMode === "situation" ? "0.5px solid #534AB7" : "0.5px solid var(--border)",

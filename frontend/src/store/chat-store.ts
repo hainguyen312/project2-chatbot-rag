@@ -14,6 +14,13 @@ export type Passage = {
   url?: string;
 };
 
+export type MemoryUsed = {
+  milvus_id?: number;
+  fact: string;
+  type: string;
+  score?: number;
+};
+
 export interface Message {
   role: "user" | "assistant";
   content: string;
@@ -23,6 +30,7 @@ export interface Message {
   confidence_score?: number | null;
   hallucination_warning?: boolean;
   cache_hit?: boolean;
+  memories_used?: MemoryUsed[];
 }
 
 export type Chat = {

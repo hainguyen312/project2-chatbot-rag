@@ -118,7 +118,13 @@ def agent_chat_model() -> str:
 
 
 def agent_system_prompt(*, situation_mode: bool) -> str:
-    base = """Bạn là trợ lý pháp luật Việt Nam thông minh với khả năng tìm kiếm đa chiều.
+    from datetime import datetime
+    today = datetime.now().strftime("%d/%m/%Y")
+    current_year = datetime.now().year
+    base = f"""Bạn là trợ lý pháp luật Việt Nam thông minh với khả năng tìm kiếm đa chiều.
+
+Hôm nay là {today} (năm {current_year}). Dùng thông tin này khi cần tính tuổi, thời hạn,
+hoặc bất kỳ tính toán liên quan đến thời gian.
 
 Quy trình làm việc:
 1. Phân tích câu hỏi và lên kế hoạch tìm kiếm
@@ -132,7 +138,16 @@ Nguyên tắc:
 - Luôn trích dẫn điều luật cụ thể (tên điều, chương, đề mục) khi có trong công cụ Pháp Điển
 - Nếu thông tin mâu thuẫn giữa Pháp Điển và Web, ưu tiên Pháp Điển
 - Nếu không đủ thông tin sau khi đã thử các công cụ phù hợp, thành thật nói không biết
-- Không bịa thông tin pháp lý"""
+- Không bịa thông tin pháp lý
+
+CÁ NHÂN HOÁ DỰA TRÊN BỘ NHỚ NGƯỜI DÙNG (nếu có ở cuối prompt này):
+- Khi câu hỏi liên quan đến TÌNH HUỐNG CỤ THỂ CỦA NGƯỜI DÙNG (vd: "tôi có đủ tuổi…",
+  "tôi có được phép…", "tôi cần làm gì…"), HÃY ÁP DỤNG memory để trả lời cho chính họ.
+- Nếu memory có năm sinh → TÍNH TUỔI = {current_year} − năm sinh, rồi so sánh với điều luật.
+- Nếu memory có nghề nghiệp/ngành/địa phương → liên hệ với quy định áp dụng cho nhóm đó.
+- Kết luận RÕ RÀNG cho cá nhân: "Bạn ĐỦ tuổi", "Bạn CHƯA đủ tuổi", "Bạn THUỘC diện…",
+  thay vì chỉ liệt kê quy định chung chung.
+- Vẫn trích dẫn điều luật làm căn cứ cho kết luận."""
     if situation_mode:
         base += """
 
@@ -653,13 +668,19 @@ def run_agentic_rag_sync(
     situation_mode: bool = False,
     max_iterations: int = 6,
     rerank_query: str | None = None,
+    system_prompt_extra: str = "",
 ) -> dict[str, Any]:
     """
     Vòng lặp tool-calling (không stream). Trả về answer, raw passage hits, iterations.
+
+    system_prompt_extra: đoạn text bổ sung append vào cuối system prompt
+        (dùng để inject long-term memory về người dùng).
     """
     rerank_ctx = (rerank_query if rerank_query is not None else user_prompt) or ""
     model = agent_chat_model()
     system_prompt = agent_system_prompt(situation_mode=situation_mode)
+    if system_prompt_extra:
+        system_prompt = system_prompt + "\n\n" + system_prompt_extra
     messages: list[dict[str, Any]] = [
         {"role": "system", "content": system_prompt},
         *[{"role": m["role"], "content": m["content"]} for m in history[-8:]],

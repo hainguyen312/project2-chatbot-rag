@@ -1,3 +1,4 @@
+import asyncio
 import os
 import re
 import tempfile
@@ -6,10 +7,10 @@ from typing import Any, Dict, List, Literal, Optional
 
 import firebase_admin
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import BackgroundTasks, FastAPI, Header, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi import FastAPI, UploadFile, File
-from firebase_admin import credentials, storage as fb_storage
+from firebase_admin import auth as fb_auth, credentials, storage as fb_storage
 from openai import OpenAI
 from pydantic import BaseModel, Field
 import json as _json
@@ -49,8 +50,28 @@ from services.utils import (
     rewrite_query_v2,
 )
 from services.semantic_cache import semantic_cache
+from services.memory_manager import MemoryManager
 
 app = FastAPI(title="RAG Backend API", version="1.0.0")
+
+# ── Memory Manager (long-term memory cho user) ────────────────────────────────
+MEMORY_ENABLED = os.getenv("MEMORY_ENABLED", "1").strip() in ("1", "true", "True", "yes")
+MEMORY_TOP_K_API = int(os.getenv("MEMORY_TOP_K", "5"))
+memory_manager: Optional[MemoryManager] = None
+if MEMORY_ENABLED:
+    try:
+        memory_manager = MemoryManager(
+            openai_client=client,
+            mongo_uri=os.getenv("MONGODB_URI", ""),
+            milvus_host=os.getenv("MILVUS_HOST", "localhost"),
+            milvus_port=os.getenv("MILVUS_PORT", "19530"),
+        )
+        print("[Memory] MemoryManager initialized")
+    except Exception as e:
+        print(f"[Memory] Khởi tạo thất bại — tắt memory: {e}")
+        memory_manager = None
+else:
+    print("[Memory] MEMORY_ENABLED=0 — bỏ qua khởi tạo MemoryManager")
 
 neo4j_driver = get_neo4j()
 two_stage_retriever = GraphRAGRetriever(
@@ -73,6 +94,8 @@ class RagChatRequest(BaseModel):
     prompt: str = Field(..., min_length=1)
     history: List[ChatMessage] = Field(default_factory=list)
     query_mode: Literal["normal", "situation"] = "normal"
+    user_id: Optional[str] = None   # định danh người dùng để cá nhân hóa memory
+    chat_id: Optional[str] = None   # để audit nguồn fact
 
 
 class RagChatResponse(BaseModel):
@@ -84,12 +107,86 @@ class RagChatResponse(BaseModel):
     confidence_score: float = 0.0
     hallucination_warning: bool = False
     cache_hit: bool = False
+    memories_used: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class FeedbackRequest(BaseModel):
     chat_id: str
     msg_idx: int
     rating: Literal["up", "down"]
+
+
+# ── Memory helpers ────────────────────────────────────────────────────────────
+def _safe_normalized_query(prompt: str, rewritten: Optional[str]) -> str:
+    """Bảo vệ rewrite_query: nếu LLM rewrite ra quá ngắn / vô nghĩa, fallback prompt gốc.
+
+    Trường hợp gặp khi user gửi câu giới thiệu + hỏi capability (vd: "tôi là X, bạn
+    làm gì được"), LLM rewrite cố ép thành topic pháp lý và trả về 1 từ rỗng nghĩa.
+    """
+    r = (rewritten or "").strip()
+    if not r:
+        return prompt
+    # Bắt error message từ rewrite_query_v2 khi exception
+    if r.startswith("Lỗi") or r.startswith("Error") or "Chưa cấu hình" in r:
+        return prompt
+    # < 2 từ hoặc < 6 ký tự được coi là quá ngắn để search hữu ích
+    if len(r) < 6 or len(r.split()) < 2:
+        return prompt
+    return r
+
+
+def _retrieve_user_memories(user_id: Optional[str], query: str) -> tuple[List[Dict[str, Any]], str]:
+    """Lấy memory của user + format thành đoạn text gắn vào system prompt.
+
+    Bọc try/except: lỗi Milvus/Mongo KHÔNG được làm chết request chính.
+    """
+    if not memory_manager or not user_id or not query:
+        return [], ""
+    try:
+        mems = memory_manager.retrieve_memories(user_id, query, top_k=MEMORY_TOP_K_API)
+        return mems, memory_manager.format_for_context(mems)
+    except Exception as e:
+        print(f"[Memory] retrieve error: {e}")
+        return [], ""
+
+
+def _inject_memory_into_system(system_prompt: str, memory_block: str) -> str:
+    if not memory_block:
+        return system_prompt
+    return system_prompt + "\n\n" + memory_block
+
+
+def _schedule_memory_update(
+    user_id: Optional[str],
+    user_msg: str,
+    bot_msg: str,
+    chat_id: Optional[str],
+) -> None:
+    """Chạy extraction + update memory ở background, không chặn response.
+
+    Dùng asyncio.create_task khi có event loop, fallback threading nếu không.
+    """
+    if not memory_manager or not user_id or not user_msg or not bot_msg:
+        return
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            loop.create_task(memory_manager.process_turn_async(
+                user_id, user_msg, bot_msg, chat_id=chat_id
+            ))
+            return
+    except RuntimeError:
+        pass
+    # Fallback: chạy trong thread riêng
+    import threading
+    def _run():
+        try:
+            asyncio.run(memory_manager.process_turn_async(
+                user_id, user_msg, bot_msg, chat_id=chat_id
+            ))
+        except Exception as e:
+            print(f"[Memory] background update error: {e}")
+    threading.Thread(target=_run, daemon=True).start()
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -233,7 +330,8 @@ def post_feedback(req: FeedbackRequest) -> Dict[str, bool]:
 
 
 @app.post("/rag/chat", response_model=RagChatResponse)
-def rag_chat(req: RagChatRequest) -> RagChatResponse:
+def rag_chat(req: RagChatRequest, authorization: Optional[str] = Header(default=None)) -> RagChatResponse:
+    req.user_id = resolve_user_id(req.user_id, authorization)
     prompt = req.prompt.strip()
     history_for_processing = [m.model_dump() for m in req.history]
     decision = run_pre_retrieve(prompt, history_for_processing)
@@ -266,10 +364,12 @@ def rag_chat(req: RagChatRequest) -> RagChatResponse:
         else history_for_processing
     )
     latest_history = base[-10:]
-    normalized_query = rewrite_query_v2(prompt, latest_history) or prompt
+    normalized_query = _safe_normalized_query(prompt, rewrite_query_v2(prompt, latest_history))
 
     intent_result = detect_intent(normalized_query) or "Có"
-    if "không" in intent_result.lower():
+    # Câu chào/giới thiệu/hỏi capability không nên bị reject (đáng lẽ pre_retrieve
+    # bắt rồi, nhưng giữ guard này để chống lọt lưới khi prompt mix meta + intro)
+    if "không" in intent_result.lower() and not is_meta_conversation(prompt):
         return RagChatResponse(
             action="proceed",
             normalized_query=normalized_query,
@@ -283,6 +383,11 @@ def rag_chat(req: RagChatRequest) -> RagChatResponse:
     is_situation = req.query_mode == "situation"
     user_for_agent = prompt if is_situation else normalized_query
 
+    # ── Lấy long-term memory để cá nhân hóa câu trả lời ───────────────────
+    # Dùng prompt gốc (giữ "tôi/mình") cho memory retrieve — không dùng normalized_query
+    # vì normalized đã strip ngôi xưng, làm giảm độ chính xác khi tìm fact về user.
+    memories_used, memory_block = _retrieve_user_memories(req.user_id, prompt)
+
     # ── Semantic cache lookup (bỏ qua câu chào hỏi / meta) ─────────────────
     q_embedding: list = []
     if not is_meta_conversation(prompt):
@@ -294,6 +399,8 @@ def rag_chat(req: RagChatRequest) -> RagChatResponse:
                 cached_passages = meta.get("passages", [])
                 cached_sources  = meta.get("sources", [])
                 confidence, hallucination = _compute_confidence(cached_passages, meta.get("iterations", 1))
+                # Vẫn schedule memory update cho cache hit (vì user vẫn vừa hội thoại 1 lượt)
+                _schedule_memory_update(req.user_id, prompt, cached.get("answer", ""), req.chat_id)
                 return RagChatResponse(
                     action="proceed",
                     normalized_query=normalized_query,
@@ -316,6 +423,7 @@ def rag_chat(req: RagChatRequest) -> RagChatResponse:
             history=latest_history,
             situation_mode=is_situation,
             rerank_query=normalized_query,
+            system_prompt_extra=memory_block,
         )
     except Exception as e:
         return RagChatResponse(
@@ -345,6 +453,9 @@ def rag_chat(req: RagChatRequest) -> RagChatResponse:
         except Exception as e:
             print(f"[Cache set error] {e}")
 
+    # ── Schedule extraction + update memory ở background ───────────────────
+    _schedule_memory_update(req.user_id, prompt, raw_response, req.chat_id)
+
     return RagChatResponse(
         action="proceed",
         normalized_query=normalized_query,
@@ -354,11 +465,13 @@ def rag_chat(req: RagChatRequest) -> RagChatResponse:
         confidence_score=confidence,
         hallucination_warning=hallucination,
         cache_hit=False,
+        memories_used=memories_used,
     )
 
 
 @app.post("/rag/stream")
-def rag_stream(req: RagChatRequest):
+def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(default=None)):
+    req.user_id = resolve_user_id(req.user_id, authorization)
     """
     Server-Sent Events stream.
       data: {"type":"status", "text":"...", "iteration"?: n, "max"?: m}
@@ -384,6 +497,10 @@ def rag_stream(req: RagChatRequest):
             for part in _chunk_stream_text(answer):
                 yield f"data: {_json.dumps({'type':'token','text':part}, ensure_ascii=False)}\n\n"
             yield f"data: {_json.dumps({'type':'done'}, ensure_ascii=False)}\n\n"
+            # QUICK_ANSWER thường là chỗ user tự giới thiệu ("Tôi là Hải, …") →
+            # vẫn extract memory (LLM sẽ tự bỏ qua các turn không có info)
+            if decision.action == Action.QUICK_ANSWER:
+                _schedule_memory_update(req.user_id, prompt, answer, req.chat_id)
             return
 
         # ── PROCEED ───────────────────────────────────────────────────────────
@@ -393,10 +510,10 @@ def rag_stream(req: RagChatRequest):
             else history_for_processing
         )
         latest_history   = base[-10:]
-        normalized_query = rewrite_query_v2(prompt, latest_history) or prompt
+        normalized_query = _safe_normalized_query(prompt, rewrite_query_v2(prompt, latest_history))
 
         intent_result = detect_intent(normalized_query) or "Có"
-        if "không" in intent_result.lower():
+        if "không" in intent_result.lower() and not is_meta_conversation(prompt):
             answer = (
                 "Yêu cầu chưa rõ ràng hoặc ngoài phạm vi. "
                 "Mình hỗ trợ tìm kiếm và giải thích pháp luật Việt Nam."
@@ -410,6 +527,11 @@ def rag_stream(req: RagChatRequest):
         is_situation = req.query_mode == "situation"
         user_for_agent = prompt if is_situation else normalized_query
 
+        # ── Lấy long-term memory để cá nhân hóa ─────────────────────────────
+        # Dùng prompt gốc (giữ "tôi/mình") cho memory retrieve — không dùng normalized_query
+        # vì normalized đã strip ngôi xưng, làm giảm độ chính xác khi tìm fact về user.
+        memories_used, memory_block = _retrieve_user_memories(req.user_id, prompt)
+
         # ── Semantic cache lookup (bỏ qua câu chào hỏi / meta) ───────────────
         q_embedding: list = []
         if not is_meta_conversation(prompt):
@@ -421,15 +543,19 @@ def rag_stream(req: RagChatRequest):
                     cached_passages = meta.get("passages", [])
                     cached_sources  = meta.get("sources", [])
                     cc, hw = _compute_confidence(cached_passages, meta.get("iterations", 1))
-                    yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':cached_passages,'sources':cached_sources,'iterations':meta.get('iterations',1),'agentic':True,'confidence_score':cc,'hallucination_warning':hw,'cache_hit':True}, ensure_ascii=False)}\n\n"
+                    yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':cached_passages,'sources':cached_sources,'iterations':meta.get('iterations',1),'agentic':True,'confidence_score':cc,'hallucination_warning':hw,'cache_hit':True,'memories_used':memories_used}, ensure_ascii=False)}\n\n"
                     for part in _chunk_stream_text(cached.get("answer", "")):
                         yield f"data: {_json.dumps({'type':'token','text':part}, ensure_ascii=False)}\n\n"
                     yield f"data: {_json.dumps({'type':'done'}, ensure_ascii=False)}\n\n"
+                    _schedule_memory_update(req.user_id, prompt, cached.get("answer", ""), req.chat_id)
                     return
             except Exception as e:
                 print(f"[Stream cache lookup error] {e}")
 
-        system_prompt = agent_system_prompt(situation_mode=is_situation)
+        system_prompt = _inject_memory_into_system(
+            agent_system_prompt(situation_mode=is_situation),
+            memory_block,
+        )
         messages: List[Any] = [
             {"role": "system", "content": system_prompt},
             *[{"role": m["role"], "content": m["content"]} for m in latest_history[-8:]],
@@ -457,7 +583,7 @@ def rag_stream(req: RagChatRequest):
                     passages = _build_passages(ded)
                     web_sources = _web_sources_from_passages(passages)
                     cc, hw = _compute_confidence(passages, iteration + 1)
-                    yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':passages,'sources':web_sources,'iterations':iteration + 1,'agentic':True,'confidence_score':cc,'hallucination_warning':hw,'cache_hit':False}, ensure_ascii=False)}\n\n"
+                    yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':passages,'sources':web_sources,'iterations':iteration + 1,'agentic':True,'confidence_score':cc,'hallucination_warning':hw,'cache_hit':False,'memories_used':memories_used}, ensure_ascii=False)}\n\n"
 
                     content = (msg.content or "").strip()
                     if content:
@@ -497,6 +623,7 @@ def rag_stream(req: RagChatRequest):
                             pass
 
                     yield f"data: {_json.dumps({'type':'done'}, ensure_ascii=False)}\n\n"
+                    _schedule_memory_update(req.user_id, prompt, stream_full_answer, req.chat_id)
                     return
 
                 for tc in msg.tool_calls:
@@ -524,7 +651,7 @@ def rag_stream(req: RagChatRequest):
             passages = _build_passages(ded)
             web_sources = _web_sources_from_passages(passages)
             cc, hw = _compute_confidence(passages, max_it)
-            yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':passages,'sources':web_sources,'iterations':max_it,'agentic':True,'confidence_score':cc,'hallucination_warning':hw,'cache_hit':False}, ensure_ascii=False)}\n\n"
+            yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':passages,'sources':web_sources,'iterations':max_it,'agentic':True,'confidence_score':cc,'hallucination_warning':hw,'cache_hit':False,'memories_used':memories_used}, ensure_ascii=False)}\n\n"
 
             stream = oai_client.chat.completions.create(
                 model=model,
@@ -565,6 +692,7 @@ def rag_stream(req: RagChatRequest):
             yield f"data: {_json.dumps({'type':'error','message':str(e)}, ensure_ascii=False)}\n\n"
 
         yield f"data: {_json.dumps({'type':'done'}, ensure_ascii=False)}\n\n"
+        _schedule_memory_update(req.user_id, prompt, stream_full_answer, req.chat_id)
 
     return StreamingResponse(
         event_stream(),
@@ -574,6 +702,176 @@ def rag_stream(req: RagChatRequest):
             "X-Accel-Buffering": "no",
         },
     )
+
+
+# ── Auth (Firebase ID token) ─────────────────────────────────────────────────
+class AuthVerifyRequest(BaseModel):
+    id_token: str
+
+
+class ClaimAnonymousRequest(BaseModel):
+    id_token: str               # Firebase ID token để xác thực
+    anonymous_id: str           # demo_xxx đang gắn dữ liệu cũ
+
+
+def _verify_firebase_token(id_token: str) -> Dict[str, Any]:
+    """Verify Firebase ID token, raise 401 nếu sai."""
+    if not firebase_admin._apps:
+        raise HTTPException(status_code=503, detail="Firebase Admin chưa khởi tạo")
+    try:
+        decoded = fb_auth.verify_id_token(id_token)
+        return decoded
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Token không hợp lệ: {e}")
+
+
+def resolve_user_id(
+    body_user_id: Optional[str],
+    authorization: Optional[str],
+) -> Optional[str]:
+    """Ưu tiên uid từ Firebase ID token (Authorization: Bearer …), fallback body."""
+    if authorization and authorization.lower().startswith("bearer "):
+        token = authorization.split(None, 1)[1].strip()
+        try:
+            decoded = fb_auth.verify_id_token(token)
+            return decoded.get("uid")
+        except Exception as e:
+            print(f"[Auth] Token verify fail, fallback body user_id: {e}")
+    return body_user_id
+
+
+@app.post("/auth/verify")
+def auth_verify(req: AuthVerifyRequest) -> Dict[str, Any]:
+    """Verify Firebase ID token, trả về uid + email + name."""
+    decoded = _verify_firebase_token(req.id_token)
+    return {
+        "uid":   decoded.get("uid"),
+        "email": decoded.get("email"),
+        "name":  decoded.get("name") or decoded.get("email"),
+        "picture": decoded.get("picture"),
+    }
+
+
+@app.post("/auth/claim_anonymous")
+def auth_claim_anonymous(req: ClaimAnonymousRequest) -> Dict[str, Any]:
+    """Sau khi user login lần đầu, re-tag toàn bộ chat + memory từ anonymous_id
+    sang uid Firebase. Không xoá dữ liệu — chỉ update khoá user_id.
+    """
+    decoded = _verify_firebase_token(req.id_token)
+    uid = decoded.get("uid")
+    anon = (req.anonymous_id or "").strip()
+    if not uid or not anon or not anon.startswith("demo_"):
+        return {"ok": False, "reason": "invalid_ids"}
+
+    moved_chats = 0
+    moved_memories = 0
+
+    # Chats: collection conversations không có user_id field hiện tại (chat history
+    # toàn bộ user share — frontend lưu tất cả) → bỏ qua chat history migration.
+    # (Nếu sau này thêm user_id cho chats, mở đoạn này.)
+
+    # Memories
+    if memory_manager and memory_manager.mongo_col is not None:
+        try:
+            res = memory_manager.mongo_col.update_many(
+                {"user_id": anon},
+                {"$set": {"user_id": uid}},
+            )
+            moved_memories = res.modified_count
+            # Milvus: phải tải lại records, xoá rồi insert vì VARCHAR không update in-place
+            if memory_manager.collection is not None:
+                try:
+                    expr = f'user_id == "{anon}"'
+                    rows = memory_manager.collection.query(
+                        expr=expr,
+                        output_fields=["id", "mem_type", "fact", "embedding", "timestamp"],
+                    )
+                    if rows:
+                        ids = [int(r["id"]) for r in rows]
+                        memory_manager.collection.delete(
+                            expr="id in [" + ",".join(str(i) for i in ids) + "]"
+                        )
+                        # Re-insert với user_id mới
+                        memory_manager.collection.insert([
+                            [uid] * len(rows),
+                            [r["mem_type"] for r in rows],
+                            [r["fact"] for r in rows],
+                            [r["embedding"] for r in rows],
+                            [r["timestamp"] for r in rows],
+                        ])
+                        memory_manager.collection.flush()
+                        # Đồng bộ lại milvus_id mới trong Mongo (best-effort: ghi đè theo
+                        # thứ tự nếu cần). Vì insert auto_id, ta phải truy vấn lại.
+                        new_rows = memory_manager.collection.query(
+                            expr=f'user_id == "{uid}"',
+                            output_fields=["id", "fact"],
+                        )
+                        by_fact = {r["fact"]: int(r["id"]) for r in new_rows}
+                        for old in rows:
+                            new_id = by_fact.get(old["fact"])
+                            if new_id is not None:
+                                memory_manager.mongo_col.update_one(
+                                    {"user_id": uid, "milvus_id": int(old["id"])},
+                                    {"$set": {"milvus_id": new_id}},
+                                )
+                except Exception as e:
+                    print(f"[Auth] Milvus re-tag fail: {e}")
+        except Exception as e:
+            print(f"[Auth] Mongo memory re-tag fail: {e}")
+
+    return {
+        "ok": True,
+        "uid": uid,
+        "anonymous_id": anon,
+        "moved_chats": moved_chats,
+        "moved_memories": moved_memories,
+    }
+
+
+# ── Memory CRUD endpoints ────────────────────────────────────────────────────
+def _enforce_user_match(path_user_id: str, authorization: Optional[str]) -> str:
+    """Người dùng đã login chỉ được thao tác trên memory của chính mình.
+
+    Anonymous user (demo_xxx) không cần token nhưng giữ nguyên path id.
+    Logged-in user phải gửi token; uid phải khớp path id.
+    """
+    resolved = resolve_user_id(path_user_id, authorization)
+    if authorization and resolved and resolved != path_user_id:
+        raise HTTPException(status_code=403,
+                            detail="Không được phép thao tác memory của người dùng khác")
+    return resolved or path_user_id
+
+
+@app.get("/memory/{user_id}")
+def list_memories(user_id: str, authorization: Optional[str] = Header(default=None)) -> Dict[str, Any]:
+    """Liệt kê toàn bộ memory chưa xoá của user_id (sắp xếp mới → cũ)."""
+    if not memory_manager:
+        raise HTTPException(status_code=503, detail="Memory service không khả dụng")
+    uid = _enforce_user_match(user_id, authorization)
+    items = memory_manager.list_user_memories(uid)
+    return {"user_id": uid, "count": len(items), "memories": items}
+
+
+@app.delete("/memory/{user_id}/{memory_id}")
+def delete_memory(user_id: str, memory_id: int,
+                  authorization: Optional[str] = Header(default=None)) -> Dict[str, Any]:
+    """Xoá 1 memory (cả Milvus + Mongo). memory_id = milvus_id."""
+    if not memory_manager:
+        raise HTTPException(status_code=503, detail="Memory service không khả dụng")
+    uid = _enforce_user_match(user_id, authorization)
+    ok = memory_manager.delete_memory(uid, memory_id)
+    return {"ok": ok, "user_id": uid, "memory_id": memory_id}
+
+
+@app.delete("/memory/{user_id}")
+def delete_all_memories(user_id: str,
+                        authorization: Optional[str] = Header(default=None)) -> Dict[str, Any]:
+    """Xoá toàn bộ memory của user (quyền được quên)."""
+    if not memory_manager:
+        raise HTTPException(status_code=503, detail="Memory service không khả dụng")
+    uid = _enforce_user_match(user_id, authorization)
+    n = memory_manager.delete_all_for_user(uid)
+    return {"ok": True, "user_id": uid, "deleted": n}
 
 
 @app.post("/tts")
