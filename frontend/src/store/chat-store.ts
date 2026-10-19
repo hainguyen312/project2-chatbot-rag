@@ -171,6 +171,10 @@ export const chatActions = {
     dispatch({ type: "SET_ACTIVE", payload: id });
   },
 
+  setError(message: string | null) {
+    dispatch({ type: "SET_ERROR", payload: message });
+  },
+
   async setUserId(userId: string | null) {
     const current = getState();
     if (current.userId === userId) return;
