@@ -1,6 +1,6 @@
 services:
     law-mysql:
-        image: mysql:8.0
+        image: mysql:9.6
         ports:
             - 3306:3306
         environment:

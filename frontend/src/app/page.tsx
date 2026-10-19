@@ -258,23 +258,48 @@ export default function Home() {
     // Chặn re-entrant: nếu đang xử lý 1 request trước đó, bỏ qua submit này.
     if (sendingRef.current) return;
     const promptSent = input.trim();
-    if (!promptSent || !activeChat) return;
+    if (!promptSent) return;
 
     sendingRef.current = true;
-    const chatId = activeChat._id;
+    setSending(true);
+
+    // Chưa chọn cuộc trò chuyện nào → tự tạo mới rồi gửi tin vào đó.
+    let chat = activeChat;
+    if (!chat) {
+      try {
+        chat = await chatActions.createChat();
+      } catch (err) {
+        console.error("[onSend] createChat", err);
+        chatActions.setError(`Không tạo được cuộc trò chuyện: ${String(err)}`);
+        setSending(false);
+        sendingRef.current = false;
+        return;
+      }
+    }
+
+    const chatId = chat._id;
     const nextMessages: Message[] = [
-      ...activeChat.messages,
+      ...chat.messages,
       { role: "user", content: promptSent },
     ];
+
+    try {
+      await patchChat(chatId, {
+        messages: nextMessages,
+        title: autoTitle(nextMessages, chat.title),
+      });
+    } catch (err) {
+      // Lưu thất bại (vd. MongoDB lỗi): nhả khóa để người dùng gửi lại được.
+      console.error("[onSend] patchChat", err);
+      chatActions.setError(`Không lưu được tin nhắn: ${String(err)}`);
+      setSending(false);
+      sendingRef.current = false;
+      return;
+    }
+
     setInput("");
-    setSending(true);
     setPendingChatId(chatId);
     setPendingStatus(null);
-
-    await patchChat(chatId, {
-      messages: nextMessages,
-      title: autoTitle(nextMessages, activeChat.title),
-    });
 
     let fullText = "";
     let metaPassages: Passage[] = [];
