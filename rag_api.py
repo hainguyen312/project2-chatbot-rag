@@ -19,14 +19,23 @@ import json as _json
 load_dotenv()
 
 _FIREBASE_CRED   = os.getenv("FIREBASE_CRED_PATH", "firebase-credentials.json")
-_FIREBASE_BUCKET = os.getenv("FIREBASE_STORAGE_BUCKET", "")
+_FIREBASE_BUCKET = (os.getenv("FIREBASE_STORAGE_BUCKET") or "").strip()
 
 # ── Init Firebase ─────────────────────────────────────────────────────────────
 if not firebase_admin._apps:
-    if _FIREBASE_CRED and os.path.exists(_FIREBASE_CRED) and _FIREBASE_BUCKET:
+    if _FIREBASE_CRED and os.path.exists(_FIREBASE_CRED):
+        if not _FIREBASE_BUCKET:
+            try:
+                with open(_FIREBASE_CRED, encoding="utf-8") as _f:
+                    _pid = (_json.load(_f).get("project_id") or "").strip()
+                if _pid:
+                    _FIREBASE_BUCKET = f"{_pid}.firebasestorage.app"
+            except Exception:
+                _FIREBASE_BUCKET = ""
         cred = credentials.Certificate(_FIREBASE_CRED)
-        firebase_admin.initialize_app(cred, {"storageBucket": _FIREBASE_BUCKET})
-        print(f"[Firebase] Initialized — bucket: {_FIREBASE_BUCKET}")
+        opts = {"storageBucket": _FIREBASE_BUCKET} if _FIREBASE_BUCKET else None
+        firebase_admin.initialize_app(cred, opts)
+        print(f"[Firebase] Initialized — bucket: {_FIREBASE_BUCKET or '(none)'}")
     else:
         print("[Firebase] Bỏ qua init — thiếu credentials hoặc bucket")
 
@@ -154,6 +163,39 @@ def _inject_memory_into_system(system_prompt: str, memory_block: str) -> str:
     if not memory_block:
         return system_prompt
     return system_prompt + "\n\n" + memory_block
+
+
+_PERSONAL_RE = re.compile(
+    r"\b(tôi|tui|mình|em|của tôi|của mình|cho tôi|cho mình|"
+    r"đủ tuổi|tuổi của|sinh năm|năm sinh|giới tính)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_personal_query(prompt: str) -> bool:
+    """Câu hỏi về tình huống riêng của người dùng ("tuổi của tôi…", "tôi có được…").
+
+    Với loại câu này, câu trả lời phụ thuộc memory của từng user nên KHÔNG được
+    dùng/ghi semantic cache (cache khoá theo normalized_query đã bỏ ngôi xưng và
+    không phân biệt user → sẽ trả nhầm câu trả lời chung chung/của người khác).
+    """
+    return bool(_PERSONAL_RE.search(prompt or ""))
+
+
+def _agent_user_prompt(original: str, normalized: str) -> str:
+    """Agent phải thấy câu gốc (giữ ngôi xưng / tình huống cá nhân).
+
+    Normalized query chỉ dùng cho tra cứu pháp lý — nếu gửi thay câu gốc, model
+    tưởng đây là hỏi luật chung và bỏ qua năm sinh trong memory.
+    """
+    original = (original or "").strip()
+    normalized = (normalized or "").strip()
+    if not normalized or normalized == original:
+        return original
+    return (
+        f"{original}\n\n"
+        f"[Gợi ý truy vấn pháp lý để tra cứu, không thay thế câu hỏi gốc: {normalized}]"
+    )
 
 
 def _schedule_memory_update(
@@ -381,16 +423,21 @@ def rag_chat(req: RagChatRequest, authorization: Optional[str] = Header(default=
         )
 
     is_situation = req.query_mode == "situation"
-    user_for_agent = prompt if is_situation else normalized_query
+    user_for_agent = _agent_user_prompt(prompt, normalized_query)
 
     # ── Lấy long-term memory để cá nhân hóa câu trả lời ───────────────────
     # Dùng prompt gốc (giữ "tôi/mình") cho memory retrieve — không dùng normalized_query
     # vì normalized đã strip ngôi xưng, làm giảm độ chính xác khi tìm fact về user.
     memories_used, memory_block = _retrieve_user_memories(req.user_id, prompt)
 
-    # ── Semantic cache lookup (bỏ qua câu chào hỏi / meta) ─────────────────
+    # ── Semantic cache lookup (bỏ qua câu chào hỏi / meta / có memory) ─────
     q_embedding: list = []
-    if not is_meta_conversation(prompt):
+    use_cache = (
+        not is_meta_conversation(prompt)
+        and not _is_personal_query(prompt)
+        and not memories_used
+    )
+    if use_cache:
         try:
             q_embedding = embed_batch([normalized_query])[0]
             cached = semantic_cache.get(q_embedding)
@@ -525,16 +572,21 @@ def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(defaul
             return
 
         is_situation = req.query_mode == "situation"
-        user_for_agent = prompt if is_situation else normalized_query
+        user_for_agent = _agent_user_prompt(prompt, normalized_query)
 
         # ── Lấy long-term memory để cá nhân hóa ─────────────────────────────
         # Dùng prompt gốc (giữ "tôi/mình") cho memory retrieve — không dùng normalized_query
         # vì normalized đã strip ngôi xưng, làm giảm độ chính xác khi tìm fact về user.
         memories_used, memory_block = _retrieve_user_memories(req.user_id, prompt)
 
-        # ── Semantic cache lookup (bỏ qua câu chào hỏi / meta) ───────────────
+        # ── Semantic cache lookup (bỏ qua câu chào hỏi / meta / có memory) ───
         q_embedding: list = []
-        if not is_meta_conversation(prompt):
+        use_cache = (
+            not is_meta_conversation(prompt)
+            and not _is_personal_query(prompt)
+            and not memories_used
+        )
+        if use_cache:
             try:
                 q_embedding = embed_batch([normalized_query])[0]
                 cached = semantic_cache.get(q_embedding)
