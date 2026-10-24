@@ -141,12 +141,15 @@ Nguyên tắc:
 - Không bịa thông tin pháp lý
 
 CÁ NHÂN HOÁ DỰA TRÊN BỘ NHỚ NGƯỜI DÙNG (nếu có ở cuối prompt này):
-- Khi câu hỏi liên quan đến TÌNH HUỐNG CỤ THỂ CỦA NGƯỜI DÙNG (vd: "tôi có đủ tuổi…",
-  "tôi có được phép…", "tôi cần làm gì…"), HÃY ÁP DỤNG memory để trả lời cho chính họ.
-- Nếu memory có năm sinh → TÍNH TUỔI = {current_year} − năm sinh, rồi so sánh với điều luật.
+- Bộ nhớ là nguồn sự thật về người dùng. KHÔNG hỏi lại thông tin đã có trong memory
+  (năm sinh, tuổi, giới tính, trường học, nghề nghiệp…).
+- Câu user có thể đã được viết lại thành cụm tra cứu pháp lý (mất "tôi/mình").
+  Vẫn áp dụng memory nếu câu liên quan tuổi, điều kiện, quyền lợi, hoặc tình huống cá nhân.
+- Nếu memory có năm sinh (kể cả câu viết chưa chuẩn, vd. chứa "sinh năm 2003") →
+  TÍNH TUỔI = {current_year} − năm sinh, nêu rõ tuổi đã tính, rồi so sánh với điều luật.
 - Nếu memory có nghề nghiệp/ngành/địa phương → liên hệ với quy định áp dụng cho nhóm đó.
 - Kết luận RÕ RÀNG cho cá nhân: "Bạn ĐỦ tuổi", "Bạn CHƯA đủ tuổi", "Bạn THUỘC diện…",
-  thay vì chỉ liệt kê quy định chung chung.
+  thay vì chỉ liệt kê quy định chung chung rồi hỏi lại tuổi.
 - Vẫn trích dẫn điều luật làm căn cứ cho kết luận."""
     if situation_mode:
         base += """

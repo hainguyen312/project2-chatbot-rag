@@ -24,7 +24,7 @@ import re
 from datetime import datetime
 from typing import Any
 
-from pymilvus import Collection, connections, utility
+from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
 
 try:
     from pymongo import MongoClient
@@ -50,6 +50,17 @@ MEMORY_UPDATE_MODEL = os.getenv("MEMORY_UPDATE_MODEL", "gpt-4o-mini")
 MEMORY_SIM_TOP = 5  # số memory tương đồng đưa vào prompt update
 
 VALID_TYPES = {"core", "episodic", "semantic", "procedural"}
+
+# Fact hồ sơ (năm sinh/giới tính/trường) — luôn pin vào context, kể cả khi
+# extractor gắn nhầm type hoặc vector search không khớp "kết hôn" ↔ "sinh năm".
+_PROFILE_FACT_RE = re.compile(
+    r"(sinh năm|năm sinh|giới tính|\blà nam\b|\blà nữ\b|học tại)",
+    re.IGNORECASE,
+)
+_FORCE_CORE_RE = re.compile(
+    r"(sinh năm|năm sinh|giới tính|\blà nam\b|\blà nữ\b)",
+    re.IGNORECASE,
+)
 
 # Cụm từ gợi ý fact MỚI có giá trị thay thế (không phải phủ định thuần tuý)
 _REPLACEMENT_HINTS = re.compile(
@@ -83,8 +94,10 @@ Nhiệm vụ: đọc 1 lượt hội thoại (user + bot) và trích xuất các
 hữu ích cho cá nhân hóa câu trả lời pháp lý trong các phiên trò chuyện sau.
 
 4 LOẠI MEMORY:
-- core: hồ sơ người dùng ổn định — nghề nghiệp, địa phương, vai trò, ngành kinh doanh.
-  Ví dụ: "Người dùng làm kế toán ở Hà Nội", "Chủ doanh nghiệp nhỏ ngành F&B".
+- core: hồ sơ người dùng ổn định — năm sinh, tuổi, giới tính, nghề nghiệp,
+  trường học, địa phương, vai trò, ngành kinh doanh.
+  Ví dụ: "Người dùng sinh năm 2003", "Người dùng là nam",
+  "Người dùng làm kế toán ở Hà Nội", "Người dùng đang học tại NEU".
 - episodic: tình huống / vụ việc cụ thể người dùng đang gặp.
   Ví dụ: "Đang tranh chấp hợp đồng thuê nhà với chủ trọ", "Bị công ty cũ nợ lương 3 tháng".
 - semantic: chủ đề pháp lý / điều luật / lĩnh vực luật mà người dùng quan tâm lâu dài.
@@ -99,7 +112,10 @@ NGUYÊN TẮC BẮT BUỘC:
    số thẻ tín dụng, mật khẩu, mã OTP, địa chỉ nhà đầy đủ kèm số.
 3. KHÔNG lưu nội dung câu chào hỏi, cảm ơn, hội thoại meta không có thông tin cá nhân.
 4. Mỗi fact viết bằng tiếng Việt, ngắn gọn, 1 câu, ở ngôi thứ 3 ("Người dùng …").
-5. Nếu lượt hội thoại không có thông tin đáng nhớ → trả về `[]`.
+5. Năm sinh / tuổi / giới tính / trường học LUÔN là type=core, viết RÕ, không
+   ghép với chủ đề pháp lý. Ví dụ ĐÚNG: "Người dùng sinh năm 2003".
+   Ví dụ SAI: "Người dùng từng năm 2005 hỏi về kết hôn sinh năm 2003".
+6. Nếu lượt hội thoại không có thông tin đáng nhớ → trả về `[]`.
 
 ĐỊNH DẠNG OUTPUT: CHỈ trả về JSON array hợp lệ, không có markdown, không giải thích.
 Mỗi phần tử là object: {"fact": "<câu tiếng Việt>", "type": "core|episodic|semantic|procedural"}
@@ -111,6 +127,14 @@ Output:
 [
   {"fact": "Người dùng mở quán cà phê ở Hạ Long, Quảng Ninh", "type": "core"},
   {"fact": "Đang tìm hiểu thủ tục đăng ký kinh doanh hộ cá thể", "type": "episodic"}
+]
+
+Input user: "Tôi sinh năm 2003, nam, tôi có đủ tuổi kết hôn không?"
+Input bot: "Theo Luật Hôn nhân và Gia đình, nam từ đủ 20 tuổi..."
+Output:
+[
+  {"fact": "Người dùng sinh năm 2003", "type": "core"},
+  {"fact": "Người dùng là nam", "type": "core"}
 ]
 
 Input user: "Cảm ơn bạn"
@@ -217,18 +241,37 @@ class MemoryManager:
 
         self.collection: Collection | None = None
         try:
-            if utility.has_collection(MEMORY_COLLECTION_NAME):
-                self.collection = Collection(MEMORY_COLLECTION_NAME)
-                self.collection.load()
-                logger.info("Loaded Milvus collection '%s'", MEMORY_COLLECTION_NAME)
-            else:
-                logger.warning(
-                    "Milvus collection '%s' chưa tồn tại. "
-                    "Chạy `python scripts/init_memory_collection.py` để khởi tạo.",
-                    MEMORY_COLLECTION_NAME,
-                )
+            if not utility.has_collection(MEMORY_COLLECTION_NAME):
+                self._create_memory_collection()
+            self.collection = Collection(MEMORY_COLLECTION_NAME)
+            self.collection.load()
+            logger.info("Loaded Milvus collection '%s'", MEMORY_COLLECTION_NAME)
         except Exception as e:
             logger.warning("Lỗi load Milvus collection: %s", e)
+
+    def _create_memory_collection(self) -> None:
+        """Tạo collection user_memory nếu chưa có (không liên quan collection pháp điển)."""
+        fields = [
+            FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=True),
+            FieldSchema(name="user_id", dtype=DataType.VARCHAR, max_length=128),
+            FieldSchema(name="mem_type", dtype=DataType.VARCHAR, max_length=32),
+            FieldSchema(name="fact", dtype=DataType.VARCHAR, max_length=2000),
+            FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=MEMORY_EMBEDDING_DIM),
+            FieldSchema(name="timestamp", dtype=DataType.VARCHAR, max_length=64),
+        ]
+        col = Collection(
+            MEMORY_COLLECTION_NAME,
+            CollectionSchema(fields, description="User long-term memory (Mem0-style)"),
+        )
+        col.create_index(
+            "embedding",
+            {
+                "index_type": "HNSW",
+                "metric_type": "COSINE",
+                "params": {"M": 16, "efConstruction": 200},
+            },
+        )
+        logger.info("Đã tạo Milvus collection '%s'", MEMORY_COLLECTION_NAME)
 
         # Mongo
         self.mongo_col = None
@@ -318,6 +361,8 @@ class MemoryManager:
             mtype = (item.get("type") or "").strip().lower()
             if not fact or mtype not in VALID_TYPES:
                 continue
+            if _FORCE_CORE_RE.search(fact):
+                mtype = "core"
             if _is_sensitive(fact):
                 logger.info("Bỏ qua fact nhạy cảm: %s…", fact[:50])
                 continue
@@ -571,7 +616,9 @@ class MemoryManager:
         1. Vector search top_k bằng query (lấy memory liên quan ngữ nghĩa).
         2. LUÔN bổ sung ALL core memories (hồ sơ user — luôn cần để cá nhân hoá,
            kể cả khi query không match semantic với fact "sinh năm X").
-        Dedup theo milvus_id, giới hạn tổng ≤ top_k + 8.
+        3. Pin thêm fact hồ sơ từ Mongo (năm sinh/giới tính/trường học) dù extractor
+           gắn nhầm type — tránh trường hợp hỏi "đủ tuổi kết hôn" mà không thấy năm sinh.
+        Dedup theo milvus_id + nội dung fact.
 
         Trả về list[{"fact", "type", "score", "timestamp", "milvus_id"}].
         """
@@ -629,6 +676,37 @@ class MemoryManager:
                 })
         except Exception as e:
             logger.warning("retrieve_memories core fail user=%s: %s", user_id, e)
+
+        # 3. Pin hồ sơ cá nhân từ Mongo (năm sinh/giới tính/trường) dù không phải core
+        if self.mongo_col is not None:
+            try:
+                seen_facts = {(m.get("fact") or "").strip().lower() for m in out}
+                docs = self.mongo_col.find(
+                    {"user_id": user_id, "deleted": {"$ne": True}},
+                    {"fact": 1, "mem_type": 1, "timestamp": 1, "milvus_id": 1},
+                ).limit(80)
+                for d in docs:
+                    fact = (d.get("fact") or "").strip()
+                    if not fact or not _PROFILE_FACT_RE.search(fact):
+                        continue
+                    key = fact.lower()
+                    if key in seen_facts:
+                        continue
+                    mid = int(d["milvus_id"]) if d.get("milvus_id") is not None else None
+                    if mid is not None and mid in seen:
+                        continue
+                    if mid is not None:
+                        seen.add(mid)
+                    seen_facts.add(key)
+                    out.append({
+                        "milvus_id": mid if mid is not None else -1,
+                        "fact": fact,
+                        "type": d.get("mem_type") or "core",
+                        "timestamp": d.get("timestamp"),
+                        "score": 1.0,
+                    })
+            except Exception as e:
+                logger.warning("retrieve_memories profile pin fail user=%s: %s", user_id, e)
 
         return out
 

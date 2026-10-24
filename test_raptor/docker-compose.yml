@@ -33,7 +33,9 @@ services:
       - "9001:9001"
       - "9000:9000"
     volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/minio:/minio_data
+      # Named volume (Linux FS). Bind-mount NTFS trên Docker Desktop Windows
+      # làm MinIO đọc inode sai → "minimum free drive threshold" dù ổ còn trống.
+      - milvus_minio_data:/minio_data
     command: minio server /minio_data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -57,9 +59,9 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
       interval: 30s
-      start_period: 90s
+      start_period: 180s
       timeout: 20s
-      retries: 3
+      retries: 10
     ports:
       - "19530:19530"
       - "9091:9091"
@@ -79,6 +81,10 @@ services:
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/neo4j:/data
     restart: always
+
+volumes:
+  milvus_minio_data:
+    name: milvus-minio-data
 
 networks:
   default:
