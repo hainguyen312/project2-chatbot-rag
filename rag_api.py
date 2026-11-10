@@ -516,12 +516,21 @@ def rag_chat(req: RagChatRequest, authorization: Optional[str] = Header(default=
     )
 
 
+def _sse_stage(stage: str, text: str, **extra: Any) -> str:
+    """Status event có cấu trúc cho UI văn phòng 3D (frontend/office).
+    Giữ field `text` để UI chat cũ vẫn hiển thị bình thường."""
+    payload: Dict[str, Any] = {"type": "status", "stage": stage, "text": text, **extra}
+    return f"data: {_json.dumps(payload, ensure_ascii=False, default=str)}\n\n"
+
+
 @app.post("/rag/stream")
 def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(default=None)):
     req.user_id = resolve_user_id(req.user_id, authorization)
     """
     Server-Sent Events stream.
-      data: {"type":"status", "text":"...", "iteration"?: n, "max"?: m}
+      data: {"type":"status", "text":"...", "stage"?: "...", "tool"?: "...", "iteration"?: n, "max"?: m}
+        stage ∈ reception | reception_done | secretary | secretary_done | memory | cache
+                | tool | tool_done | compose
       data: {"type":"meta",  "action":"...", "normalized_query":"...", "passages":[...], "iterations"?: n}
       data: {"type":"token", "text":"..."}
       data: {"type":"done"}
@@ -530,7 +539,9 @@ def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(defaul
     def event_stream():
         prompt = req.prompt.strip()
         history_for_processing = [m.model_dump() for m in req.history]
+        yield _sse_stage("reception", "Lễ tân đang tiếp nhận yêu cầu...")
         decision = run_pre_retrieve(prompt, history_for_processing)
+        yield _sse_stage("reception_done", "Đã phân loại yêu cầu", action=decision.action.value)
 
         # ── QUICK / SPAM / ESCALATE ───────────────────────────────────────────
         if decision.action in (Action.QUICK_ANSWER, Action.SPAM, Action.ESCALATE):
@@ -557,9 +568,16 @@ def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(defaul
             else history_for_processing
         )
         latest_history   = base[-10:]
+        yield _sse_stage("secretary", "Thư ký đang chuẩn hoá câu hỏi...")
         normalized_query = _safe_normalized_query(prompt, rewrite_query_v2(prompt, latest_history))
 
         intent_result = detect_intent(normalized_query) or "Có"
+        yield _sse_stage(
+            "secretary_done",
+            "Đã chuẩn hoá câu hỏi",
+            normalized_query=normalized_query,
+            in_scope="không" not in intent_result.lower() or is_meta_conversation(prompt),
+        )
         if "không" in intent_result.lower() and not is_meta_conversation(prompt):
             answer = (
                 "Yêu cầu chưa rõ ràng hoặc ngoài phạm vi. "
@@ -578,6 +596,7 @@ def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(defaul
         # Dùng prompt gốc (giữ "tôi/mình") cho memory retrieve — không dùng normalized_query
         # vì normalized đã strip ngôi xưng, làm giảm độ chính xác khi tìm fact về user.
         memories_used, memory_block = _retrieve_user_memories(req.user_id, prompt)
+        yield _sse_stage("memory", "Đã tra hồ sơ khách hàng", count=len(memories_used))
 
         # ── Semantic cache lookup (bỏ qua câu chào hỏi / meta / có memory) ───
         q_embedding: list = []
@@ -590,6 +609,7 @@ def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(defaul
             try:
                 q_embedding = embed_batch([normalized_query])[0]
                 cached = semantic_cache.get(q_embedding)
+                yield _sse_stage("cache", "Kiểm tra sổ tay án lệ đã trả lời", hit=bool(cached))
                 if cached:
                     meta = cached.get("meta", {})
                     cached_passages = meta.get("passages", [])
@@ -631,6 +651,7 @@ def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(defaul
                 messages.append(assistant_message_to_dict(msg))
 
                 if not msg.tool_calls:
+                    yield _sse_stage("compose", "Luật sư đang soạn câu trả lời...", iteration=iteration + 1, max=max_it)
                     ded = _dedup_results(bucket)
                     passages = _build_passages(ded)
                     web_sources = _web_sources_from_passages(passages)
@@ -680,11 +701,15 @@ def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(defaul
 
                 for tc in msg.tool_calls:
                     tname = tc.function.name
-                    yield f"data: {_json.dumps({'type':'status','text':f'🔍 Đang gọi {tname}...','iteration':iteration + 1,'max':max_it}, ensure_ascii=False)}\n\n"
                     try:
                         args = _json.loads(tc.function.arguments or "{}")
                     except Exception:
                         args = {}
+                    yield _sse_stage(
+                        "tool", f"🔍 Đang gọi {tname}...",
+                        tool=tname, call_id=tc.id, args=args,
+                        iteration=iteration + 1, max=max_it,
+                    )
                     tool_content, full_hits = execute_agent_tool(
                         tname,
                         args,
@@ -693,12 +718,19 @@ def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(defaul
                         rerank_query=normalized_query,
                     )
                     apply_agent_tool_result(tname, tool_content, full_hits, bucket)
+                    yield _sse_stage(
+                        "tool_done", f"✅ {tname} xong",
+                        tool=tname, call_id=tc.id, count=len(full_hits or []),
+                        titles=[str(h.get("ten") or h.get("title") or "")[:80] for h in (full_hits or [])[:5]],
+                        iteration=iteration + 1, max=max_it,
+                    )
                     messages.append({
                         "role": "tool",
                         "tool_call_id": tc.id,
                         "content": tool_content,
                     })
 
+            yield _sse_stage("compose", "Luật sư đang soạn câu trả lời...", iteration=max_it, max=max_it)
             ded = _dedup_results(bucket)
             passages = _build_passages(ded)
             web_sources = _web_sources_from_passages(passages)

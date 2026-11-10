@@ -1,0 +1,105 @@
+.office-root {
+  --office-panel-bg: rgba(15, 23, 42, 0.82);
+  --office-panel-fg: #e2e8f0;
+  background: #1e2533;
+  color: var(--office-panel-fg);
+}
+
+.office-panel {
+  background: var(--office-panel-bg);
+  color: var(--office-panel-fg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.office-chip {
+  border-radius: 9999px;
+  padding: 0.3rem 0.7rem;
+  font-size: 12px;
+  white-space: nowrap;
+  color: inherit;
+  opacity: 0.8;
+  transition: background 0.15s, opacity 0.15s;
+}
+.office-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  opacity: 1;
+}
+.office-chip.is-mock {
+  background: rgba(250, 204, 21, 0.18);
+  color: #fde047;
+  opacity: 1;
+}
+.office-chip:disabled {
+  cursor: not-allowed;
+}
+.office-chip.is-on {
+  background: rgba(56, 189, 248, 0.2);
+  color: #7dd3fc;
+  opacity: 1;
+}
+
+.office-bubble {
+  position: relative;
+  animation: office-pop 0.18s ease-out;
+}
+.office-bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: 10px;
+  height: 10px;
+  background: white;
+  transform: translateX(-50%) rotate(45deg);
+}
+@keyframes office-pop {
+  from { transform: scale(0.7); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.office-dots::after {
+  content: "•••";
+  letter-spacing: 2px;
+  animation: office-blink 1.2s infinite;
+}
+@keyframes office-blink {
+  50% { opacity: 0.3; }
+}
+
+.office-md p { margin: 0.35rem 0; }
+.office-md ul, .office-md ol { padding-left: 1.2rem; margin: 0.35rem 0; }
+.office-md ul { list-style: disc; }
+.office-md ol { list-style: decimal; }
+.office-md strong { color: #fde68a; }
+.office-md a { color: #7dd3fc; text-decoration: underline; }
+.office-md h1, .office-md h2, .office-md h3 { font-weight: 600; margin: 0.6rem 0 0.3rem; }
+.office-md table { font-size: 12px; border-collapse: collapse; margin: 0.4rem 0; }
+.office-md th, .office-md td { border: 1px solid rgba(255, 255, 255, 0.15); padding: 0.2rem 0.4rem; }
+.office-md hr { border-color: rgba(255, 255, 255, 0.15); margin: 0.6rem 0; }
+
+.office-btn {
+  border-radius: 0.6rem;
+  padding: 0.35rem 0.7rem;
+  font-size: 12px;
+  background: rgba(56, 189, 248, 0.16);
+  color: #bae6fd;
+  transition: background 0.15s;
+}
+.office-btn:hover {
+  background: rgba(56, 189, 248, 0.3);
+}
+.office-option {
+  text-align: left;
+  border-radius: 0.75rem;
+  padding: 0.55rem 0.8rem;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transition: background 0.15s;
+}
+.office-option:hover {
+  background: rgba(255, 255, 255, 0.13);
+}

@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@react-three/drei": "^10.0.7",
+    "@react-three/fiber": "^9.1.2",
+    "@react-three/postprocessing": "^3.0.4",
     "@stream-io/video-react-sdk": "^1.35.2",
     "firebase": "^12.15.0",
     "lucide-react": "^1.8.0",
@@ -19,6 +22,7 @@
     "react-markdown": "^10.1.0",
     "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
+    "three": "^0.170.0",
     "wavesurfer.js": "^7.12.6"
   },
   "devDependencies": {
@@ -27,6 +31,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.170.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
     "tailwindcss": "^4",

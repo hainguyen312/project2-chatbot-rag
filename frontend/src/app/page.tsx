@@ -751,6 +751,14 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1 md:gap-2">
+                  <a
+                    href="/office"
+                    title="Xem văn phòng luật 3D"
+                    className="rounded-lg px-2 py-1 text-xs font-medium hover:opacity-80"
+                    style={{ color: "var(--text-muted)", border: "1px solid var(--border, rgba(127,127,127,.3))" }}
+                  >
+                    🏢 <span className="hidden md:inline">Văn phòng 3D</span>
+                  </a>
                   <AuthButton />
                   {userId && <MemoryPanelButton userId={userId} />}
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="hidden h-4 w-4 md:block"
