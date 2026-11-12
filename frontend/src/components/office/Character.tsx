@@ -577,19 +577,21 @@ function CharacterImpl({ def }: { def: CharacterDef }) {
         <Html position={[0, 2.0 * scale, 0]} center zIndexRange={[20, 0]} style={{ pointerEvents: "none" }}>
           <div className="flex flex-col items-center gap-1 select-none" style={{ transform: "translateY(-50%)" }}>
             {view.bubble && (
-              <div className="office-bubble w-max max-w-[150px] rounded-2xl bg-white px-3 py-1.5 text-[12px] leading-snug text-slate-800 shadow-lg ring-1 ring-black/10 sm:max-w-[220px]">
+              <div className="office-bubble w-max max-w-[150px] rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-1.5 text-[12px] leading-snug text-[var(--text-primary)] shadow-lg sm:max-w-[220px]">
                 {view.bubble}
               </div>
             )}
             <div
               className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-semibold shadow ${
-                isSel ? "bg-yellow-300 text-slate-900" : "bg-slate-900/75 text-white"
+                isSel
+                  ? "bg-[var(--accent)] text-[var(--text-on-accent)]"
+                  : "border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)]"
               }`}
             >
               {def.name}
               <span className="ml-1 hidden font-normal opacity-75 sm:inline">· {def.role}</span>
               {view.busy && def.id !== "client" && (
-                <span className="ml-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 align-middle" />
+                <span className="ml-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--ok-text)] align-middle" />
               )}
             </div>
           </div>

@@ -12,9 +12,13 @@ export type Passage = {
   score?: number;
   source?: string;
   url?: string;
+  /** Văn bản gốc, vd. "(Điều 8 Luật số 52/2014/QH13, có hiệu lực …)" */
+  vbqppl?: string;
+  trust_level?: string;
 };
 
 export type MemoryUsed = {
+  mem_id?: string;
   milvus_id?: number;
   fact: string;
   type: string;

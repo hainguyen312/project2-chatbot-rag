@@ -1,0 +1,204 @@
+{
+ "model": "gpt-4.1",
+ "summary": {
+  "cases": 3,
+  "case_pass": 1.0,
+  "must_call_recall": 1.0,
+  "should_call_recall": null,
+  "forbidden_rate": 0.0,
+  "first_tool_acc": 1.0,
+  "forced_web_acc": 1.0,
+  "invalid_id_rate": 0.0,
+  "empty_arg_rate": 0.0,
+  "redundant_rate": 0.0,
+  "over_budget_rate": 0.0,
+  "max_iter_rate": 0.0,
+  "answer_check": 1.0,
+  "avg_calls": 2.3333333333333335,
+  "avg_latency_s": 9.485308647155762,
+  "cost_usd": 0.188862
+ },
+ "rows": [
+  {
+   "id": "def_notice",
+   "category": "dinh_nghia",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "graph_traverse"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 2,
+   "id_calls": 1,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 7.773456811904907,
+   "cost_usd": 0.05199
+  },
+  {
+   "id": "pen_drugs",
+   "category": "muc_phat",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "get_full_article"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 2,
+   "id_calls": 1,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 7.064747095108032,
+   "cost_usd": 0.050302
+  },
+  {
+   "id": "gap_encroach",
+   "category": "ngoai_du_lieu",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "graph_traverse",
+    "web_search"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 3,
+   "id_calls": 1,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 13.617722034454346,
+   "cost_usd": 0.08657
+  }
+ ],
+ "traces": [
+  {
+   "case": "def_notice",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Thời hạn báo trước khi đơn phương nghỉ việc (đơn phương chấm dứt hợp đồng lao động) phụ thuộc vào loại hợp đồng và ngành nghề bạn đang làm việc. Cụ thể:\n\n1. Đối với người lao động làm việc theo hợp đồng lao động thông thường:\n- Ít nhất 45 ngày nếu làm việc theo hợp đồng lao động không xác định thời hạn.\n- Ít nhất 30 ngày nếu làm việc theo hợp đồng lao động xác định thời hạn từ 12 tháng đến 36 tháng.\n- Ít nhất 03 ngày làm việc nếu làm việc theo hợp đồng lao động xác định thời hạn dưới 12 tháng.\n(Theo Điều 35 Bộ luật số 45/2019/QH14, Quyền đơn phương chấm dứt hợp đồng lao động của người lao động)\n\n2. Đối với một số ngành, nghề, công việc đặc thù (như thành viên tổ lái tàu bay, thuyền viên tàu biển, người quản lý doanh nghiệp...):\n- Ít nhất 120 ngày đối với hợp đồng lao động không xác định thời hạn hoặc hợp đồng xác định thời hạn từ 12 tháng trở lên.\n- Ít nhất bằng một phần tư thời hạn của hợp đồng lao động đối với hợp đồng có thời hạn dưới 12 tháng.\n(Theo Điều 7 Nghị định 145/2020/NĐ-CP, Thời hạn báo trước khi đơn phương chấm dứt hợp đồng lao động đối với một số ngành, nghề, công việc đặc thù)\n\n3. Đối với lao động là người giúp việc gia đình:\n- Phải báo trước ít nhất 15 ngày, trừ một số trường hợp đặc biệt thì không cần báo trước.\n(Theo Điều 89 Nghị định 145/2020/NĐ-CP, Một số quy định riêng đối với lao động là người giúp việc gia đình)\n\n4. Một số trường hợp đặc biệt, người lao động có quyền nghỉ việc mà không cần báo trước (ví dụ: không được trả lương, bị ngược đãi, bị quấy rối tình dục tại nơi làm việc, lao động nữ mang thai phải nghỉ việc theo chỉ định của cơ sở y tế...).\n(Theo khoản 2 Điều 35 Bộ luật số 45/2019/QH14)\n\nTóm lại: Thời hạn báo trước phổ biến là 45 ngày, 30 ngày hoặc 3 ngày làm việc tùy loại hợp đồng, nhưng có ngoại lệ cho ngành nghề đặc thù và một số trường hợp đặc biệt. Bạn cần xác định rõ loại hợp đồng và ngành nghề của mình để áp dụng đúng quy định.",
+   "iterations": 3,
+   "latency_s": 7.773456811904907,
+   "cost_usd": 0.05199,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "thời hạn báo trước khi đơn phương chấm dứt hợp đồng lao động"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "graph_traverse",
+     "args": {
+      "mapcs": [
+       "20.2.LQ.35"
+      ],
+      "hop": 1
+     },
+     "n_hits": 12
+    }
+   ]
+  },
+  {
+   "case": "pen_drugs",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Hành vi tàng trữ trái phép chất ma túy là tội phạm hình sự và bị xử lý rất nghiêm khắc theo quy định tại Điều 249 Bộ luật số 100/2015/QH13 (sửa đổi, bổ sung bởi Luật số 12/2017/QH14). Cụ thể:\n\n1. Người nào tàng trữ trái phép chất ma túy (không nhằm mục đích mua bán, vận chuyển, sản xuất) sẽ bị phạt tù từ 01 năm đến 05 năm nếu thuộc một trong các trường hợp sau:\n- Đã bị xử phạt vi phạm hành chính hoặc đã bị kết án về tội này hoặc các tội liên quan về ma túy mà chưa được xóa án tích mà còn vi phạm;\n- Tàng trữ các loại chất ma túy với khối lượng cụ thể (ví dụ: heroin, cocaine, methamphetamine... từ 0,1 gam đến dưới 5 gam; nhựa thuốc phiện từ 1 gam đến dưới 500 gam; các chất ma túy khác ở thể rắn từ 1 gam đến dưới 20 gam...).\n\n2. Nếu phạm tội có tình tiết tăng nặng (như có tổ chức, phạm tội nhiều lần, lợi dụng chức vụ, sử dụng người dưới 16 tuổi, khối lượng ma túy lớn hơn...) thì mức phạt tù từ 05 năm đến 10 năm.\n\n3. Nếu khối lượng ma túy tàng trữ lớn hơn nữa, mức phạt tù từ 10 năm đến 15 năm.\n\n4. Trường hợp đặc biệt nghiêm trọng (khối lượng rất lớn), mức phạt tù từ 15 năm đến 20 năm hoặc tù chung thân.\n\n5. Ngoài hình phạt tù, người phạm tội còn có thể bị phạt tiền từ 5.000.000 đồng đến 500.000.000 đồng, cấm đảm nhiệm chức vụ, cấm hành nghề hoặc làm công việc nhất định từ 01 năm đến 05 năm hoặc tịch thu một phần hoặc toàn bộ tài sản.\n\nCăn cứ pháp lý: Điều 249 Bộ luật số 100/2015/QH13 (Tội tàng trữ trái phép chất ma túy).\n\nLưu ý: Mức hình phạt cụ thể phụ thuộc vào loại, khối lượng chất ma túy và các tình tiết tăng nặng/giảm nhẹ khác. Nếu bạn cần tra cứu về trường hợp cụ thể (loại ma túy, khối lượng...), vui lòng cung cấp thêm thông tin để được tư vấn chi tiết hơn.",
+   "iterations": 3,
+   "latency_s": 7.064747095108032,
+   "cost_usd": 0.050302,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "xử lý tàng trữ trái phép chất ma tuý"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "get_full_article",
+     "args": {
+      "mapc": "160010000000000020000200000000000000000024900000000000000000"
+     },
+     "n_hits": 1
+    }
+   ]
+  },
+  {
+   "case": "gap_encroach",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Nếu hàng xóm xây nhà lấn sang đất nhà bạn, bạn có thể xử lý theo các bước và căn cứ pháp luật sau:\n\n1. Xác định rõ ranh giới đất:\n   - Bạn cần có giấy tờ chứng minh quyền sử dụng đất (sổ đỏ, giấy tờ hợp pháp khác).\n   - Có thể yêu cầu cơ quan chuyên môn (địa chính xã/phường) đo đạc, xác định lại mốc giới, ranh giới đất.\n\n2. Hòa giải tại địa phương:\n   - Trước tiên, nên trao đổi, hòa giải với hàng xóm.\n   - Nếu không giải quyết được, bạn gửi đơn đề nghị hòa giải đến UBND cấp xã/phường nơi có đất.\n\n3. Xử phạt hành chính:\n   - Nếu xác định có hành vi lấn, chiếm đất, hàng xóm sẽ bị xử phạt theo quy định tại Điều 14 Nghị định 91/2019/NĐ-CP (được sửa đổi, bổ sung bởi Nghị định 04/2022/NĐ-CP).\n   - Mức phạt tùy loại đất và diện tích lấn chiếm, ví dụ:\n     - Đất ở (phi nông nghiệp) tại nông thôn: Phạt từ 10 triệu đến 20 triệu đồng nếu diện tích lấn chiếm dưới 500m².\n     - Nếu ở đô thị, mức phạt gấp đôi so với nông thôn.\n   - Ngoài phạt tiền, người vi phạm còn bị buộc khôi phục lại tình trạng ban đầu (tháo dỡ phần xây dựng lấn chiếm, trả lại đất).\n\n   (Căn cứ: Điều 14 Nghị định 91/2019/NĐ-CP, tên điều: \"Lấn, chiếm đất\")\n\n4. Khởi kiện ra tòa án:\n   - Nếu hòa giải không thành, bạn có quyền khởi kiện tại Tòa án nhân dân cấp huyện để yêu cầu giải quyết tranh chấp đất đai, buộc trả lại phần đất bị lấn chiếm và bồi thường thiệt hại (nếu có).\n\n5. Trường hợp vi phạm nghiêm trọng:\n   - Nếu đã bị xử phạt hành chính mà vẫn tiếp tục lấn chiếm, có thể bị truy cứu trách nhiệm hình sự theo Điều 228 Bộ luật Hình sự 2015 (Tội vi phạm các quy định về sử dụng đất đai).\n\nTóm lại: Bạn nên liên hệ UBND xã/phường để được hướng dẫn hòa giải, xác minh ranh giới đất, lập biên bản vi phạm và đề nghị xử lý hành chính. Nếu không giải quyết được, bạn có thể khởi kiện ra tòa án để bảo vệ quyền lợi của mình.\n\nTrích dẫn pháp luật:\n- Điều 14 Nghị định 91/2019/NĐ-CP (được sửa đổi, bổ sung bởi Nghị định 04/2022/NĐ-CP): \"Lấn, chiếm đất\"\n- Điều 228 Bộ luật số 100/2015/QH13: \"Tội vi phạm các quy định về sử dụng đất đai\"\n\nNếu cần hướng dẫn chi tiết về thủ tục, hồ sơ hoặc mẫu đơn, bạn có thể hỏi thêm!",
+   "iterations": 4,
+   "latency_s": 13.617722034454346,
+   "cost_usd": 0.08657,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "xử lý xây nhà lấn chiếm đất của hàng xóm"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "graph_traverse",
+     "args": {
+      "mapcs": [
+       "39.13.NĐ.74.14"
+      ],
+      "hop": 1
+     },
+     "n_hits": 2
+    },
+    {
+     "name": "web_search",
+     "args": {
+      "query": "xử lý xây nhà lấn chiếm đất ở của hàng xóm mới nhất 2026"
+     },
+     "n_hits": 3
+    }
+   ]
+  }
+ ]
+}

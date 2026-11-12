@@ -1,0 +1,50 @@
+@startuml ACT_XuLyCauHoi
+!include _style.iuml
+title Biểu đồ hoạt động — Xử lý một câu hỏi pháp luật
+
+|Người dùng|
+start
+:Nhập câu hỏi (gõ hoặc giọng nói);
+:Chọn chế độ hỏi;
+|Hệ thống|
+:Phân loại yêu cầu (quick / spam / sentiment);
+if (Loại yêu cầu?) then (quick)
+  :Trả lời nhanh soạn sẵn;
+elseif (spam) then
+  :Từ chối yêu cầu spam;
+elseif (escalate) then
+  :Đề xuất chuyển cán bộ;
+else (proceed)
+  :Chuẩn hoá câu hỏi + nhận diện ý định;
+  if (Thuộc phạm vi pháp luật?) then (không)
+    :Thông báo ngoài phạm vi;
+  else (có)
+    :Tra bộ nhớ cá nhân của người dùng;
+    if (Có trong semantic cache?) then (có)
+      :Lấy câu trả lời từ cache;
+    else (không)
+      repeat
+        :LLM quyết định gọi tool;
+        if (Cần thêm thông tin?) then (có)
+          :Thực thi tool
+          (vector / graph / full article / web);
+          :Gom điều luật vào bucket;
+        endif
+      repeat while (Còn tool_calls và < 6 vòng?) is (có)
+      ->không;
+      :Rerank, loại trùng, tính độ tin cậy;
+      :Sinh câu trả lời có trích dẫn;
+      :Lưu vào semantic cache;
+    endif
+    fork
+      :Stream câu trả lời về giao diện;
+    fork again
+      :Cập nhật bộ nhớ dài hạn (nền);
+    end fork
+  endif
+endif
+|Người dùng|
+:Đọc câu trả lời, xem điều luật trích dẫn;
+:(Tuỳ chọn) nghe TTS, đánh giá câu trả lời;
+stop
+@enduml

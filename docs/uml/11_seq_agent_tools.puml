@@ -1,0 +1,44 @@
+@startuml SEQ_AgentTools
+!include _style.iuml
+title Biểu đồ tuần tự — Thực thi tool của agent (truy xuất điều luật)
+autonumber
+
+participant "rag_api" as API
+participant "execute_agent_tool" as Exec
+participant "GraphRAGRetriever" as Ret
+participant "OpenAI\nEmbedding" as Emb
+database "Milvus" as Milvus
+database "Neo4j" as Neo4j
+database "MySQL" as MySQL
+participant "Tavily" as Tavily
+
+API -> Exec : execute_agent_tool(name, args, rerank_query)
+activate Exec
+alt name = vector_search
+  Exec -> Ret : _vector_search(query, pool_k)
+  Ret -> Emb : embed(query)
+  Emb --> Ret : vector
+  Ret -> Milvus : search(phapdien_simple_tendieu)
+  Milvus --> Ret : danh sách mapc
+  Ret --> Exec : mapcs
+  Exec -> Neo4j : fetch_dieu_records(mapcs)
+  Neo4j --> Exec : toàn văn điều luật
+  opt Neo4j thiếu node
+    Exec -> MySQL : truy vấn pddieu (fallback)
+    MySQL --> Exec : nội dung điều
+  end
+  Exec -> Exec : rerank_phapdien_hits()\n(từ khoá / LLM nếu bật)
+else name = graph_traverse
+  Exec -> Neo4j : MATCH (d)-[:LIEN_QUAN|THAM_CHIEU]-(x)
+  Neo4j --> Exec : điều luật liên quan
+  Exec -> Exec : rerank
+else name = get_full_article
+  Exec -> Neo4j : lấy điều theo mapc
+  Neo4j --> Exec : toàn văn điều
+else name = web_search
+  Exec -> Tavily : search(query)
+  Tavily --> Exec : kết quả web (url, nội dung)
+end
+Exec --> API : (JSON rút gọn cho LLM, full_hits cho UI)
+deactivate Exec
+@enduml

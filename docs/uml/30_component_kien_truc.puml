@@ -1,0 +1,69 @@
+@startuml CMP_KienTruc
+!include _style.iuml
+title Biểu đồ thành phần — Kiến trúc hệ thống
+
+actor "Người dùng" as U
+actor "Quản trị viên" as A
+
+package "Frontend (Next.js :3000)" {
+  [Chat UI\n(page.tsx, MessageRow,\nPassagePanel, MemoryPanel)] as ChatUI
+  [Văn phòng luật 3D\n(/office)] as Office
+  [API routes\n/api/stream, /api/chats,\n/api/tts, /api/stt,\n/api/memory, /api/auth] as Routes
+}
+
+package "Backend RAG (FastAPI :8001)" {
+  [rag_api.py] as API
+  [Pre-retrieve\n(quick / spam / sentiment)] as Pre
+  [Agentic RAG\n(tool-calling)] as Agent
+  [GraphRAGRetriever] as Ret
+  [MemoryManager] as Mem
+  [SemanticCache] as Cache
+}
+
+package "Xử lý dữ liệu (offline)" {
+  [law-crawler] as Crawler
+  [seed_data_batch.py] as Seed
+  [build_graph.py] as Build
+  [evaluation] as Eval
+}
+
+database "MySQL\n(Pháp Điển)" as MySQL
+database "Milvus\n(vector điều luật,\nuser memory)" as Milvus
+database "Neo4j\n(đồ thị điều luật)" as Neo4j
+database "MongoDB\n(hội thoại, memory)" as Mongo
+cloud "OpenAI\n(LLM, embedding,\nWhisper, TTS)" as OpenAI
+cloud "Firebase\n(Auth, Storage)" as Firebase
+cloud "Tavily" as Tavily
+
+U --> ChatUI
+U --> Office
+ChatUI --> Routes
+Office --> Routes
+ChatUI ..> Firebase : đăng nhập
+Routes --> API : HTTP / SSE
+Routes --> Mongo : CRUD hội thoại
+
+API --> Pre
+API --> Agent
+API --> Mem
+API --> Cache
+Agent --> Ret
+Ret --> Milvus
+Ret --> Neo4j
+Agent --> MySQL : fallback
+Agent --> Tavily
+Mem --> Milvus
+Mem --> Mongo
+API --> OpenAI
+API --> Firebase : verify token,\nupload TTS
+
+A --> Crawler
+A --> Seed
+A --> Build
+A --> Eval
+Crawler --> MySQL
+Seed --> MySQL
+Seed --> Milvus
+Build --> MySQL
+Build --> Neo4j
+@enduml

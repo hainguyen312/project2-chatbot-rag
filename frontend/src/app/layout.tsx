@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Be_Vietnam_Pro, Geist_Mono } from "next/font/google";
+import { Be_Vietnam_Pro, Geist_Mono, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import "./theme.css";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -8,6 +8,13 @@ const beVietnamPro = Be_Vietnam_Pro({
   variable: "--font-be-vietnam",
   subsets: ["latin", "vietnamese"],
   weight: ["300", "400", "500", "600", "700"],
+});
+
+// Câu trả lời đọc như văn bản luật: serif có đủ dấu tiếng Việt, trục opsz cho cỡ chữ đọc
+const sourceSerif = Source_Serif_4({
+  variable: "--font-serif",
+  subsets: ["latin", "vietnamese"],
+  axes: ["opsz"],
 });
 
 const geistMono = Geist_Mono({
@@ -28,8 +35,8 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`${beVietnamPro.variable} ${geistMono.variable} h-full antialiased`}
+      lang="vi"
+      className={`${beVietnamPro.variable} ${sourceSerif.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AuthProvider>{children}</AuthProvider>

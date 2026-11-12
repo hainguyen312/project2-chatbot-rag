@@ -6,13 +6,13 @@ Kiến trúc:
   phân loại theo 4 loại memory: core / episodic / semantic / procedural.
 - Update: với mỗi candidate fact, tìm các memory tương đồng của user, để LLM
   quyết định ADD / UPDATE / DELETE / NOOP (giống thuật toán Mem0).
-- Retrieve: vector search Milvus, filter theo user_id, trả về top_k.
+- Retrieve: cosine trên embedding lưu trong Mongo (theo user_id), có tính độ mới.
 
-Storage:
-- Milvus `user_memory`: vector + metadata để search ngữ nghĩa nhanh.
-- MongoDB `memories`: raw fact + lịch sử thay đổi (audit log).
-
-Cả 2 store được giữ đồng bộ qua trường `milvus_id` (Milvus PK lưu trong Mongo).
+Storage (một nguồn dữ liệu duy nhất):
+- MongoDB `memories`: fact + embedding + loại + cờ nhạy cảm + lịch sử thay đổi.
+  Tìm kiếm ngữ nghĩa = cosine bằng numpy trên memory của MỘT user (số lượng nhỏ).
+- MongoDB `memory_settings`: chế độ bộ nhớ theo user (no_sensitive | full | off).
+(Trước đây vector nằm ở Milvus, fact ở Mongo → hai kho lệch nhau khi Milvus bị reset.)
 """
 from __future__ import annotations
 
@@ -21,10 +21,13 @@ import json
 import logging
 import os
 import re
+import threading
 from datetime import datetime
 from typing import Any
 
-from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
+import uuid
+
+import numpy as np
 
 try:
     from pymongo import MongoClient
@@ -41,13 +44,25 @@ if not logger.handlers:
 logger.setLevel(logging.INFO)
 
 
-MEMORY_COLLECTION_NAME = "user_memory"
-MEMORY_EMBEDDING_DIM = 1536
 MEMORY_MONGO_COLLECTION = os.getenv("MEMORY_MONGO_COLLECTION", "memories")
 MEMORY_TOP_K = int(os.getenv("MEMORY_TOP_K", "5"))
 MEMORY_EXTRACT_MODEL = os.getenv("MEMORY_EXTRACT_MODEL", "gpt-4o-mini")
 MEMORY_UPDATE_MODEL = os.getenv("MEMORY_UPDATE_MODEL", "gpt-4o-mini")
 MEMORY_SIM_TOP = 5  # số memory tương đồng đưa vào prompt update
+
+# ── Độ mới & hết hạn khi TRUY XUẤT ──────────────────────────────────────────
+# Chu kỳ bán rã (ngày) theo loại: sau N ngày, trọng số độ mới còn 1/2. None = không phai.
+MEMORY_HALF_LIFE_DAYS: dict[str, float | None] = {
+    "episodic": float(os.getenv("MEMORY_EPISODIC_HALF_LIFE_DAYS", "30")),
+    "semantic": float(os.getenv("MEMORY_SEMANTIC_HALF_LIFE_DAYS", "120")),
+    "core": None,
+    "procedural": None,
+}
+# Episodic quá hạn này thì KHÔNG đưa vào context nữa (vẫn giữ trong DB, hiện "đã cũ" ở panel)
+MEMORY_EPISODIC_TTL_DAYS = float(os.getenv("MEMORY_EPISODIC_TTL_DAYS", "180"))
+# Bỏ memory có độ tương đồng thấp hơn ngưỡng (trước đây luôn lấy đủ top_k dù không liên quan)
+MEMORY_MIN_SIMILARITY = float(os.getenv("MEMORY_MIN_SIMILARITY", "0.2"))
+MEMORY_RECENCY_WEIGHT = float(os.getenv("MEMORY_RECENCY_WEIGHT", "0.4"))
 
 VALID_TYPES = {"core", "episodic", "semantic", "procedural"}
 
@@ -86,6 +101,27 @@ _SENSITIVE_PATTERNS = [
 ]
 
 
+# Chủ đề NHẠY CẢM (dữ liệu cá nhân nhạy cảm): chỉ lưu khi người dùng chủ động cho phép.
+# LLM gắn cờ `sensitive`; regex này là lưới dự phòng khi LLM bỏ sót.
+_SENSITIVE_TOPIC_RE = re.compile(
+    r"(khởi tố|bị bắt|tạm giam|tạm giữ|truy nã|tiền án|tiền sự|án tích|đi tù|ngồi tù|"
+    r"đang bị điều tra|bị kết án|phạm tội|"
+    r"bệnh|ung thư|hiv|aids|trầm cảm|tâm thần|mang thai|sảy thai|phá thai|khuyết tật|"
+    r"đồng tính|chuyển giới|xu hướng tính dục|quan hệ tình dục|"
+    r"tôn giáo|theo đạo|đảng viên|chính trị|dân tộc thiểu số)",
+    re.IGNORECASE,
+)
+
+MEMORY_MODES = ("no_sensitive", "full", "off")
+# Mặc định: ghi nhớ nhưng KHÔNG lưu dữ liệu nhạy cảm (privacy by default)
+MEMORY_DEFAULT_MODE = os.getenv("MEMORY_DEFAULT_MODE", "no_sensitive")
+MEMORY_SETTINGS_COLLECTION = os.getenv("MEMORY_SETTINGS_COLLECTION", "memory_settings")
+
+
+def is_sensitive_topic(fact: str) -> bool:
+    return bool(_SENSITIVE_TOPIC_RE.search(fact or ""))
+
+
 # ── Prompts ───────────────────────────────────────────────────────────────────
 
 _EXTRACTION_SYSTEM_PROMPT = """Bạn là bộ trích xuất bộ nhớ dài hạn cho trợ lý pháp luật Việt Nam.
@@ -116,8 +152,13 @@ NGUYÊN TẮC BẮT BUỘC:
    ghép với chủ đề pháp lý. Ví dụ ĐÚNG: "Người dùng sinh năm 2003".
    Ví dụ SAI: "Người dùng từng năm 2005 hỏi về kết hôn sinh năm 2003".
 6. Nếu lượt hội thoại không có thông tin đáng nhớ → trả về `[]`.
+7. Trường "sensitive" = true nếu fact thuộc dữ liệu cá nhân NHẠY CẢM: liên quan tố tụng
+   hình sự của người dùng (bị khởi tố, bị bắt, tiền án, đang bị điều tra), sức khoẻ / bệnh
+   tật / thai sản, đời sống tình dục hoặc xu hướng tính dục, tôn giáo, quan điểm chính trị,
+   dân tộc. Còn lại "sensitive" = false.
 
-ĐỊNH DẠNG OUTPUT: CHỈ trả về JSON array hợp lệ, không có markdown, không giải thích.
+ĐỊNH DẠNG OUTPUT: JSON object {"facts": [...]} — mảng fact nằm trong trường "facts"
+(các ví dụ dưới đây chỉ ghi phần mảng). Không có fact nào → {"facts": []}.
 Mỗi phần tử là object: {"fact": "<câu tiếng Việt>", "type": "core|episodic|semantic|procedural"}
 
 VÍ DỤ:
@@ -194,9 +235,109 @@ Existing: [{"id": 12, "fact": "Người dùng mở quán cà phê ở Hạ Long"
 Output: {"action":"DELETE","target_id":12,"reason":"Phủ định memory cũ, không có giá trị thay thế"}
 """
 
+_BATCH_UPDATE_SYSTEM_PROMPT = _UPDATE_SYSTEM_PROMPT + """
+CHẾ ĐỘ NHIỀU CANDIDATE (định dạng thực tế được dùng):
+- Input gồm danh sách CANDIDATES (mỗi cái có "index") và danh sách EXISTING chung;
+  mỗi memory cũ có "id" là SỐ THỨ TỰ NGẮN (1, 2, 3…).
+- Trả về {"decisions": [...]} với ĐÚNG MỘT quyết định cho MỖI candidate:
+  {"candidate": <index>, "action": "...", "target_id": <id trong EXISTING hoặc null>,
+   "merged_fact": <câu mới khi UPDATE, ngược lại null>, "reason": "..."}
+- target_id CHỈ được là một "id" có trong EXISTING; ADD/NOOP thì target_id = null.
+- Hai candidate cùng lượt nói về CÙNG một thực thể → chỉ một cái ADD/UPDATE, cái kia NOOP.
+- Không có EXISTING nào liên quan → ADD (trừ khi candidate rỗng nghĩa → NOOP).
+"""
+
+_EXTRACT_SCHEMA = {
+    "name": "memory_facts",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "properties": {"facts": {"type": "array", "items": {
+            "type": "object",
+            "properties": {
+                "fact": {"type": "string"},
+                "type": {"type": "string", "enum": sorted(VALID_TYPES)},
+                "sensitive": {"type": "boolean"},
+            },
+            "required": ["fact", "type", "sensitive"],
+            "additionalProperties": False,
+        }}},
+        "required": ["facts"],
+        "additionalProperties": False,
+    },
+}
+
+_DECISION_SCHEMA = {
+    "name": "memory_decisions",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "properties": {"decisions": {"type": "array", "items": {
+            "type": "object",
+            "properties": {
+                "candidate": {"type": "integer"},
+                "action": {"type": "string", "enum": ["ADD", "UPDATE", "DELETE", "NOOP"]},
+                "target_id": {"type": ["integer", "null"]},
+                "merged_fact": {"type": ["string", "null"]},
+                "reason": {"type": "string"},
+            },
+            "required": ["candidate", "action", "target_id", "merged_fact", "reason"],
+            "additionalProperties": False,
+        }}},
+        "required": ["decisions"],
+        "additionalProperties": False,
+    },
+}
+
+# Mỗi user chỉ một lượt ghi memory chạy tại một thời điểm (tránh 2 lượt chat liên tiếp
+# cùng ADD một fact → bản trùng).
+_USER_LOCKS: dict[str, threading.Lock] = {}
+_USER_LOCKS_GUARD = threading.Lock()
+
+
+def _user_lock(user_id: str) -> threading.Lock:
+    with _USER_LOCKS_GUARD:
+        return _USER_LOCKS.setdefault(user_id, threading.Lock())
+
 
 def _now_iso() -> str:
     return datetime.now().isoformat()
+
+
+def _age_days(timestamp: str | None, now: datetime | None = None) -> float | None:
+    """Số ngày từ timestamp (ISO) tới now; None nếu không đọc được."""
+    try:
+        ts = datetime.fromisoformat(str(timestamp))
+    except Exception:
+        return None
+    now = now or datetime.now()
+    if ts.tzinfo is not None and now.tzinfo is None:
+        ts = ts.replace(tzinfo=None)
+    return max(0.0, (now - ts).total_seconds() / 86400)
+
+
+def recency_factor(mem_type: str | None, timestamp: str | None, now: datetime | None = None) -> float:
+    """1.0 = mới; giảm theo chu kỳ bán rã của loại memory; loại không phai → 1.0."""
+    half = MEMORY_HALF_LIFE_DAYS.get((mem_type or "").lower())
+    age = _age_days(timestamp, now)
+    if not half or age is None:
+        return 1.0
+    return 0.5 ** (age / half)
+
+
+def is_expired(mem_type: str | None, timestamp: str | None, now: datetime | None = None) -> bool:
+    """Episodic quá MEMORY_EPISODIC_TTL_DAYS → không dùng khi trả lời."""
+    if (mem_type or "").lower() != "episodic":
+        return False
+    age = _age_days(timestamp, now)
+    return age is not None and age > MEMORY_EPISODIC_TTL_DAYS
+
+
+def retrieval_score(similarity: float, mem_type: str | None, timestamp: str | None,
+                    now: datetime | None = None) -> float:
+    """Điểm xếp hạng = độ tương đồng × (1 − w + w × độ mới)."""
+    w = MEMORY_RECENCY_WEIGHT
+    return similarity * ((1 - w) + w * recency_factor(mem_type, timestamp, now))
 
 
 def _is_sensitive(fact: str) -> bool:
@@ -231,98 +372,67 @@ class MemoryManager:
         self.mongo_uri = mongo_uri
         self.mongo_db_name = (mongo_db or os.getenv("MONGODB_DB") or "chatbot_rag").strip()
 
-        # Milvus: tận dụng connection alias "default" đã có (two_stage_search.py
-        # đã connect sẵn). Nếu chưa, connect lại (pymilvus connect idempotent).
-        try:
-            if not connections.has_connection("default"):
-                connections.connect("default", host=milvus_host, port=milvus_port)
-        except Exception as e:
-            logger.warning("Không kết nối được Milvus: %s", e)
+        # milvus_host / milvus_port: giữ tham số để tương thích, không còn dùng.
+        self._connect_mongo()
 
-        # Khai báo sẵn để mọi nhánh lỗi đều không gây AttributeError
+    def _connect_mongo(self) -> None:
+        """Kết nối MongoDB lưu fact (gọi từ __init__, mỗi lần khởi tạo)."""
+        # Khai báo sẵn để mọi nhánh lỗi đều không gây AttributeError (theo bản sửa trên main)
         self._mongo_client = None
         self.mongo_col = None
-        self.collection: Collection | None = None
+        self.settings_col = None
+        if not (MongoClient and self.mongo_uri):
+            logger.warning("Thiếu pymongo hoặc MONGODB_URI — memory bị tắt")
+            return
         try:
-            if not utility.has_collection(MEMORY_COLLECTION_NAME):
-                self._create_memory_collection()
-            self.collection = Collection(MEMORY_COLLECTION_NAME)
-            self.collection.load()
-            logger.info("Loaded Milvus collection '%s'", MEMORY_COLLECTION_NAME)
+            self._mongo_client = MongoClient(
+                self.mongo_uri,
+                serverSelectionTimeoutMS=8000,
+                connectTimeoutMS=8000,
+                socketTimeoutMS=8000,
+            )
+            self._mongo_client.admin.command("ping")
+            self.mongo_col = self._mongo_client[self.mongo_db_name][MEMORY_MONGO_COLLECTION]
+            self.settings_col = self._mongo_client[self.mongo_db_name][MEMORY_SETTINGS_COLLECTION]
+            # Index để query nhanh theo user_id
+            try:
+                self.mongo_col.create_index([("user_id", 1)])
+                self.mongo_col.create_index([("mem_id", 1)], unique=True, sparse=True)
+                self.settings_col.create_index([("user_id", 1)], unique=True)
+            except Exception:
+                pass
+            logger.info("Kết nối MongoDB '%s.%s'", self.mongo_db_name, MEMORY_MONGO_COLLECTION)
         except Exception as e:
-            logger.warning("Lỗi load Milvus collection: %s", e)
-
-        # Mongo (luôn chạy, không phụ thuộc collection Milvus mới tạo hay đã có)
-        if MongoClient and mongo_uri:
-            try:
-                self._mongo_client = MongoClient(
-                    mongo_uri,
-                    serverSelectionTimeoutMS=8000,
-                    connectTimeoutMS=8000,
-                    socketTimeoutMS=8000,
-                )
-                self._mongo_client.admin.command("ping")
-                self.mongo_col = self._mongo_client[self.mongo_db_name][MEMORY_MONGO_COLLECTION]
-                # Index để query nhanh theo user_id
-                try:
-                    self.mongo_col.create_index([("user_id", 1)])
-                    self.mongo_col.create_index([("user_id", 1), ("milvus_id", 1)])
-                except Exception:
-                    pass
-                logger.info("Kết nối MongoDB '%s.%s'", self.mongo_db_name, MEMORY_MONGO_COLLECTION)
-            except Exception as e:
-                logger.warning("Không kết nối được MongoDB: %s", e)
-
-    def _create_memory_collection(self) -> None:
-        """Tạo collection user_memory nếu chưa có (không liên quan collection pháp điển)."""
-        fields = [
-            FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=True),
-            FieldSchema(name="user_id", dtype=DataType.VARCHAR, max_length=128),
-            FieldSchema(name="mem_type", dtype=DataType.VARCHAR, max_length=32),
-            FieldSchema(name="fact", dtype=DataType.VARCHAR, max_length=2000),
-            FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=MEMORY_EMBEDDING_DIM),
-            FieldSchema(name="timestamp", dtype=DataType.VARCHAR, max_length=64),
-        ]
-        col = Collection(
-            MEMORY_COLLECTION_NAME,
-            CollectionSchema(fields, description="User long-term memory (Mem0-style)"),
-        )
-        col.create_index(
-            "embedding",
-            {
-                "index_type": "HNSW",
-                "metric_type": "COSINE",
-                "params": {"M": 16, "efConstruction": 200},
-            },
-        )
-        logger.info("Đã tạo Milvus collection '%s'", MEMORY_COLLECTION_NAME)
-
-        # Mongo
-        self.mongo_col = None
-        if MongoClient and mongo_uri:
-            try:
-                self._mongo_client = MongoClient(
-                    mongo_uri,
-                    serverSelectionTimeoutMS=8000,
-                    connectTimeoutMS=8000,
-                    socketTimeoutMS=8000,
-                )
-                self._mongo_client.admin.command("ping")
-                self.mongo_col = self._mongo_client[self.mongo_db_name][MEMORY_MONGO_COLLECTION]
-                # Index để query nhanh theo user_id
-                try:
-                    self.mongo_col.create_index([("user_id", 1)])
-                    self.mongo_col.create_index([("user_id", 1), ("milvus_id", 1)])
-                except Exception:
-                    pass
-                logger.info("Kết nối MongoDB '%s.%s'", self.mongo_db_name, MEMORY_MONGO_COLLECTION)
-            except Exception as e:
-                logger.warning("Không kết nối được MongoDB: %s", e)
+            logger.warning("Không kết nối được MongoDB: %s", e)
 
     # ── Helpers ────────────────────────────────────────────────────────────
 
+    # ── Cài đặt bộ nhớ theo người dùng ─────────────────────────────────────
+
+    def get_mode(self, user_id: str) -> str:
+        """Chế độ bộ nhớ của user: no_sensitive (mặc định) | full | off."""
+        col = getattr(self, "settings_col", None)
+        if col is not None and user_id:
+            try:
+                doc = col.find_one({"user_id": user_id})
+                if doc and doc.get("mode") in MEMORY_MODES:
+                    return doc["mode"]
+            except Exception as e:
+                logger.warning("get_mode fail: %s", e)
+        return MEMORY_DEFAULT_MODE if MEMORY_DEFAULT_MODE in MEMORY_MODES else "no_sensitive"
+
+    def set_mode(self, user_id: str, mode: str) -> str:
+        if mode not in MEMORY_MODES:
+            raise ValueError(f"mode phải là một trong {MEMORY_MODES}")
+        col = getattr(self, "settings_col", None)
+        if col is None:
+            raise RuntimeError("Chưa kết nối MongoDB")
+        col.update_one({"user_id": user_id}, {"$set": {"mode": mode, "updated_at": _now_iso()}}, upsert=True)
+        logger.info("Memory mode user=%s → %s", user_id, mode)
+        return mode
+
     def _ready(self) -> bool:
-        return self.collection is not None and self.mongo_col is not None
+        return self.mongo_col is not None
 
     def _embed(self, text: str) -> list[float]:
         """Embed 1 đoạn text bằng text-embedding-3-small (dim 1536)."""
@@ -357,23 +467,13 @@ class MemoryManager:
         )
 
         try:
-            resp = self.client.chat.completions.create(
-                model=MEMORY_EXTRACT_MODEL,
-                messages=[
-                    {"role": "system", "content": _EXTRACTION_SYSTEM_PROMPT},
-                    {"role": "user", "content": user_prompt},
-                ],
-                temperature=0.0,
-                max_tokens=600,
-            )
-            raw = _strip_json_fence(resp.choices[0].message.content or "")
-            if not raw or raw == "[]":
-                return []
-            data = json.loads(raw)
-        except (json.JSONDecodeError, Exception) as e:
-            logger.warning("Extraction parse fail: %s", e)
+            data = self._llm_json(MEMORY_EXTRACT_MODEL, _EXTRACTION_SYSTEM_PROMPT, user_prompt,
+                                  _EXTRACT_SCHEMA, max_tokens=600)
+        except Exception as e:
+            logger.warning("Extraction fail: %s", e)
             return []
-
+        if isinstance(data, dict):
+            data = data.get("facts", [])
         if not isinstance(data, list):
             return []
 
@@ -392,239 +492,227 @@ class MemoryManager:
                 continue
             if len(fact) > 1800:
                 fact = fact[:1800]
-            out.append({"fact": fact, "type": mtype})
+            out.append({"fact": fact, "type": mtype,
+                        "sensitive": bool(item.get("sensitive")) or is_sensitive_topic(fact)})
         return out
 
-    # ── UPDATE ─────────────────────────────────────────────────────────────
-
-    def _decide_action(
-        self,
-        candidate: dict,
-        existing: list[dict],
-    ) -> dict:
-        """Gọi LLM để quyết định ADD/UPDATE/DELETE/NOOP."""
-        existing_payload = [
-            {"id": e["milvus_id"], "fact": e["fact"], "type": e.get("mem_type")}
-            for e in existing
-        ]
-        user_prompt = (
-            f"CANDIDATE FACT:\n{json.dumps(candidate, ensure_ascii=False)}\n\n"
-            f"EXISTING MEMORIES (tương đồng nhất, top-{len(existing_payload)}):\n"
-            f"{json.dumps(existing_payload, ensure_ascii=False, indent=2)}\n\n"
-            "Quyết định thao tác theo format JSON đã quy định."
+    def _llm_json(self, model: str, system: str, user: str, schema: dict, max_tokens: int) -> Any:
+        """Gọi LLM với structured outputs (JSON Schema strict) → dict đã parse."""
+        resp = self.client.chat.completions.create(
+            model=model,
+            messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+            temperature=0.0,
+            max_tokens=max_tokens,
+            response_format={"type": "json_schema", "json_schema": schema},
         )
+        return json.loads(_strip_json_fence(resp.choices[0].message.content or ""))
+
+    def _embed_many(self, texts: list[str]) -> list[list[float]]:
+        """Embed nhiều câu trong MỘT request."""
+        if not texts:
+            return []
+        resp = self.client.embeddings.create(model="text-embedding-3-small", input=texts)
+        return [d.embedding for d in resp.data]
+
+    # ── Lưu trữ: MongoDB là nguồn dữ liệu DUY NHẤT ─────────────────────────
+    # Embedding nằm ngay trong document; độ tương đồng tính bằng numpy trên memory của
+    # MỘT user (vài chục–vài trăm bản ghi → < 1 ms). Không còn đồng bộ 2 kho (trước đây
+    # Milvus bị reset → Mongo trỏ tới vector không tồn tại, memory "mất" mà không báo lỗi).
+
+    def _active_docs(self, user_id: str, with_embedding: bool = True) -> list[dict]:
+        proj = {"history": 0} if with_embedding else {"history": 0, "embedding": 0}
         try:
-            resp = self.client.chat.completions.create(
-                model=MEMORY_UPDATE_MODEL,
-                messages=[
-                    {"role": "system", "content": _UPDATE_SYSTEM_PROMPT},
-                    {"role": "user", "content": user_prompt},
-                ],
-                temperature=0.0,
-                max_tokens=300,
+            return list(self.mongo_col.find({"user_id": user_id, "deleted": {"$ne": True}}, proj))
+        except Exception as e:
+            logger.warning("Mongo find fail user=%s: %s", user_id, e)
+            return []
+
+    @staticmethod
+    def _similarities(query_emb: list[float], docs: list[dict]) -> list[tuple[float, dict]]:
+        """[(cosine, doc)] cho các doc có embedding cùng số chiều với query."""
+        q = np.asarray(query_emb, dtype=np.float32)
+        qn = float(np.linalg.norm(q)) or 1.0
+        rows = [d for d in docs if isinstance(d.get("embedding"), list) and len(d["embedding"]) == len(q)]
+        if not rows:
+            return []
+        m = np.asarray([d["embedding"] for d in rows], dtype=np.float32)
+        norms = np.linalg.norm(m, axis=1)
+        norms[norms == 0] = 1.0
+        sims = (m @ q) / (norms * qn)
+        return [(float(s), d) for s, d in zip(sims, rows)]
+
+    def _search_similar(self, user_id: str, emb: list[float], k: int = MEMORY_SIM_TOP) -> list[dict]:
+        """Memory cũ của user gần nhất với 1 vector: [{"mem_id","fact","mem_type","score"}]."""
+        scored = sorted(self._similarities(emb, self._active_docs(user_id)), key=lambda x: -x[0])[:k]
+        return [{"mem_id": d["mem_id"], "fact": d.get("fact"), "mem_type": d.get("mem_type"), "score": s}
+                for s, d in scored if d.get("mem_id")]
+
+    def _decide_actions(self, candidates: list[dict], existing: list[dict]) -> list[dict]:
+        """MỘT lần gọi LLM quyết định ADD/UPDATE/DELETE/NOOP cho mọi candidate.
+
+        LLM chỉ thấy số thứ tự ngắn (1..N) thay cho id thật; target_id trả về được ánh xạ
+        lại và KIỂM TRA thuộc danh sách existing. Trả về list cùng độ dài candidates:
+        {"action", "target_id" (mem_id|None), "merged_fact", "reason"}.
+        """
+        if not existing:
+            return [{"action": "ADD", "target_id": None, "merged_fact": None, "reason": "empty_existing"}
+                    for _ in candidates]
+        local_to_id = {i + 1: e["mem_id"] for i, e in enumerate(existing)}
+        user_prompt = (
+            "CANDIDATES:\n" + json.dumps(
+                [{"index": i, "fact": c["fact"], "type": c["type"]} for i, c in enumerate(candidates)],
+                ensure_ascii=False, indent=2)
+            + "\n\nEXISTING MEMORIES:\n" + json.dumps(
+                [{"id": i + 1, "fact": e["fact"], "type": e.get("mem_type")} for i, e in enumerate(existing)],
+                ensure_ascii=False, indent=2)
+            + "\n\nQuyết định cho TỪNG candidate."
+        )
+        fallback = {"action": "ADD", "target_id": None, "merged_fact": None, "reason": "decision_fallback"}
+        try:
+            data = self._llm_json(MEMORY_UPDATE_MODEL, _BATCH_UPDATE_SYSTEM_PROMPT, user_prompt,
+                                  _DECISION_SCHEMA, max_tokens=200 + 150 * len(candidates))
+            raw = data.get("decisions", []) if isinstance(data, dict) else []
+        except Exception as e:
+            logger.warning("Decision LLM fail: %s — fallback ADD", e)
+            raw = []
+
+        by_idx: dict[int, dict] = {}
+        for d in raw:
+            if isinstance(d, dict) and isinstance(d.get("candidate"), int):
+                by_idx.setdefault(d["candidate"], d)
+        out = []
+        for i in range(len(candidates)):
+            d = by_idx.get(i)
+            if not d:
+                out.append(dict(fallback))
+                continue
+            action = str(d.get("action", "")).upper()
+            if action not in {"ADD", "UPDATE", "DELETE", "NOOP"}:
+                out.append(dict(fallback))
+                continue
+            tid = local_to_id.get(d.get("target_id")) if d.get("target_id") is not None else None
+            if action in {"UPDATE", "DELETE"} and tid is None:
+                # id không tồn tại trong danh sách đưa cho LLM → không được sửa/xoá bừa
+                logger.warning("Decision %s với target_id không hợp lệ (%r) → %s",
+                               action, d.get("target_id"), "ADD" if action == "UPDATE" else "NOOP")
+                action = "ADD" if action == "UPDATE" else "NOOP"
+            out.append({"action": action, "target_id": tid,
+                        "merged_fact": d.get("merged_fact"), "reason": d.get("reason")})
+        return out
+
+    # ── Thực thi từng thao tác ─────────────────────────────────────────────
+
+    def _do_add(self, user_id: str, cand: dict, emb: list[float], now: str) -> str:
+        mem_id = uuid.uuid4().hex[:16]
+        try:
+            self.mongo_col.insert_one({
+                "user_id": user_id, "mem_id": mem_id, "fact": cand["fact"], "mem_type": cand["type"],
+                "sensitive": bool(cand.get("sensitive")), "embedding": list(map(float, emb)),
+                "timestamp": now, "version": 1, "source_chat_id": cand.get("source_chat_id"),
+                "history": [{"action": "ADD", "fact": cand["fact"], "at": now}],
+            })
+        except Exception as e:
+            logger.warning("Mongo insert fail: %s", e)
+            return "SKIP"
+        logger.info("ADD user=%s [%s] %s", user_id, cand["type"], cand["fact"][:80])
+        return "ADD"
+
+    def _do_update(self, user_id: str, cand: dict, target_id: str, merged: str, reason: Any, now: str) -> str:
+        try:
+            merged_emb = self._embed(merged)
+        except Exception as e:
+            logger.warning("Embed merged fail: %s", e)
+            return "SKIP"
+        try:
+            old = self.mongo_col.find_one({"user_id": user_id, "mem_id": target_id}) or {}
+            # Sửa TẠI CHỖ, giữ nguyên mem_id (không còn xoá + chèn như với Milvus auto_id)
+            self.mongo_col.update_one(
+                {"user_id": user_id, "mem_id": target_id},
+                {"$set": {"fact": merged, "mem_type": cand["type"], "timestamp": now,
+                          "embedding": list(map(float, merged_emb)),
+                          "sensitive": bool(cand.get("sensitive")) or is_sensitive_topic(merged),
+                          "version": old.get("version", 1) + 1},
+                 "$push": {"history": {"action": "UPDATE", "fact": merged, "at": now, "reason": reason}}},
             )
-            raw = _strip_json_fence(resp.choices[0].message.content or "")
-            data = json.loads(raw)
         except Exception as e:
-            logger.warning("Update decision parse fail: %s — fallback ADD", e)
-            return {"action": "ADD", "reason": "decision_fail_fallback"}
+            logger.warning("Mongo update fail: %s", e)
+            return "SKIP"
+        logger.info("UPDATE user=%s id=%s: %s", user_id, target_id, merged[:80])
+        return "UPDATE"
 
-        action = (data.get("action") or "").upper()
-        if action not in {"ADD", "UPDATE", "DELETE", "NOOP"}:
-            return {"action": "ADD", "reason": "invalid_action_fallback"}
-        return data
-
-    def _insert_milvus(
-        self,
-        user_id: str,
-        mem_type: str,
-        fact: str,
-        embedding: list[float],
-        timestamp: str,
-    ) -> int | None:
-        """Insert 1 record vào Milvus, trả về primary key (auto_id)."""
-        if not self.collection:
-            return None
+    def _do_delete(self, user_id: str, cand: dict, target_id: str, reason: Any, now: str) -> str:
         try:
-            res = self.collection.insert([
-                [user_id],
-                [mem_type],
-                [fact],
-                [embedding],
-                [timestamp],
-            ])
-            self.collection.flush()
-            pks = list(res.primary_keys)
-            return int(pks[0]) if pks else None
+            self.mongo_col.update_one(
+                {"user_id": user_id, "mem_id": target_id},
+                {"$set": {"deleted": True, "deleted_at": now},
+                 "$push": {"history": {"action": "DELETE", "at": now, "reason": reason,
+                                       "negated_by": cand["fact"]}}},
+            )
         except Exception as e:
-            logger.warning("Milvus insert fail: %s", e)
-            return None
+            logger.warning("Mongo soft-delete fail: %s", e)
+            return "SKIP"
+        logger.info("DELETE user=%s id=%s (negated by: %s)", user_id, target_id, cand["fact"][:60])
+        return "DELETE"
 
-    def _delete_milvus(self, milvus_id: int) -> bool:
-        if not self.collection:
-            return False
-        try:
-            self.collection.delete(expr=f"id in [{int(milvus_id)}]")
-            self.collection.flush()
-            return True
-        except Exception as e:
-            logger.warning("Milvus delete fail: %s", e)
-            return False
+    # ── UPDATE (gộp) ────────────────────────────────────────────────────────
 
-    def update_memory(self, user_id: str, candidate_fact: dict) -> str:
-        """So khớp candidate với memory đã có, LLM quyết định ADD/UPDATE/DELETE/NOOP.
+    def update_memories(self, user_id: str, candidates: list[dict]) -> list[str]:
+        """Cập nhật bộ nhớ cho NHIỀU candidate với 1 lần embed + 1 lần gọi LLM quyết định.
 
-        Trả về tên thao tác đã thực hiện (chuỗi).
+        Trả về list thao tác đã thực hiện, cùng thứ tự candidates.
         """
         if not self._ready() or not user_id:
-            return "SKIP"
+            return ["SKIP"] * len(candidates)
+        valid: list[tuple[int, dict]] = []
+        results = ["SKIP"] * len(candidates)
+        for i, c in enumerate(candidates):
+            fact = (c.get("fact") or "").strip()
+            mtype = (c.get("type") or "").strip().lower()
+            if fact and mtype in VALID_TYPES:
+                valid.append((i, {**c, "fact": fact, "type": mtype}))
+        if not valid:
+            return results
 
-        fact_text = candidate_fact.get("fact", "").strip()
-        mem_type = candidate_fact.get("type", "").strip().lower()
-        if not fact_text or mem_type not in VALID_TYPES:
-            return "SKIP"
-
-        # 1. Embed candidate
         try:
-            emb = self._embed(fact_text)
+            embs = self._embed_many([c["fact"] for _, c in valid])
         except Exception as e:
-            logger.warning("Embed fail: %s", e)
-            return "SKIP"
+            logger.warning("Embed batch fail: %s", e)
+            return results
 
-        # 2. Search top-K memory tương đồng của user trong Milvus
-        existing: list[dict] = []
-        try:
-            results = self.collection.search(
-                data=[emb],
-                anns_field="embedding",
-                param={"metric_type": "COSINE", "params": {"ef": 64}},
-                limit=MEMORY_SIM_TOP,
-                expr=f'user_id == "{user_id}"',
-                output_fields=["user_id", "mem_type", "fact", "timestamp"],
-            )
-            for hit in results[0]:
-                existing.append({
-                    "milvus_id": int(hit.id),
-                    "fact": hit.entity.get("fact"),
-                    "mem_type": hit.entity.get("mem_type"),
-                    "score": float(hit.distance),
-                })
-        except Exception as e:
-            logger.warning("Milvus search fail (update_memory): %s", e)
+        # Gộp memory tương đồng của mọi candidate (khử trùng theo mem_id)
+        existing: dict[str, dict] = {}
+        for emb in embs:
+            for e in self._search_similar(user_id, emb):
+                existing.setdefault(e["mem_id"], e)
+        decisions = self._decide_actions([c for _, c in valid], list(existing.values()))
 
-        # 3. Nếu chưa có memory tương đồng nào → ADD luôn
-        if not existing:
-            decision = {"action": "ADD", "reason": "empty_existing"}
-        else:
-            decision = self._decide_action(candidate_fact, existing)
-
-        action = decision.get("action", "NOOP").upper()
-
-        # Guard: LLM hay nhầm DELETE cho các fact có thay thế (vd "chuyển sang
-        # trường khác"). Convert DELETE → UPDATE nếu fact mới có dấu hiệu thay thế
-        # và đủ dài để mang thông tin có nghĩa.
-        if action == "DELETE" and _looks_like_replacement(fact_text) and len(fact_text) >= 25:
-            logger.info("Guard: DELETE → UPDATE vì candidate có thông tin thay thế")
-            action = "UPDATE"
-            decision["action"] = "UPDATE"
-            # Giữ target_id từ LLM. Nếu thiếu merged_fact, dùng candidate fact.
-            decision.setdefault("merged_fact", fact_text)
         now = _now_iso()
+        touched: set[str] = set()  # một memory cũ chỉ bị sửa/xoá một lần trong lượt
+        for (i, cand), emb, d in zip(valid, embs, decisions):
+            action, target = d["action"], d["target_id"]
+            # Guard: LLM hay nhầm DELETE cho fact có giá trị thay thế ("chuyển sang …")
+            if action == "DELETE" and _looks_like_replacement(cand["fact"]) and len(cand["fact"]) >= 25:
+                logger.info("Guard: DELETE → UPDATE vì candidate có thông tin thay thế")
+                action = "UPDATE"
+            if action in {"UPDATE", "DELETE"} and target in touched:
+                action = "ADD" if action == "UPDATE" else "NOOP"
+            if action == "ADD":
+                results[i] = self._do_add(user_id, cand, emb, now)
+            elif action == "UPDATE":
+                touched.add(target)
+                merged = (d.get("merged_fact") or cand["fact"]).strip()
+                results[i] = self._do_update(user_id, cand, target, merged, d.get("reason"), now)
+            elif action == "DELETE":
+                touched.add(target)
+                results[i] = self._do_delete(user_id, cand, target, d.get("reason"), now)
+            else:
+                logger.info("NOOP user=%s candidate=%s", user_id, cand["fact"][:60])
+                results[i] = "NOOP"
+        return results
 
-        # 4. Thực thi thao tác trên cả Milvus + Mongo
-        if action == "ADD":
-            pk = self._insert_milvus(user_id, mem_type, fact_text, emb, now)
-            if pk is None:
-                return "SKIP"
-            try:
-                self.mongo_col.insert_one({
-                    "user_id": user_id,
-                    "milvus_id": pk,
-                    "fact": fact_text,
-                    "mem_type": mem_type,
-                    "timestamp": now,
-                    "version": 1,
-                    "source_chat_id": candidate_fact.get("source_chat_id"),
-                    "history": [{"action": "ADD", "fact": fact_text, "at": now}],
-                })
-            except Exception as e:
-                logger.warning("Mongo insert fail: %s", e)
-            logger.info("ADD user=%s [%s] %s", user_id, mem_type, fact_text[:80])
-            return "ADD"
-
-        if action == "UPDATE":
-            target_id = decision.get("target_id")
-            merged = (decision.get("merged_fact") or fact_text).strip()
-            if not isinstance(target_id, int) and not str(target_id).isdigit():
-                logger.warning("UPDATE thiếu target_id hợp lệ → fallback ADD")
-                return self.update_memory(user_id, {**candidate_fact, "_force_add": True}) \
-                    if not candidate_fact.get("_force_add") else "SKIP"
-            target_id = int(target_id)
-
-            # Embed bản merged để index nhất quán
-            try:
-                merged_emb = self._embed(merged)
-            except Exception as e:
-                logger.warning("Embed merged fail: %s", e)
-                return "SKIP"
-
-            # Milvus không hỗ trợ in-place update với auto_id → delete + insert mới
-            self._delete_milvus(target_id)
-            new_pk = self._insert_milvus(user_id, mem_type, merged, merged_emb, now)
-            if new_pk is None:
-                return "SKIP"
-
-            try:
-                old_doc = self.mongo_col.find_one({"user_id": user_id, "milvus_id": target_id})
-                hist = (old_doc or {}).get("history", [])
-                hist.append({"action": "UPDATE", "fact": merged, "at": now,
-                             "reason": decision.get("reason")})
-                self.mongo_col.update_one(
-                    {"user_id": user_id, "milvus_id": target_id},
-                    {"$set": {
-                        "milvus_id": new_pk,
-                        "fact": merged,
-                        "mem_type": mem_type,
-                        "timestamp": now,
-                        "version": (old_doc or {}).get("version", 1) + 1,
-                        "history": hist,
-                    }},
-                    upsert=True,
-                )
-            except Exception as e:
-                logger.warning("Mongo update fail: %s", e)
-            logger.info("UPDATE user=%s id=%s → %s: %s",
-                        user_id, target_id, new_pk, merged[:80])
-            return "UPDATE"
-
-        if action == "DELETE":
-            target_id = decision.get("target_id")
-            if target_id is None:
-                return "NOOP"
-            target_id = int(target_id)
-            self._delete_milvus(target_id)
-            try:
-                self.mongo_col.update_one(
-                    {"user_id": user_id, "milvus_id": target_id},
-                    {"$set": {
-                        "deleted": True,
-                        "deleted_at": now,
-                    },
-                     "$push": {
-                        "history": {"action": "DELETE", "at": now,
-                                    "reason": decision.get("reason"),
-                                    "negated_by": fact_text},
-                     }},
-                )
-            except Exception as e:
-                logger.warning("Mongo soft-delete fail: %s", e)
-            logger.info("DELETE user=%s id=%s (negated by: %s)",
-                        user_id, target_id, fact_text[:60])
-            return "DELETE"
-
-        # NOOP
-        logger.info("NOOP user=%s candidate=%s", user_id, fact_text[:60])
-        return "NOOP"
+    def update_memory(self, user_id: str, candidate_fact: dict) -> str:
+        """Tương thích ngược: cập nhật 1 candidate."""
+        return self.update_memories(user_id, [candidate_fact])[0]
 
     # ── RETRIEVE ───────────────────────────────────────────────────────────
 
@@ -642,96 +730,59 @@ class MemoryManager:
            kể cả khi query không match semantic với fact "sinh năm X").
         3. Pin thêm fact hồ sơ từ Mongo (năm sinh/giới tính/trường học) dù extractor
            gắn nhầm type — tránh trường hợp hỏi "đủ tuổi kết hôn" mà không thấy năm sinh.
-        Dedup theo milvus_id + nội dung fact.
+        Dedup theo mem_id + nội dung fact.
 
-        Trả về list[{"fact", "type", "score", "timestamp", "milvus_id"}].
+        Trả về list[{"fact", "type", "score", "timestamp", "mem_id"}].
         """
-        if not self.collection or not user_id:
+        if not self._ready() or not user_id:
             return []
+        mode = self.get_mode(user_id)
+        if mode == "off":
+            return []
+        out = self._retrieve_all_sources(user_id, query, top_k)
+        if mode == "no_sensitive":
+            out = [m for m in out if not is_sensitive_topic(m.get("fact") or "")]
+        return out
 
-        seen: set[int] = set()
+    def _retrieve_all_sources(self, user_id: str, query: str, top_k: int) -> list[dict]:
+        """
+        1. Ngữ nghĩa: cosine giữa query và memory của user → bỏ episodic hết hạn + dưới ngưỡng
+           → xếp theo độ tương đồng có tính độ mới → giữ top_k.
+        2. LUÔN kèm mọi memory core (hồ sơ) — kể cả khi query không khớp ngữ nghĩa.
+        3. Kèm fact hồ sơ (năm sinh / giới tính / trường) dù extractor gắn nhầm loại.
+        """
+        docs = self._active_docs(user_id)
+        now = datetime.now()
         out: list[dict] = []
+        seen: set[str] = set()
 
-        # 1. Semantic search
-        if query:
+        def add(d: dict, score: float, sim: float | None = None):
+            key = d.get("mem_id") or (d.get("fact") or "").strip().lower()
+            if not key or key in seen:
+                return
+            seen.add(key)
+            item = {"mem_id": d.get("mem_id"), "fact": d.get("fact"), "type": d.get("mem_type"),
+                    "timestamp": d.get("timestamp"), "score": round(score, 4)}
+            if sim is not None:
+                item["similarity"] = round(sim, 4)
+            out.append(item)
+
+        if query and docs:
             try:
-                emb = self._embed(query)
-                results = self.collection.search(
-                    data=[emb],
-                    anns_field="embedding",
-                    param={"metric_type": "COSINE", "params": {"ef": 64}},
-                    limit=top_k,
-                    expr=f'user_id == "{user_id}"',
-                    output_fields=["user_id", "mem_type", "fact", "timestamp"],
-                )
-                for hit in results[0]:
-                    mid = int(hit.id)
-                    if mid in seen:
+                ranked = []
+                for sim, d in self._similarities(self._embed(query), docs):
+                    if sim < MEMORY_MIN_SIMILARITY or is_expired(d.get("mem_type"), d.get("timestamp"), now):
                         continue
-                    seen.add(mid)
-                    out.append({
-                        "milvus_id": mid,
-                        "fact": hit.entity.get("fact"),
-                        "type": hit.entity.get("mem_type"),
-                        "timestamp": hit.entity.get("timestamp"),
-                        "score": round(float(hit.distance), 4),
-                    })
+                    ranked.append((retrieval_score(sim, d.get("mem_type"), d.get("timestamp"), now), sim, d))
+                ranked.sort(key=lambda x: x[0], reverse=True)
+                for score, sim, d in ranked[:top_k]:
+                    add(d, score, sim)
             except Exception as e:
                 logger.warning("retrieve_memories semantic fail user=%s: %s", user_id, e)
 
-        # 2. Luôn include core memories (user profile) — bất kể semantic match
-        try:
-            core_rows = self.collection.query(
-                expr=f'user_id == "{user_id}" and mem_type == "core"',
-                output_fields=["id", "mem_type", "fact", "timestamp"],
-                limit=8,
-            )
-            for r in core_rows:
-                mid = int(r["id"])
-                if mid in seen:
-                    continue
-                seen.add(mid)
-                out.append({
-                    "milvus_id": mid,
-                    "fact": r.get("fact"),
-                    "type": r.get("mem_type"),
-                    "timestamp": r.get("timestamp"),
-                    "score": 1.0,  # core luôn ưu tiên cao
-                })
-        except Exception as e:
-            logger.warning("retrieve_memories core fail user=%s: %s", user_id, e)
-
-        # 3. Pin hồ sơ cá nhân từ Mongo (năm sinh/giới tính/trường) dù không phải core
-        if self.mongo_col is not None:
-            try:
-                seen_facts = {(m.get("fact") or "").strip().lower() for m in out}
-                docs = self.mongo_col.find(
-                    {"user_id": user_id, "deleted": {"$ne": True}},
-                    {"fact": 1, "mem_type": 1, "timestamp": 1, "milvus_id": 1},
-                ).limit(80)
-                for d in docs:
-                    fact = (d.get("fact") or "").strip()
-                    if not fact or not _PROFILE_FACT_RE.search(fact):
-                        continue
-                    key = fact.lower()
-                    if key in seen_facts:
-                        continue
-                    mid = int(d["milvus_id"]) if d.get("milvus_id") is not None else None
-                    if mid is not None and mid in seen:
-                        continue
-                    if mid is not None:
-                        seen.add(mid)
-                    seen_facts.add(key)
-                    out.append({
-                        "milvus_id": mid if mid is not None else -1,
-                        "fact": fact,
-                        "type": d.get("mem_type") or "core",
-                        "timestamp": d.get("timestamp"),
-                        "score": 1.0,
-                    })
-            except Exception as e:
-                logger.warning("retrieve_memories profile pin fail user=%s: %s", user_id, e)
-
+        for d in docs:
+            if d.get("mem_type") == "core" or _PROFILE_FACT_RE.search(d.get("fact") or ""):
+                add(d, 1.0)
         return out
 
     def format_for_context(self, memories: list[dict]) -> str:
@@ -764,31 +815,40 @@ class MemoryManager:
 
         Gọi qua asyncio.create_task() từ route sau khi đã stream xong.
         """
+        return await asyncio.to_thread(self.process_turn, user_id, user_msg, bot_msg, chat_id)
+
+    def process_turn(self, user_id: str, user_msg: str, bot_msg: str, chat_id: str | None = None) -> dict:
+        """Trích xuất + cập nhật memory cho 1 lượt, KHOÁ theo user (lượt sau chờ lượt trước)."""
         if not user_id or not self._ready():
             return {"skipped": True, "reason": "no_user_or_not_ready"}
-
-        try:
-            facts = await asyncio.to_thread(
-                self.extract_memories, user_msg, bot_msg
-            )
-        except Exception as e:
-            logger.warning("process_turn_async extract fail: %s", e)
-            return {"skipped": True, "reason": f"extract_fail:{e}"}
-
-        if not facts:
-            return {"extracted": 0, "actions": []}
-
-        actions = []
-        for fact in facts:
-            if chat_id:
-                fact["source_chat_id"] = chat_id
+        mode = self.get_mode(user_id)
+        if mode == "off":
+            return {"skipped": True, "reason": "memory_off"}
+        with _user_lock(user_id):
             try:
-                act = await asyncio.to_thread(self.update_memory, user_id, fact)
+                facts = self.extract_memories(user_msg, bot_msg)
             except Exception as e:
-                logger.warning("update_memory fail: %s", e)
-                act = "ERROR"
-            actions.append({"fact": fact["fact"][:80], "action": act})
-        return {"extracted": len(facts), "actions": actions}
+                logger.warning("process_turn extract fail: %s", e)
+                return {"skipped": True, "reason": f"extract_fail:{e}"}
+            dropped = 0
+            if mode == "no_sensitive":
+                kept = [f for f in facts if not f.get("sensitive")]
+                dropped = len(facts) - len(kept)
+                if dropped:
+                    logger.info("Bỏ %d fact nhạy cảm (user chưa cho phép lưu)", dropped)
+                facts = kept
+            if not facts:
+                return {"extracted": 0, "actions": [], "dropped_sensitive": dropped}
+            for f in facts:
+                if chat_id:
+                    f["source_chat_id"] = chat_id
+            try:
+                acts = self.update_memories(user_id, facts)
+            except Exception as e:
+                logger.warning("update_memories fail: %s", e)
+                acts = ["ERROR"] * len(facts)
+            return {"extracted": len(facts), "dropped_sensitive": dropped,
+                    "actions": [{"fact": f["fact"][:80], "action": a} for f, a in zip(facts, acts)]}
 
     # ── CRUD cho endpoint quản lý ──────────────────────────────────────────
 
@@ -799,28 +859,30 @@ class MemoryManager:
         try:
             docs = list(self.mongo_col.find(
                 {"user_id": user_id, "deleted": {"$ne": True}},
-                {"history": 0},
+                {"history": 0, "embedding": 0},
             ).sort("timestamp", -1))
             out = []
+            now = datetime.now()
             for d in docs:
                 d["_id"] = str(d.get("_id"))
+                d["expired"] = is_expired(d.get("mem_type"), d.get("timestamp"), now)
+                d["sensitive"] = bool(d.get("sensitive")) or is_sensitive_topic(d.get("fact") or "")
                 out.append(d)
             return out
         except Exception as e:
             logger.warning("list_user_memories fail: %s", e)
             return []
 
-    def delete_memory(self, user_id: str, milvus_id: int) -> bool:
-        """Xoá 1 memory cụ thể (cả Milvus + Mongo)."""
+    def delete_memory(self, user_id: str, mem_id: str) -> bool:
+        """Xoá hẳn 1 memory theo yêu cầu của người dùng."""
         if not self._ready() or not user_id:
             return False
-        self._delete_milvus(milvus_id)
         try:
-            res = self.mongo_col.delete_one({"user_id": user_id, "milvus_id": int(milvus_id)})
-            logger.info("Manual DELETE user=%s id=%s", user_id, milvus_id)
+            res = self.mongo_col.delete_one({"user_id": user_id, "mem_id": str(mem_id)})
+            logger.info("Manual DELETE user=%s id=%s", user_id, mem_id)
             return res.deleted_count > 0
         except Exception as e:
-            logger.warning("delete_memory mongo fail: %s", e)
+            logger.warning("delete_memory fail: %s", e)
             return False
 
     def delete_all_for_user(self, user_id: str) -> int:
@@ -828,15 +890,6 @@ class MemoryManager:
         if not self._ready() or not user_id:
             return 0
         try:
-            docs = list(self.mongo_col.find({"user_id": user_id}, {"milvus_id": 1}))
-            ids = [int(d["milvus_id"]) for d in docs if d.get("milvus_id") is not None]
-            if ids and self.collection is not None:
-                expr = "id in [" + ",".join(str(i) for i in ids) + "]"
-                try:
-                    self.collection.delete(expr=expr)
-                    self.collection.flush()
-                except Exception as e:
-                    logger.warning("Bulk Milvus delete fail: %s", e)
             res = self.mongo_col.delete_many({"user_id": user_id})
             logger.info("Right-to-be-forgotten user=%s deleted=%d", user_id, res.deleted_count)
             return res.deleted_count

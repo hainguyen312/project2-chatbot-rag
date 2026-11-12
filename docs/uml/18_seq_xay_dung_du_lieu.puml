@@ -1,0 +1,44 @@
+@startuml SEQ_DuLieu
+!include _style.iuml
+title Biểu đồ tuần tự — UC12–UC14 Xây dựng kho tri thức pháp luật
+autonumber
+
+actor "Quản trị viên" as A
+participant "law-crawler\nmain.py" as Crawler
+participant "seed_data_batch.py" as Seed
+participant "build_graph.py" as Build
+participant "OpenAI\nEmbedding" as Emb
+database "MySQL (law)" as MySQL
+database "Milvus" as Milvus
+database "Neo4j" as Neo4j
+
+== UC12: Thu thập Pháp Điển ==
+A -> Crawler : python main.py
+Crawler -> Crawler : đọc chude.json, demuc.json,\nthư mục demuc/*.html
+Crawler -> Crawler : phân tích HTML → chủ đề, đề mục,\nchương, điều (pddieu)
+Crawler -> MySQL : INSERT các bảng
+Crawler --> A : hoàn tất
+
+== UC13: Lập chỉ mục vector ==
+A -> Seed : python seed_data_batch.py [--resume]
+Seed -> Milvus : drop + tạo collection\n(trừ khi --resume)
+loop theo batch điều luật
+  Seed -> MySQL : SELECT pddieu
+  MySQL --> Seed : rows
+  Seed -> Emb : embed(tendieu)
+  alt lỗi embed
+    Seed -> Seed : ghi embed_errors.csv
+  else thành công
+    Emb --> Seed : vectors
+    Seed -> Milvus : insert(vector, metadata JSON)
+  end
+end
+Seed --> A : hoàn tất
+
+== UC14: Xây dựng đồ thị ==
+A -> Build : python retrieve/build_graph.py
+Build -> MySQL : đọc điều luật + tham chiếu
+Build -> Neo4j : MERGE node Dieu (mapc, nội dung)
+Build -> Neo4j : MERGE quan hệ LIEN_QUAN, THAM_CHIEU
+Build --> A : hoàn tất
+@enduml

@@ -53,6 +53,8 @@ export type Passage = {
   score?: number;
   source?: string;
   url?: string;
+  /** Văn bản gốc, vd. "(Điều 8 Luật số 52/2014/QH13, …)" — dùng cho thẻ căn cứ */
+  vbqppl?: string;
 };
 
 export type StreamEvent = {

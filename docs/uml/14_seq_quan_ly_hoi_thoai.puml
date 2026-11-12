@@ -1,0 +1,55 @@
+@startuml SEQ_HoiThoai
+!include _style.iuml
+title Biểu đồ tuần tự — UC07 Quản lý hội thoại
+autonumber
+
+actor "Người dùng" as U
+participant "Giao diện\n(chat-store)" as UI
+participant "/api/chats\n(Next.js route)" as Route
+participant "lib/chats" as Lib
+database "MongoDB\n(hoặc RAM)" as DB
+
+== Xem danh sách ==
+U -> UI : Mở ứng dụng
+UI -> Route : GET /api/chats (x-user-id)
+Route -> Lib : listChats(uid)
+Lib -> DB : find({user_id})
+DB --> Lib : chats
+Lib --> Route : chats
+Route --> UI : 200 {chats}
+UI --> U : Hiển thị sidebar (ghim lên đầu)
+
+== Tạo hội thoại ==
+U -> UI : Nhấn "Cuộc trò chuyện mới"
+UI -> Route : POST /api/chats {title}
+Route -> Lib : createChat(uid, title)
+Lib -> DB : insertOne
+Route --> UI : 201 {chat}
+
+== Mở hội thoại ==
+U -> UI : Chọn một hội thoại
+UI -> Route : GET /api/chats/{id}
+Route -> Lib : getChatById(id, uid)
+Lib -> DB : findOne({_id, user_id})
+alt không tìm thấy
+  Route --> UI : 404
+else tìm thấy
+  Route --> UI : 200 {chat}
+  UI --> U : Hiển thị tin nhắn
+end
+
+== Đổi tên / ghim ==
+U -> UI : Đổi tên hoặc ghim
+UI -> Route : PATCH /api/chats/{id} {title | pinned}
+Route -> Lib : updateChat(id, uid, patch)
+Lib -> DB : updateOne
+Route --> UI : 200 {chat}
+
+== Xoá ==
+U -> UI : Xoá hội thoại (xác nhận)
+UI -> Route : DELETE /api/chats/{id}
+Route -> Lib : deleteChatById(id, uid)
+Lib -> DB : deleteOne
+Route --> UI : 200 {ok}
+UI --> U : Cập nhật sidebar
+@enduml

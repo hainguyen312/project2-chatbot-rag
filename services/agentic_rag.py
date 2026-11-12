@@ -11,6 +11,7 @@ from typing import Any
 # Giới hạn nội dung đưa vào prompt tool (UI bucket giữ full)
 LLM_MAX_NOIDUNG_CHARS = int(os.getenv("AGENT_LLM_MAX_NOIDUNG_CHARS", "4000"))
 LLM_MAX_PASSAGE_CHARS = int(os.getenv("AGENT_LLM_MAX_PASSAGE_CHARS", "4000"))
+LLM_MAX_WEB_CHARS = int(os.getenv("AGENT_LLM_MAX_WEB_CHARS", "1500"))
 # Rerank: 1 = sau overlap gọi LLM chấm lại top-N (tốn API); 0 = chỉ overlap + Milvus order
 RAG_AGENT_LLM_RERANK = os.getenv("RAG_AGENT_LLM_RERANK", "0").strip().lower() in ("1", "true", "yes")
 AGENT_VECTOR_POOL_MULT = max(1, int(os.getenv("AGENT_VECTOR_POOL_MULT", "3")))
@@ -48,7 +49,10 @@ RAG_AGENT_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "vector_search",
-            "description": "Tìm kiếm semantic trong Milvus. Dùng khi cần tìm điều luật liên quan đến chủ đề.",
+            "description": (
+                "Tìm điều luật trong Pháp Điển (hybrid: semantic Milvus + từ khoá BM25). "
+                "Dùng khi cần tìm điều luật liên quan đến chủ đề; nên dùng thuật ngữ pháp lý cụ thể."
+            ),
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -63,16 +67,24 @@ RAG_AGENT_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "graph_traverse",
-            "description": "Duyệt graph Neo4j để tìm các điều luật có quan hệ LIEN_QUAN hoặc THAM_CHIEU. Dùng sau vector_search để mở rộng context.",
+            "description": (
+                "Tìm các điều luật có quan hệ (LIEN_QUAN / THAM_CHIEU) với các điều đã tìm được. "
+                "Dùng sau vector_search để mở rộng context."
+            ),
             "parameters": {
                 "type": "object",
                 "properties": {
                     "mapcs": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "Danh sách mapc của các điều luật seed",
+                        "description": "Giá trị trường `mapc` (dãy số) của các điều đã tìm được; "
+                                       "chấp nhận cả `ma_phap_dien` (vd. 20.2.LQ.35)",
                     },
-                    "hop": {"type": "integer", "default": 2},
+                    "hop": {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "1 = điều liên quan trực tiếp (khuyến nghị); 2 = mở rộng xa hơn, nhiễu hơn",
+                    },
                 },
                 "required": ["mapcs"],
             },
@@ -96,17 +108,63 @@ RAG_AGENT_TOOLS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "get_full_article",
-            "description": "Lấy toàn bộ nội dung một điều luật theo mapc. Dùng khi cần đọc chi tiết hơn snippet.",
+            "description": "Lấy toàn bộ nội dung một điều luật. Dùng khi cần đọc chi tiết hơn snippet.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "mapc": {"type": "string"},
+                    "mapc": {"type": "string",
+                             "description": "Giá trị trường `mapc` của điều luật; chấp nhận cả `ma_phap_dien`"},
                 },
                 "required": ["mapc"],
             },
         },
     },
 ]
+
+
+# ── Tự động kiểm tra hiệu lực bằng web ─────────────────────────────────────────
+# Pháp Điển trong DB có thể chưa cập nhật văn bản thay thế (vd. NĐ 100/2019 → NĐ 168/2024).
+# Agent tự quyết gọi web_search thì hiếm khi gọi khi đã thấy một điều "khớp", nên trước khi
+# trả lời, nếu câu hỏi thuộc loại dễ đổi theo văn bản mới hoặc kết quả Pháp Điển yếu → buộc
+# gọi web_search đúng 1 lần.
+AGENT_AUTO_WEB_VERIFY = os.getenv("AGENT_AUTO_WEB_VERIFY", "1").strip().lower() in ("1", "true", "yes")
+AGENT_WEB_VERIFY_SCORE = float(os.getenv("AGENT_WEB_VERIFY_SCORE", "0.5"))
+_TIME_SENSITIVE = re.compile(
+    r"(phạt|xử phạt|bao nhiêu tiền|lệ phí|\bphí\b|\bthuế\b|mức lương|lương tối thiểu|mức đóng|"
+    r"trợ cấp|mức hưởng|hiện nay|hiện hành|mới nhất|còn hiệu lực|năm 20\d\d)",
+    re.IGNORECASE,
+)
+WEB_SEARCH_TOOL_CHOICE = {"type": "function", "function": {"name": "web_search"}}
+
+
+def web_verify_reason(question: str, bucket: list[dict[str, Any]], used_tools: set[str]) -> str | None:
+    """Lý do cần buộc kiểm tra web trước khi trả lời, hoặc None nếu không cần."""
+    if not AGENT_AUTO_WEB_VERIFY or "web_search" in used_tools:
+        return None
+    phapdien = [h for h in bucket if h.get("source") == "phapdien"]
+    if not phapdien:
+        # Chỉ khi agent ĐÃ tra Pháp Điển mà không ra gì; câu chào / câu chỉ cần memory thì thôi
+        searched = used_tools & {"vector_search", "graph_traverse", "get_full_article"}
+        return "không tìm thấy điều luật phù hợp trong Pháp Điển" if searched else None
+    if _TIME_SENSITIVE.search(question or ""):
+        return ("câu hỏi về mức phạt / mức tiền / quy định hiện hành, có thể đã bị văn bản mới "
+                "sửa đổi hoặc thay thế")
+    top = max(float(h.get("score", 0.0)) for h in phapdien)
+    if top < AGENT_WEB_VERIFY_SCORE:
+        return f"độ liên quan của kết quả Pháp Điển thấp (cao nhất {top:.2f})"
+    return None
+
+
+def web_verify_instruction(reason: str) -> dict[str, str]:
+    print(f"[Agent] Buộc web_search trước khi trả lời: {reason}", flush=True)
+    return {
+        "role": "system",
+        "content": (
+            f"Chưa trả lời. Lý do: {reason}. Gọi web_search để kiểm tra quy định hiện hành "
+            "(văn bản đã bị sửa đổi/thay thế chưa, mức phạt/mức tiền hiện tại), sau đó mới viết "
+            "câu trả lời cuối cùng theo đúng các nguyên tắc."
+        ),
+    }
 
 
 def agent_chat_model() -> str:
@@ -135,8 +193,30 @@ Quy trình làm việc:
 6. Sau khi đủ thông tin (thường 2-4 tool calls), tổng hợp câu trả lời
 
 Nguyên tắc:
-- Luôn trích dẫn điều luật cụ thể (tên điều, chương, đề mục) khi có trong công cụ Pháp Điển
-- Nếu thông tin mâu thuẫn giữa Pháp Điển và Web, ưu tiên Pháp Điển
+- Luôn trích dẫn điều luật cụ thể khi có trong công cụ Pháp Điển.
+- CÁCH TRÍCH DẪN: số điều và tên văn bản lấy NGUYÊN VĂN từ trường `vbqppl`
+  (vd. "Điều 8 Nghị định số 100/2019/NĐ-CP" → ghi "Điều 8 Nghị định 100/2019/NĐ-CP"),
+  kèm tên điều (trường `ten`). Trường `ma_phap_dien` (vd. "39.13.NĐ.75.8") chỉ là mã sắp xếp
+  trong Bộ Pháp điển, KHÔNG phải số điều hay số hiệu văn bản: "NĐ.75" KHÔNG có nghĩa là
+  "Nghị định 75", "39.13" KHÔNG phải "Điều 39.13". Thiếu `vbqppl` thì ghi "mã Pháp điển
+  <ma_phap_dien>" + tên điều; TUYỆT ĐỐI không tự suy ra số điều, số hiệu hay năm văn bản.
+- ĐỐI CHIẾU PHẠM VI ÁP DỤNG TRƯỚC KHI KẾT LUẬN: mỗi quy định chỉ áp dụng cho đúng
+  chủ thể / phương tiện / hành vi / điều kiện nó nêu. So từng yếu tố với câu hỏi:
+  · Khớp hoàn toàn → kết luận theo quy định đó.
+  · Câu hỏi rộng hơn quy định (vd. hỏi "xe đạp", quy định chỉ nói "xe đạp máy, xe đạp điện")
+    → TÁCH TRƯỜNG HỢP: trường hợp quy định có nói và trường hợp không nói. Không được
+    gộp chúng, không suy rộng quy định sang đối tượng nó không nêu.
+  · Không tìm thấy quy định nào cho trường hợp được hỏi → nói rõ "không có quy định
+    xử phạt / không bắt buộc đối với trường hợp này trong các văn bản đã tra", không suy diễn.
+- Chỉ đưa vào câu trả lời các khoản/điểm liên quan trực tiếp đến câu hỏi; không liệt kê
+  các mức phạt cho hành vi khác.
+- `diem_lien_quan` (0–1) của mỗi điều: dưới 0,5 là khớp yếu — đọc kỹ nội dung trước khi dùng.
+- PHÁP ĐIỂN VÀ WEB: Pháp Điển là nguồn chính về nội dung quy định nhưng có thể chưa cập nhật
+  văn bản mới. Nếu web_search từ nguồn tin cậy (`do_tin_cay_nguon` = "high": vbpl.vn,
+  chinhphu.vn, thuvienphapluat.vn…) cho thấy văn bản trong Pháp Điển đã bị sửa đổi/thay thế
+  hoặc mức tiền đã đổi → nêu rõ quy định hiện hành theo văn bản mới (kèm nguồn), ghi chú quy
+  định cũ theo Pháp Điển, và khuyên đối chiếu văn bản chính thức. Nguồn web độ tin cậy thấp
+  hoặc không nói rõ văn bản → ưu tiên Pháp Điển.
 - Nếu không đủ thông tin sau khi đã thử các công cụ phù hợp, thành thật nói không biết
 - Không bịa thông tin pháp lý
 
@@ -149,7 +229,9 @@ CÁ NHÂN HOÁ DỰA TRÊN BỘ NHỚ NGƯỜI DÙNG (nếu có ở cuối promp
   TÍNH TUỔI = {current_year} − năm sinh, nêu rõ tuổi đã tính, rồi so sánh với điều luật.
 - Nếu memory có nghề nghiệp/ngành/địa phương → liên hệ với quy định áp dụng cho nhóm đó.
 - Kết luận RÕ RÀNG cho cá nhân: "Bạn ĐỦ tuổi", "Bạn CHƯA đủ tuổi", "Bạn THUỘC diện…",
-  thay vì chỉ liệt kê quy định chung chung rồi hỏi lại tuổi.
+  thay vì chỉ liệt kê quy định chung chung rồi hỏi lại tuổi — NHƯNG chỉ khi thông tin của
+  người dùng khớp phạm vi áp dụng của quy định (xem ĐỐI CHIẾU PHẠM VI ÁP DỤNG). Còn thiếu
+  một yếu tố quyết định (loại xe, loại hợp đồng…) → kết luận theo từng trường hợp.
 - Vẫn trích dẫn điều luật làm căn cứ cho kết luận."""
     if situation_mode:
         base += """
@@ -176,6 +258,7 @@ def hit_dict_to_row(h: dict[str, Any]) -> dict[str, Any]:
         "tenchuong": h.get("tenchuong"),
         "tendemuc": h.get("tendemuc"),
         "tenchude": h.get("tenchude"),
+        "vbqppl": h.get("vbqppl"),
     }
 
 
@@ -266,6 +349,7 @@ def rerank_phapdien_hits(
                 "tenchuong": h.get("tenchuong"),
                 "tendemuc": h.get("tendemuc"),
                 "tenchude": h.get("tenchude"),
+                "vbqppl": h.get("vbqppl"),
                 "base_score": base,
             }
         )
@@ -284,6 +368,7 @@ def rerank_phapdien_hits(
             "tenchuong": c.get("tenchuong"),
             "tendemuc": c.get("tendemuc"),
             "tenchude": c.get("tenchude"),
+            "vbqppl": c.get("vbqppl"),
         }
         out.append(row_to_full_hit(row, score=float(c.get("score", 0.5))))
     return out
@@ -311,6 +396,7 @@ def row_to_full_hit(row: dict[str, Any], *, score: float, source: str = "phapdie
         "tenchuong": row.get("tenchuong"),
         "tendemuc": row.get("tendemuc"),
         "tenchude": row.get("tenchude"),
+        "vbqppl": row.get("vbqppl"),
         "noidung": row.get("noidung") or "",
         "passage": build_passage_text(row),
         "score": score,
@@ -318,21 +404,75 @@ def row_to_full_hit(row: dict[str, Any], *, score: float, source: str = "phapdie
     }
 
 
+_PHAPDIEN_CODE = re.compile(r"^\s*Điều\s+([\w.\-]+?)\.\s+(.*)$", re.UNICODE | re.DOTALL)
+
+
+def split_phapdien_title(ten: str) -> tuple[str, str]:
+    """'Điều 39.13.NĐ.75.8. Xử phạt…' → ('39.13.NĐ.75.8', 'Xử phạt…')."""
+    m = _PHAPDIEN_CODE.match(ten or "")
+    return (m.group(1), m.group(2).strip()) if m else ("", (ten or "").strip())
+
+
 def row_to_llm_item(row: dict[str, Any]) -> dict[str, Any]:
+    """Bản rút gọn gửi LLM. Tách mã Pháp Điển khỏi tên điều để LLM không đọc nhầm mã
+    (vd. 'NĐ.75') thành số hiệu văn bản; văn bản gốc nằm ở `vbqppl`. Không gửi kèm
+    `passage` (trùng nội dung với `noidung`, tốn token gấp đôi)."""
     noidung = row.get("noidung") or ""
     preview = truncate_for_llm(noidung, LLM_MAX_NOIDUNG_CHARS)
-    passage = build_passage_text(row)
-    passage_preview = truncate_for_llm(passage, LLM_MAX_PASSAGE_CHARS)
+    ma, ten = split_phapdien_title(row.get("ten") or "")
     return {
         "mapc": row.get("mapc", ""),
-        "ten": row.get("ten", ""),
-        "tenchuong": row.get("tenchuong"),
-        "tendemuc": row.get("tendemuc"),
+        "ma_phap_dien": ma,
+        "ten": ten,
+        "vbqppl": row.get("vbqppl"),
         "tenchude": row.get("tenchude"),
+        "tendemuc": row.get("tendemuc"),
+        "tenchuong": row.get("tenchuong"),
         "noidung": preview,
-        "passage": passage_preview,
         "noidung_truncated": len(noidung) > len(preview),
     }
+
+
+def hit_to_llm_item(h: dict[str, Any]) -> dict[str, Any]:
+    """row_to_llm_item + điểm liên quan (0–1) để LLM biết kết quả nào yếu."""
+    item = row_to_llm_item(hit_dict_to_row(h))
+    item["diem_lien_quan"] = round(float(h.get("score", 0.0)), 2)
+    return item
+
+
+_MA_PHAP_DIEN = re.compile(r"^\d+\.\d+\.[A-Za-zĐđ]+\.[\d.]+$")
+
+
+def _lookup_mapc_by_code(codes: list[str]) -> dict[str, str]:
+    """ma_phap_dien → mapc qua MySQL (tên điều bắt đầu bằng 'Điều <mã>. ')."""
+    if not codes:
+        return {}
+    try:
+        import pymysql
+        conn = pymysql.connect(**_MYSQL_CFG)
+        out: dict[str, str] = {}
+        with conn.cursor() as cur:
+            for code in codes:
+                cur.execute("SELECT mapc FROM pddieu WHERE ten LIKE %s LIMIT 1", (f"Điều {code}. %",))
+                row = cur.fetchone()
+                if row:
+                    out[code] = row[0]
+        conn.close()
+        return out
+    except Exception as e:
+        print(f"[Agent] Tra mapc theo mã Pháp Điển lỗi: {e}")
+        return {}
+
+
+def resolve_article_ids(ids: list[str]) -> list[str]:
+    """LLM hay truyền `ma_phap_dien` (vd. '20.2.LQ.35') thay vì `mapc` → tra ra mapc tương ứng.
+    id đã là mapc (dãy số) giữ nguyên; mã không tra được giữ nguyên để tool báo không tìm thấy."""
+    ids = [i.strip().removeprefix("Điều ").rstrip(".") for i in ids if i and i.strip()]
+    codes = [i for i in ids if _MA_PHAP_DIEN.match(i)]
+    found = _lookup_mapc_by_code(codes)
+    if codes:
+        print(f"[Agent] Đổi mã Pháp Điển → mapc: {len(found)}/{len(codes)}", flush=True)
+    return [found.get(i, i) for i in ids]
 
 
 def _fetch_dieu_mysql(mapcs: list[str]) -> list[dict[str, Any]]:
@@ -350,7 +490,8 @@ def _fetch_dieu_mysql(mapcs: list[str]) -> list[dict[str, Any]]:
             dm.ten AS tendemuc,
             ch.ten AS tenchuong,
             d.ten AS ten,
-            d.noidung AS noidung
+            d.noidung AS noidung,
+            d.vbqppl AS vbqppl
         FROM pddieu d
         LEFT JOIN pdchuong ch ON d.chuong_id = ch.mapc
         LEFT JOIN pddemuc dm ON d.demuc_id = dm.id
@@ -466,23 +607,33 @@ def execute_agent_tool(
                 return json.dumps([], ensure_ascii=False), empty
 
             pool_k = min(max(top_k * AGENT_VECTOR_POOL_MULT, top_k), 40)
-            mapcs = retriever._vector_search(q, top_k=pool_k)
+            # Hybrid (Milvus + BM25, RRF) — giữ điểm retrieval thật làm base_score cho rerank
+            if hasattr(retriever, "_hybrid_search"):
+                fused = retriever._hybrid_search(q, top_k=pool_k)
+                score_by_mapc = {d["mapc"]: float(d["score"]) for d in fused}
+                mapcs = [d["mapc"] for d in fused]
+            else:
+                mapcs = retriever._vector_search(q, top_k=pool_k)
+                score_by_mapc = {m: max(0.35, 1.0 - i * 0.012) for i, m in enumerate(mapcs)}
             if not mapcs:
                 return json.dumps([], ensure_ascii=False), empty
 
             rows = fetch_dieu_records(neo4j_driver, mapcs)
-            full_hits = [row_to_full_hit(r, score=0.8) for r in rows]
-            rq = (rerank_query or "").strip() or q
+            full_hits = [row_to_full_hit(r, score=score_by_mapc.get(r.get("mapc"), 0.3)) for r in rows]
+            # Rerank theo truy vấn agent tự đặt (q) + truy vấn gốc đã chuẩn hoá: agent hay
+            # tách câu hỏi thành nhiều lượt search hẹp, chỉ dùng rerank_query sẽ kéo mọi
+            # lượt về cùng một thứ tự.
+            rq = " ".join(dict.fromkeys(filter(None, [q, (rerank_query or "").strip()])))
             full_hits = rerank_phapdien_hits(retriever, rq, full_hits, top_k=top_k)
-            llm_items = [row_to_llm_item(hit_dict_to_row(h)) for h in full_hits]
+            llm_items = [hit_to_llm_item(h) for h in full_hits]
             return json.dumps(llm_items, ensure_ascii=False), full_hits
 
         if name == "graph_traverse":
             mapcs = args.get("mapcs") or []
             if not isinstance(mapcs, list):
                 mapcs = []
-            mapcs = [str(x) for x in mapcs if x]
-            hop = max(1, int(args.get("hop", 2)))
+            mapcs = resolve_article_ids([str(x) for x in mapcs if x])
+            hop = min(2, max(1, int(args.get("hop", 1))))
             results = retriever._graph_expand(mapcs, hop=hop)[:40]
 
             full_hits = []
@@ -494,6 +645,7 @@ def execute_agent_tool(
                     "tenchuong": r.get("tenchuong"),
                     "tendemuc": r.get("tendemuc"),
                     "tenchude": r.get("tenchude"),
+                    "vbqppl": r.get("vbqppl"),
                 }
                 score = float(r.get("base_score", 0.85))
                 full_hits.append(row_to_full_hit(row, score=score))
@@ -502,7 +654,7 @@ def execute_agent_tool(
             if graph_top:
                 rq = (rerank_query or "").strip() or " ".join(mapcs[:5])
                 full_hits = rerank_phapdien_hits(retriever, rq, full_hits, top_k=graph_top)
-            llm_items = [row_to_llm_item(hit_dict_to_row(h)) for h in full_hits]
+            llm_items = [hit_to_llm_item(h) for h in full_hits]
 
             return json.dumps(llm_items, ensure_ascii=False), full_hits
 
@@ -514,6 +666,7 @@ def execute_agent_tool(
                 return json.dumps([], ensure_ascii=False), empty
 
             res = search_tavily(q, top_k=5)
+            print(f"[Agent] web_search {q!r} → {len(res)} kết quả sau lọc tin cậy", flush=True)
             full_hits = []
             llm_items = []
             for r in res:
@@ -530,12 +683,10 @@ def execute_agent_tool(
                     "source_label": r.get("source_label", "[Web]"),
                 })
                 llm_items.append({
-                    "title": r.get("ten"),
                     "ten": r.get("ten"),
-                    "content": truncate_for_llm(content, 400),
-                    "noidung": truncate_for_llm(content, 400),
+                    "noidung": truncate_for_llm(content, LLM_MAX_WEB_CHARS),
                     "url": r.get("url", ""),
-                    "mapc": r.get("mapc") or "",
+                    "do_tin_cay_nguon": r.get("trust_level", "medium"),
                 })
             return json.dumps(llm_items, ensure_ascii=False), full_hits
 
@@ -543,18 +694,22 @@ def execute_agent_tool(
             mapc = str(args.get("mapc", "")).strip()
             if not mapc:
                 return json.dumps({"error": "Thiếu mapc"}, ensure_ascii=False), empty
+            mapc = (resolve_article_ids([mapc]) or [mapc])[0]
 
             row = fetch_dieu_single(neo4j_driver, mapc)
             if not row:
                 return json.dumps({"error": "Không tìm thấy"}, ensure_ascii=False), empty
 
             full_hit = row_to_full_hit(row, score=1.0)
+            ma, ten_dieu = split_phapdien_title(row.get("ten") or "")
             llm_payload = {
                 "mapc": mapc,
-                "ten": row.get("ten"),
+                "ma_phap_dien": ma,
+                "ten": ten_dieu,
                 "tenchuong": row.get("tenchuong"),
                 "tendemuc": row.get("tendemuc"),
                 "tenchude": row.get("tenchude"),
+                "vbqppl": row.get("vbqppl"),
                 "noidung": row.get("noidung") or "",
             }
             return json.dumps(llm_payload, ensure_ascii=False), [full_hit]
@@ -631,6 +786,7 @@ def hits_for_passages(tool_name: str, result_json: str) -> list[dict[str, Any]]:
                 "tenchuong": r.get("tenchuong"),
                 "tendemuc": r.get("tendemuc"),
                 "tenchude": r.get("tenchude"),
+                "vbqppl": r.get("vbqppl"),
                 "noidung": r.get("noidung") or r.get("passage", ""),
                 "passage": r.get("passage") or r.get("noidung", ""),
                 "score": 0.85,
@@ -690,19 +846,29 @@ def run_agentic_rag_sync(
         {"role": "user", "content": user_prompt},
     ]
     bucket: list[dict[str, Any]] = []
+    used_tools: set[str] = set()
+    tool_choice: Any = "auto"
 
     for iteration in range(max_iterations):
         response = openai_client.chat.completions.create(
             model=model,
             messages=messages,
             tools=RAG_AGENT_TOOLS,
-            tool_choice="auto",
+            tool_choice=tool_choice,
             temperature=0.1,
         )
+        tool_choice = "auto"
         msg = response.choices[0].message
-        messages.append(assistant_message_to_dict(msg))
 
         if not msg.tool_calls:
+            # Trước khi chốt: câu hỏi dễ đổi theo văn bản mới / Pháp Điển yếu → buộc web_search 1 lần
+            reason = web_verify_reason(user_prompt, bucket, used_tools)
+            if reason and iteration < max_iterations - 1:
+                messages.append(web_verify_instruction(reason))
+                tool_choice = WEB_SEARCH_TOOL_CHOICE
+                used_tools.add("web_search")  # chỉ buộc 1 lần
+                continue
+            messages.append(assistant_message_to_dict(msg))
             text = (msg.content or "").strip()
             if text:
                 return {
@@ -712,7 +878,9 @@ def run_agentic_rag_sync(
                 }
             break
 
+        messages.append(assistant_message_to_dict(msg))
         for tc in msg.tool_calls:
+            used_tools.add(tc.function.name)
             try:
                 args = json.loads(tc.function.arguments or "{}")
             except json.JSONDecodeError:

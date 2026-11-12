@@ -1,0 +1,40 @@
+@startuml SEQ_DangNhap
+!include _style.iuml
+title Biểu đồ tuần tự — UC10 Đăng nhập và đồng bộ dữ liệu ẩn danh
+autonumber
+
+actor "Người dùng" as U
+participant "Giao diện\n(useAuth)" as UI
+participant "Firebase Auth" as FB
+participant "/api/auth/\nclaim_anonymous" as Proxy
+participant "rag_api" as API
+database "MongoDB" as Mongo
+database "Milvus\n(user_memory)" as Milvus
+
+U -> UI : Chọn đăng nhập (email/mật khẩu hoặc Google)
+alt email
+  UI -> FB : signInWithEmailAndPassword()
+else Google
+  UI -> FB : signInWithPopup(GoogleAuthProvider)
+end
+alt xác thực thất bại
+  FB --> UI : lỗi
+  UI --> U : Thông báo đăng nhập thất bại
+else thành công
+  FB --> UI : user (uid) + ID token
+  opt localStorage có anonymous_id "demo_xxx"
+    UI -> Proxy : POST {id_token, anonymous_id}
+    Proxy -> API : POST /auth/claim_anonymous
+    API -> FB : verify_id_token(id_token)
+    FB --> API : uid
+    API -> Mongo : update_many conversations\nuser_id: demo_xxx → uid
+    API -> Mongo : update_many memories → uid
+    API -> Milvus : query + delete + insert lại\nmemory với user_id = uid
+    API --> Proxy : {ok, chats, memories}
+    Proxy --> UI : kết quả
+    UI -> UI : xoá anonymous_id
+  end
+  UI -> UI : tải lại danh sách hội thoại
+  UI --> U : Hiển thị tài khoản đã đăng nhập
+end
+@enduml

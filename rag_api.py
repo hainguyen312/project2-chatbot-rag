@@ -45,6 +45,9 @@ from retrieve.build_graph import GraphRAGRetriever, get_neo4j
 from retrieve.two_stage_search import client, collection
 from services.agentic_rag import (
     RAG_AGENT_TOOLS,
+    WEB_SEARCH_TOOL_CHOICE,
+    web_verify_instruction,
+    web_verify_reason,
     agent_chat_model,
     agent_system_prompt,
     apply_agent_tool_result,
@@ -59,6 +62,7 @@ from services.utils import (
     rewrite_query_v2,
 )
 from services.semantic_cache import semantic_cache
+from services import auth_guard
 from services.memory_manager import MemoryManager
 
 app = FastAPI(title="RAG Backend API", version="1.0.0")
@@ -88,6 +92,13 @@ two_stage_retriever = GraphRAGRetriever(
     milvus_collection=collection,
     openai_client=client,
 )
+
+# BM25 lexical index (hybrid search): load/build nền để request đầu không phải chờ
+if os.getenv("RETRIEVAL_MODE", "hybrid").strip().lower() != "vector":
+    import threading
+    from retrieve.lexical_bm25 import get_bm25
+
+    threading.Thread(target=get_bm25, name="bm25-warmup", daemon=True).start()
 
 # Agentic RAG — OpenAI function tools (bản đầy đủ trong services/agentic_rag.py)
 TOOLS = RAG_AGENT_TOOLS
@@ -253,6 +264,7 @@ def _build_passages(results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             "tenchuong": hit.get("tenchuong", ""),
             "tendemuc":  hit.get("tendemuc", ""),
             "tenchude":  hit.get("tenchude", ""),
+            "vbqppl":    hit.get("vbqppl") or "",
             "noidung":   str(hit.get("noidung") or hit.get("passage", "")),
             "score":     round(float(hit.get("score", 0)), 4),
             "source":    hit.get("source", "phapdien"),
@@ -637,6 +649,8 @@ def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(defaul
         max_it = 6
         model = agent_chat_model()
         stream_full_answer = ""
+        used_tools: set = set()
+        tool_choice: Any = "auto"
 
         try:
             for iteration in range(max_it):
@@ -644,13 +658,23 @@ def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(defaul
                     model=model,
                     messages=messages,
                     tools=RAG_AGENT_TOOLS,
-                    tool_choice="auto",
+                    tool_choice=tool_choice,
                     temperature=0.1,
                 )
+                tool_choice = "auto"
                 msg = response.choices[0].message
-                messages.append(assistant_message_to_dict(msg))
 
                 if not msg.tool_calls:
+                    # Câu hỏi dễ đổi theo văn bản mới / Pháp Điển yếu → buộc web_search 1 lần
+                    reason = web_verify_reason(user_for_agent, bucket, used_tools)
+                    if reason and iteration < max_it - 1:
+                        messages.append(web_verify_instruction(reason))
+                        tool_choice = WEB_SEARCH_TOOL_CHOICE
+                        used_tools.add("web_search")
+                        yield _sse_stage("verify", "Đang kiểm tra văn bản hiện hành trên web...",
+                                         reason=reason, iteration=iteration + 1, max=max_it)
+                        continue
+                    messages.append(assistant_message_to_dict(msg))
                     yield _sse_stage("compose", "Luật sư đang soạn câu trả lời...", iteration=iteration + 1, max=max_it)
                     ded = _dedup_results(bucket)
                     passages = _build_passages(ded)
@@ -699,8 +723,10 @@ def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(defaul
                     _schedule_memory_update(req.user_id, prompt, stream_full_answer, req.chat_id)
                     return
 
+                messages.append(assistant_message_to_dict(msg))
                 for tc in msg.tool_calls:
                     tname = tc.function.name
+                    used_tools.add(tname)
                     try:
                         args = _json.loads(tc.function.arguments or "{}")
                     except Exception:
@@ -809,19 +835,9 @@ def _verify_firebase_token(id_token: str) -> Dict[str, Any]:
         raise HTTPException(status_code=401, detail=f"Token không hợp lệ: {e}")
 
 
-def resolve_user_id(
-    body_user_id: Optional[str],
-    authorization: Optional[str],
-) -> Optional[str]:
-    """Ưu tiên uid từ Firebase ID token (Authorization: Bearer …), fallback body."""
-    if authorization and authorization.lower().startswith("bearer "):
-        token = authorization.split(None, 1)[1].strip()
-        try:
-            decoded = fb_auth.verify_id_token(token)
-            return decoded.get("uid")
-        except Exception as e:
-            print(f"[Auth] Token verify fail, fallback body user_id: {e}")
-    return body_user_id
+def resolve_user_id(body_user_id: Optional[str], authorization: Optional[str]) -> Optional[str]:
+    """uid đã xác thực (token) hoặc id ẩn danh demo_… — xem services/auth_guard.py."""
+    return auth_guard.resolve_user_id(body_user_id, authorization, fb_auth.verify_id_token)
 
 
 @app.post("/auth/verify")
@@ -870,44 +886,10 @@ def auth_claim_anonymous(req: ClaimAnonymousRequest) -> Dict[str, Any]:
                 {"$set": {"user_id": uid}},
             )
             moved_memories = res.modified_count
-            # Milvus: phải tải lại records, xoá rồi insert vì VARCHAR không update in-place
-            if memory_manager.collection is not None:
-                try:
-                    expr = f'user_id == "{anon}"'
-                    rows = memory_manager.collection.query(
-                        expr=expr,
-                        output_fields=["id", "mem_type", "fact", "embedding", "timestamp"],
-                    )
-                    if rows:
-                        ids = [int(r["id"]) for r in rows]
-                        memory_manager.collection.delete(
-                            expr="id in [" + ",".join(str(i) for i in ids) + "]"
-                        )
-                        # Re-insert với user_id mới
-                        memory_manager.collection.insert([
-                            [uid] * len(rows),
-                            [r["mem_type"] for r in rows],
-                            [r["fact"] for r in rows],
-                            [r["embedding"] for r in rows],
-                            [r["timestamp"] for r in rows],
-                        ])
-                        memory_manager.collection.flush()
-                        # Đồng bộ lại milvus_id mới trong Mongo (best-effort: ghi đè theo
-                        # thứ tự nếu cần). Vì insert auto_id, ta phải truy vấn lại.
-                        new_rows = memory_manager.collection.query(
-                            expr=f'user_id == "{uid}"',
-                            output_fields=["id", "fact"],
-                        )
-                        by_fact = {r["fact"]: int(r["id"]) for r in new_rows}
-                        for old in rows:
-                            new_id = by_fact.get(old["fact"])
-                            if new_id is not None:
-                                memory_manager.mongo_col.update_one(
-                                    {"user_id": uid, "milvus_id": int(old["id"])},
-                                    {"$set": {"milvus_id": new_id}},
-                                )
-                except Exception as e:
-                    print(f"[Auth] Milvus re-tag fail: {e}")
+            # Cài đặt bộ nhớ: mang theo lựa chọn của phiên ẩn danh nếu tài khoản chưa có
+            sc = getattr(memory_manager, "settings_col", None)
+            if sc is not None and sc.find_one({"user_id": uid}) is None:
+                sc.update_one({"user_id": anon}, {"$set": {"user_id": uid}})
         except Exception as e:
             print(f"[Auth] Mongo memory re-tag fail: {e}")
 
@@ -922,16 +904,11 @@ def auth_claim_anonymous(req: ClaimAnonymousRequest) -> Dict[str, Any]:
 
 # ── Memory CRUD endpoints ────────────────────────────────────────────────────
 def _enforce_user_match(path_user_id: str, authorization: Optional[str]) -> str:
-    """Người dùng đã login chỉ được thao tác trên memory của chính mình.
-
-    Anonymous user (demo_xxx) không cần token nhưng giữ nguyên path id.
-    Logged-in user phải gửi token; uid phải khớp path id.
-    """
-    resolved = resolve_user_id(path_user_id, authorization)
-    if authorization and resolved and resolved != path_user_id:
-        raise HTTPException(status_code=403,
-                            detail="Không được phép thao tác memory của người dùng khác")
-    return resolved or path_user_id
+    """Người dùng đã đăng nhập chỉ thao tác memory của chính mình; uid không kèm token → 401."""
+    try:
+        return auth_guard.enforce_user_match(path_user_id, authorization, fb_auth.verify_id_token)
+    except auth_guard.AuthError as e:
+        raise HTTPException(status_code=e.status, detail=e.detail)
 
 
 @app.get("/memory/{user_id}")
@@ -945,9 +922,9 @@ def list_memories(user_id: str, authorization: Optional[str] = Header(default=No
 
 
 @app.delete("/memory/{user_id}/{memory_id}")
-def delete_memory(user_id: str, memory_id: int,
+def delete_memory(user_id: str, memory_id: str,
                   authorization: Optional[str] = Header(default=None)) -> Dict[str, Any]:
-    """Xoá 1 memory (cả Milvus + Mongo). memory_id = milvus_id."""
+    """Xoá hẳn 1 memory. memory_id = mem_id."""
     if not memory_manager:
         raise HTTPException(status_code=503, detail="Memory service không khả dụng")
     uid = _enforce_user_match(user_id, authorization)
@@ -964,6 +941,31 @@ def delete_all_memories(user_id: str,
     uid = _enforce_user_match(user_id, authorization)
     n = memory_manager.delete_all_for_user(uid)
     return {"ok": True, "user_id": uid, "deleted": n}
+
+
+class MemorySettingsRequest(BaseModel):
+    mode: Literal["no_sensitive", "full", "off"]
+
+
+@app.get("/memory/{user_id}/settings")
+def get_memory_settings(user_id: str, authorization: Optional[str] = Header(default=None)) -> Dict[str, Any]:
+    """Chế độ bộ nhớ: no_sensitive (mặc định) | full | off."""
+    if not memory_manager:
+        raise HTTPException(status_code=503, detail="Memory service không khả dụng")
+    uid = _enforce_user_match(user_id, authorization)
+    return {"user_id": uid, "mode": memory_manager.get_mode(uid)}
+
+
+@app.put("/memory/{user_id}/settings")
+def put_memory_settings(user_id: str, req: MemorySettingsRequest,
+                        authorization: Optional[str] = Header(default=None)) -> Dict[str, Any]:
+    if not memory_manager:
+        raise HTTPException(status_code=503, detail="Memory service không khả dụng")
+    uid = _enforce_user_match(user_id, authorization)
+    try:
+        return {"user_id": uid, "mode": memory_manager.set_mode(uid, req.mode)}
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
 
 
 @app.post("/tts")

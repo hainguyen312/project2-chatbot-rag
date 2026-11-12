@@ -1,87 +1,138 @@
 /* ============================================================
-   VNLaw Chatbot — Theme System
-   Dùng class "dark" trên <html> hoặc <body> để bật dark mode.
-   Ví dụ: document.documentElement.classList.toggle("dark")
+   VNLaw Chatbot — Theme
+   Hướng thiết kế: trang văn bản pháp luật. Nền giấy trắng lạnh, chữ mực xanh đen,
+   một màu nhấn duy nhất là đỏ son (màu dấu mộc) — chỉ dùng cho CĂN CỨ PHÁP LÝ
+   và hành động chính (gửi câu hỏi). Mọi thứ khác giữ trung tính.
+   Dark mode: class "dark" trên <html>.
    ============================================================ */
 
-/* ---------- Light mode (default) ---------- */
 :root {
-    /* Backgrounds */
-    --bg-base:       #f5f5f2;   /* page background */
-    --bg-sidebar:    #ffffff;   /* sidebar panel */
-    --bg-main:       #fafaf8;   /* chat area */
-    --bg-surface:    #dddddd;   /* cards, active items */
-    --bg-input:      #f0f0ed;   /* text inputs */
-    --bg-msg-user:   #2563eb;   /* user chat bubble */
-    --bg-msg-bot:    #ffffff;   /* bot chat bubble */
-    --bg-hover:      #f0f0ed;   /* hover state on list items */
-    --bg-msgbtn:     #cec9fd;
-  
-    /* Text */
-    --text-primary:    #18181b;
-    --text-secondary:  #52525b;
-    --text-muted:      #a1a1aa;
-    --text-on-accent:  #ffffff;
-  
-    /* Borders */
-    --border:        rgba(0, 0, 0, 0.08);
-    --border-strong: rgba(0, 0, 0, 0.15);
-  
-    /* Accent / Brand */
-    --accent:        #2563eb;
-    --accent-hover:  #1d4ed8;
-    --accent-light:  #dbeafe;   /* e.g. pinned tag bg */
-    --accent-text:   #1e40af;   /* text on accent-light */
-  
-    /* Status / Pending bubble */
-    --status-bg:     #eef2ff;
-    --status-text:   #4338ca;
-    --status-border: rgba(99, 102, 241, 0.2);
-  
-    /* Danger */
-    --danger-text:   #b91c1c;
-    --danger-bg:     rgba(185, 28, 28, 0.06);
-    --danger-border: rgba(185, 28, 28, 0.2);
-  
-    /* Misc */
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.07);
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-  }
-  
-  /* ---------- Dark mode ---------- */
-  .dark {
-    --bg-base:       #0f0f0f;
-    --bg-sidebar:    #111111;
-    --bg-main:       #181818;
-    --bg-surface:    #1f1f1f;
-    --bg-input:      #262626;
-    --bg-msg-user:   #2563eb;
-    --bg-msg-bot:    #272727;
-    --bg-hover:      #252525;
-    --bg-msgbtn:     #534AB7;
-  
-    --text-primary:    #f4f4f5;
-    --text-secondary:  #a1a1aa;
-    --text-muted:      #71717a;
-    --text-on-accent:  #ffffff;
-  
-    --border:        rgba(255, 255, 255, 0.07);
-    --border-strong: rgba(255, 255, 255, 0.13);
-  
-    --accent:        #3b82f6;
-    --accent-hover:  #2563eb;
-    --accent-light:  #1e3a5f;
-    --accent-text:   #93c5fd;
-  
-    --status-bg:     #1a1a2e;
-    --status-text:   #818cf8;
-    --status-border: rgba(129, 140, 248, 0.2);
-  
-    --danger-text:   #fca5a5;
-    --danger-bg:     rgba(239, 68, 68, 0.08);
-    --danger-border: rgba(239, 68, 68, 0.2);
-  
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  }
+  /* Nền */
+  --bg-base:       #F7F8FA;   /* trang */
+  --bg-sidebar:    #EFF1F5;   /* thanh bên — tách khỏi vùng đọc */
+  --bg-main:       #F7F8FA;   /* vùng hội thoại */
+  --bg-surface:    #FFFFFF;   /* thẻ, nút nổi */
+  --bg-input:      #FFFFFF;   /* ô nhập */
+  --bg-msg-user:   #E6EAF1;   /* bong bóng câu hỏi */
+  --bg-msg-bot:    transparent; /* câu trả lời trình bày như văn bản, không bọc khung */
+  --bg-hover:      #E8EBF0;
+  --bg-msgbtn:     #DDE2EA;   /* mục chat đang chọn khi thu gọn sidebar */
+
+  /* Chữ */
+  --text-primary:    #1C2433; /* mực */
+  --text-secondary:  #4A5568;
+  --text-muted:      #7D8796;
+  --text-on-accent:  #FFFFFF;
+
+  /* Đường kẻ */
+  --border:        #E1E5EB;
+  --border-strong: #C9CFD9;
+
+  /* Đỏ son — căn cứ pháp lý + hành động chính */
+  --accent:        #A4262C;
+  --accent-hover:  #8A1F24;
+  --accent-light:  #F6E8E9;
+  --accent-text:   #8A1F24;
+
+  /* Trạng thái đang xử lý */
+  --status-bg:     #EEF1F5;
+  --status-text:   #4A5568;
+  --status-border: #DDE2EA;
+
+  /* Cảnh báo / nguy hiểm — nâu cam, KHÔNG trùng đỏ son để căn cứ không bị đọc thành lỗi */
+  --danger-text:   #9A4A0B;
+  --danger-bg:     #FBF1E6;
+  --danger-border: #EBCFAE;
+
+  /* Tích cực (phản hồi hữu ích, độ tin cậy cao) */
+  --ok-text:       #2F6B46;
+  --ok-bg:         #E9F3EC;
+
+  --focus-ring:    0 0 0 3px rgba(164, 38, 44, 0.18);
+  --shadow-sm:     0 1px 2px rgba(28, 36, 51, 0.06);
+  --shadow-input:  0 1px 2px rgba(28, 36, 51, 0.05), 0 4px 16px rgba(28, 36, 51, 0.05);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --reading-width: 46rem;   /* ~720px: dòng chữ dưới ~80 ký tự */
+}
+
+.dark {
+  --bg-base:       #121821;   /* mực đêm, không phải đen xám */
+  --bg-sidebar:    #0E131B;
+  --bg-main:       #121821;
+  --bg-surface:    #1A212C;
+  --bg-input:      #1A212C;
+  --bg-msg-user:   #242D3B;
+  --bg-msg-bot:    transparent;
+  --bg-hover:      #1F2733;
+  --bg-msgbtn:     #2A3444;
+
+  --text-primary:    #E6E9EF;
+  --text-secondary:  #A9B1BE;
+  --text-muted:      #737D8C;
+  --text-on-accent:  #FFFFFF;
+
+  --border:        rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+
+  --accent:        #D2575D;
+  --accent-hover:  #E0747A;
+  --accent-light:  rgba(210, 87, 93, 0.14);
+  --accent-text:   #F0A6A9;
+
+  --status-bg:     #1A212C;
+  --status-text:   #A9B1BE;
+  --status-border: rgba(255, 255, 255, 0.08);
+
+  --danger-text:   #E3A766;
+  --danger-bg:     rgba(227, 167, 102, 0.10);
+  --danger-border: rgba(227, 167, 102, 0.28);
+
+  --ok-text:       #7CC79A;
+  --ok-bg:         rgba(124, 199, 154, 0.12);
+
+  --focus-ring:    0 0 0 3px rgba(210, 87, 93, 0.30);
+  --shadow-sm:     0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-input:  0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Văn bản câu trả lời: serif, giãn dòng rộng, nhịp đoạn rõ */
+.answer-prose {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--text-primary);
+}
+.answer-prose p { margin: 0.6em 0; }
+.answer-prose p:first-child { margin-top: 0; }
+.answer-prose strong { font-weight: 600; }
+.answer-prose ul, .answer-prose ol { padding-left: 1.4em; margin: 0.5em 0; }
+.answer-prose ul { list-style: disc; }
+.answer-prose ol { list-style: decimal; }
+.answer-prose li { margin: 0.25em 0; }
+.answer-prose li::marker { color: var(--text-muted); }
+.answer-prose h1, .answer-prose h2, .answer-prose h3 {
+  font-family: var(--font-be-vietnam), sans-serif;
+  font-weight: 600; font-size: 1rem; margin: 1.1em 0 0.3em;
+}
+.answer-prose a { color: var(--accent-text); text-decoration: underline; text-underline-offset: 2px; }
+.answer-prose blockquote {
+  margin: 0.8em 0; padding-left: 0.9em; color: var(--text-secondary);
+  border-left: 2px solid var(--border-strong);
+}
+.answer-prose hr { border: 0; border-top: 1px solid var(--border); margin: 1.2em 0; }
+.answer-prose code { font-size: 0.85em; padding: 0.1em 0.3em; border-radius: 4px; background: var(--bg-hover); }
+.answer-prose table { border-collapse: collapse; font-size: 0.92em; margin: 0.8em 0; }
+.answer-prose th, .answer-prose td { border: 1px solid var(--border); padding: 0.35em 0.6em; text-align: left; }
+
+/* Tiêu điểm bàn phím nhìn thấy được trên mọi phần tử tương tác */
+:where(button, a, input, textarea, select, [tabindex]):focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

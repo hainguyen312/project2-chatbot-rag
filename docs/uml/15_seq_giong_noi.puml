@@ -1,0 +1,49 @@
+@startuml SEQ_GiongNoi
+!include _style.iuml
+title Biểu đồ tuần tự — UC04 Hỏi bằng giọng nói (STT) và UC05 Nghe câu trả lời (TTS)
+autonumber
+
+actor "Người dùng" as U
+participant "Giao diện" as UI
+participant "Next.js\n/api/stt, /api/tts" as Proxy
+participant "rag_api" as API
+participant "OpenAI\nWhisper / TTS" as OAI
+participant "Firebase Storage" as FS
+database "MongoDB" as Mongo
+
+== UC04: Speech-to-text ==
+U -> UI : Nhấn ghi âm và nói
+UI -> UI : MediaRecorder ghi audio\n+ hiển thị waveform
+U -> UI : Dừng ghi âm
+UI -> Proxy : POST /api/stt (FormData audio.webm)
+Proxy -> API : POST /stt
+API -> OAI : transcriptions.create(whisper-1, language=vi)
+OAI --> API : text
+API --> Proxy : {text}
+Proxy --> UI : {text}
+UI -> UI : điền text vào ô nhập
+note right of UI : Tiếp tục luồng UC01
+
+== UC05: Text-to-speech ==
+U -> UI : Nhấn nghe câu trả lời
+alt tin nhắn đã có tts_url
+  UI -> FS : phát audio từ URL
+else chưa có
+  UI -> Proxy : POST /api/tts {text, chat_id, msg_idx}
+  Proxy -> API : POST /tts
+  API -> API : _strip_markdown(text)
+  API -> OAI : audio.speech.create(tts-1, mp3)
+  OAI --> API : audio bytes
+  alt Firebase được cấu hình
+    API -> FS : upload mp3 + make_public
+    FS --> API : public_url
+    API -> Mongo : save_tts_url(chat_id, msg_idx, url)
+    API --> Proxy : {url}
+    Proxy --> UI : {url}
+  else không có Firebase
+    API --> Proxy : stream audio/mpeg
+    Proxy --> UI : audio/mpeg
+  end
+end
+UI --> U : Phát âm thanh
+@enduml

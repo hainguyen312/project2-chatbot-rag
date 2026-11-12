@@ -1,0 +1,1429 @@
+{
+ "model": "gpt-4.1",
+ "summary": {
+  "cases": 23,
+  "case_pass": 1.0,
+  "must_call_recall": 1.0,
+  "should_call_recall": 0.6666666666666666,
+  "forbidden_rate": 0.0,
+  "first_tool_acc": 1.0,
+  "forced_web_acc": 1.0,
+  "invalid_id_rate": 0.17647058823529413,
+  "empty_arg_rate": 0.0,
+  "redundant_rate": 0.0,
+  "over_budget_rate": 0.0,
+  "max_iter_rate": 0.043478260869565216,
+  "answer_check": 1.0,
+  "avg_calls": 2.652173913043478,
+  "avg_latency_s": 8.220725992451543,
+  "cost_usd": 1.718542
+ },
+ "rows": [
+  {
+   "id": "def_marriage",
+   "category": "dinh_nghia",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 1,
+   "id_calls": 0,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 4.352871894836426,
+   "cost_usd": 0.021852
+  },
+  {
+   "id": "def_labor_17",
+   "category": "dinh_nghia",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "get_full_article"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 2,
+   "id_calls": 1,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 5.22721004486084,
+   "cost_usd": 0.035826
+  },
+  {
+   "id": "def_suspended",
+   "category": "dinh_nghia",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 1,
+   "id_calls": 0,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 5.493929147720337,
+   "cost_usd": 0.027264
+  },
+  {
+   "id": "def_notice",
+   "category": "dinh_nghia",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "graph_traverse"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 2,
+   "id_calls": 1,
+   "invalid_id_calls": 1,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 6.2569169998168945,
+   "cost_usd": 0.037364
+  },
+  {
+   "id": "def_marriage_docs",
+   "category": "dinh_nghia",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "graph_traverse",
+    "graph_traverse",
+    "web_search"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 4,
+   "id_calls": 2,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 8.480823755264282,
+   "cost_usd": 0.054214
+  },
+  {
+   "id": "scope_helmet",
+   "category": "pham_vi_ap_dung",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "web_search"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": true,
+   "n_calls": 2,
+   "id_calls": 0,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 7.070300817489624,
+   "cost_usd": 0.06691
+  },
+  {
+   "id": "scope_pregnant",
+   "category": "pham_vi_ap_dung",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "vector_search",
+    "vector_search",
+    "get_full_article"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 4,
+   "id_calls": 1,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 8.507543087005615,
+   "cost_usd": 0.112376
+  },
+  {
+   "id": "scope_theft",
+   "category": "pham_vi_ap_dung",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "get_full_article"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 2,
+   "id_calls": 1,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 6.659319162368774,
+   "cost_usd": 0.036012
+  },
+  {
+   "id": "scope_debt",
+   "category": "pham_vi_ap_dung",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "vector_search",
+    "vector_search",
+    "get_full_article"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 4,
+   "id_calls": 1,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 9.67221975326538,
+   "cost_usd": 0.134238
+  },
+  {
+   "id": "scope_age_marry",
+   "category": "pham_vi_ap_dung",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "graph_traverse",
+    "vector_search"
+   ],
+   "must_recall": 1.0,
+   "should_recall": 1.0,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 3,
+   "id_calls": 1,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 7.8387062549591064,
+   "cost_usd": 0.052886
+  },
+  {
+   "id": "pen_helmet_motor",
+   "category": "muc_phat",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "get_full_article",
+    "web_search"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": true,
+   "n_calls": 3,
+   "id_calls": 1,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 9.095585107803345,
+   "cost_usd": 0.109516
+  },
+  {
+   "id": "pen_alcohol",
+   "category": "muc_phat",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "get_full_article",
+    "web_search"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 3,
+   "id_calls": 1,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 7.152345895767212,
+   "cost_usd": 0.109568
+  },
+  {
+   "id": "pen_redlight_bike",
+   "category": "muc_phat",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "get_full_article",
+    "web_search"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": true,
+   "n_calls": 3,
+   "id_calls": 1,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 10.383738279342651,
+   "cost_usd": 0.119166
+  },
+  {
+   "id": "pen_id_fee",
+   "category": "muc_phat",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "web_search"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 2,
+   "id_calls": 0,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 5.29548192024231,
+   "cost_usd": 0.034358
+  },
+  {
+   "id": "pen_min_wage",
+   "category": "muc_phat",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "web_search",
+    "vector_search",
+    "get_full_article",
+    "web_search"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 4,
+   "id_calls": 1,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 10.888552904129028,
+   "cost_usd": 0.05685
+  },
+  {
+   "id": "pen_drugs",
+   "category": "muc_phat",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "graph_traverse",
+    "graph_traverse"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 3,
+   "id_calls": 2,
+   "invalid_id_calls": 1,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 7.049559116363525,
+   "cost_usd": 0.053746
+  },
+  {
+   "id": "gap_land_term",
+   "category": "ngoai_du_lieu",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "vector_search",
+    "web_search",
+    "web_search"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 4,
+   "id_calls": 0,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 18.763282299041748,
+   "cost_usd": 0.135534
+  },
+  {
+   "id": "gap_license_age",
+   "category": "ngoai_du_lieu",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "vector_search",
+    "vector_search",
+    "web_search",
+    "web_search"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 5,
+   "id_calls": 0,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": true,
+   "latency_s": 18.118870973587036,
+   "cost_usd": 0.27828
+  },
+  {
+   "id": "gap_encroach",
+   "category": "ngoai_du_lieu",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "graph_traverse",
+    "web_search",
+    "vector_search"
+   ],
+   "must_recall": 1.0,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 4,
+   "id_calls": 1,
+   "invalid_id_calls": 1,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 16.280589818954468,
+   "cost_usd": 0.108964
+  },
+  {
+   "id": "rel_marriage_ban",
+   "category": "quan_he_dieu_luat",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "vector_search",
+    "get_full_article"
+   ],
+   "must_recall": 1.0,
+   "should_recall": 0.0,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 3,
+   "id_calls": 1,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 8.358757019042969,
+   "cost_usd": 0.087114
+  },
+  {
+   "id": "detail_full_article",
+   "category": "doc_toan_van",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [
+    "vector_search",
+    "get_full_article"
+   ],
+   "must_recall": 1.0,
+   "should_recall": 1.0,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 2,
+   "id_calls": 1,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 5.451930046081543,
+   "cost_usd": 0.038952
+  },
+  {
+   "id": "chat_identity",
+   "category": "tro_chuyen",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [],
+   "must_recall": null,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 0,
+   "id_calls": 0,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 1.5330722332000732,
+   "cost_usd": 0.004064
+  },
+  {
+   "id": "chat_thanks",
+   "category": "tro_chuyen",
+   "pass": true,
+   "checks": {
+    "must_call": true,
+    "must_not_call": true,
+    "first_tool": true,
+    "forced_web": true,
+    "budget": true,
+    "answer": true
+   },
+   "tools": [],
+   "must_recall": null,
+   "should_recall": null,
+   "forbidden": false,
+   "forced_web": false,
+   "n_calls": 0,
+   "id_calls": 0,
+   "invalid_id_calls": 0,
+   "empty_args": 0,
+   "redundant": 0,
+   "hit_max_iter": false,
+   "latency_s": 1.1450912952423096,
+   "cost_usd": 0.003488
+  }
+ ],
+ "traces": [
+  {
+   "case": "def_marriage",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Theo quy định tại Điều 8 Luật số 52/2014/QH13 (Luật Hôn nhân và Gia đình), điều kiện để được kết hôn như sau:\n\n1. Nam, nữ kết hôn với nhau phải tuân theo các điều kiện:\n   a) Nam từ đủ 20 tuổi trở lên, nữ từ đủ 18 tuổi trở lên;\n   b) Việc kết hôn do nam và nữ tự nguyện quyết định;\n   c) Không bị mất năng lực hành vi dân sự;\n   d) Việc kết hôn không thuộc một trong các trường hợp cấm kết hôn theo quy định tại các điểm a, b, c và d khoản 2 Điều 5 của Luật này (ví dụ: kết hôn giả tạo, tảo hôn, cưỡng ép kết hôn, kết hôn giữa những người có quan hệ huyết thống gần...).\n\n2. Nhà nước không thừa nhận hôn nhân giữa những người cùng giới tính.\n\n(Trích dẫn: Điều 8 Luật số 52/2014/QH13, Điều kiện kết hôn)\n\nNếu bạn cần biết cụ thể các trường hợp cấm kết hôn hoặc thủ tục đăng ký kết hôn, vui lòng hỏi thêm!",
+   "iterations": 2,
+   "latency_s": 4.352871894836426,
+   "cost_usd": 0.021852,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "điều kiện kết hôn"
+     },
+     "n_hits": 10
+    }
+   ]
+  },
+  {
+   "case": "def_labor_17",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Người 17 tuổi có thể ký hợp đồng lao động, nhưng cần lưu ý:\n\nTheo khoản 4 Điều 18 Bộ luật số 45/2019/QH14 (Bộ luật Lao động 2019), người lao động từ đủ 15 tuổi đến chưa đủ 18 tuổi được phép giao kết hợp đồng lao động, nhưng phải có sự đồng ý bằng văn bản của người đại diện theo pháp luật của người đó.\n\nTrích dẫn quy định:\n- \"Người giao kết hợp đồng lao động bên phía người lao động là người thuộc một trong các trường hợp sau đây:\n  ... b) Người lao động từ đủ 15 tuổi đến chưa đủ 18 tuổi khi có sự đồng ý bằng văn bản của người đại diện theo pháp luật của người đó;\" (Điều 18 Bộ luật số 45/2019/QH14, Thẩm quyền giao kết hợp đồng lao động).\n\nKết luận:\n- Người 17 tuổi ĐƯỢC ký hợp đồng lao động, nhưng phải có sự đồng ý bằng văn bản của người đại diện theo pháp luật (thường là cha, mẹ hoặc người giám hộ hợp pháp).\n\nBạn nên chuẩn bị văn bản đồng ý này khi ký hợp đồng lao động ở tuổi 17.",
+   "iterations": 3,
+   "latency_s": 5.22721004486084,
+   "cost_usd": 0.035826,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "độ tuổi ký hợp đồng lao động"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "get_full_article",
+     "args": {
+      "mapc": "200020000000000030000010000000000000000001800000000000000000"
+     },
+     "n_hits": 1
+    }
+   ]
+  },
+  {
+   "case": "def_suspended",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Điều kiện để người bị kết án phạt tù được hưởng án treo được quy định tại Điều 2 Nghị quyết số 02/2018/NQ-HĐTP (có hiệu lực từ 01/07/2018) như sau:\n\n1. Bị xử phạt tù không quá 03 năm.\n2. Có nhân thân tốt.\n   - Được coi là có nhân thân tốt nếu ngoài lần phạm tội này, người phạm tội luôn chấp hành đúng chính sách, pháp luật và thực hiện đầy đủ các nghĩa vụ của công dân ở nơi cư trú, nơi làm việc.\n   - Đối với người đã bị kết án nhưng thuộc trường hợp được coi là không có án tích, đã được xóa án tích, hoặc đã bị xử phạt vi phạm hành chính/xử lý kỷ luật mà thời gian được coi là chưa bị xử phạt/xử lý tính đến ngày phạm tội lần này đã quá 06 tháng, nếu xét thấy tính chất, mức độ của tội phạm mới là ít nghiêm trọng hoặc là đồng phạm có vai trò không đáng kể và có đủ các điều kiện khác thì cũng có thể cho hưởng án treo.\n3. Có từ 02 tình tiết giảm nhẹ trách nhiệm hình sự trở lên, trong đó có ít nhất 01 tình tiết giảm nhẹ quy định tại khoản 1 Điều 51 Bộ luật Hình sự và không có tình tiết tăng nặng quy định tại khoản 1 Điều 52 Bộ luật Hình sự.\n   - Nếu có tình tiết tăng nặng thì số tình tiết giảm nhẹ phải nhiều hơn số tình tiết tăng nặng từ 02 tình tiết trở lên, trong đó có ít nhất 01 tình tiết giảm nhẹ tại khoản 1 Điều 51 Bộ luật Hình sự.\n4. Có nơi cư trú rõ ràng hoặc nơi làm việc ổn định để cơ quan, tổ chức có thẩm quyền giám sát, giáo dục.\n   - Nơi cư trú rõ ràng là nơi tạm trú hoặc thường trú có địa chỉ cụ thể theo Luật Cư trú.\n   - Nơi làm việc ổn định là nơi làm việc có thời hạn từ 01 năm trở lên theo hợp đồng lao động hoặc quyết định của cơ quan, tổ chức có thẩm quyền.\n5. Xét thấy không cần phải bắt chấp hành hình phạt tù nếu người phạm tội có khả năng tự cải tạo và việc cho hưởng án treo không gây nguy hiểm cho xã hội, không ảnh hưởng xấu đến an ninh, trật tự, an toàn xã hội.\n\n(Căn cứ: Điều 2 Nghị quyết 02/2018/NQ-HĐTP, Điều kiện cho người bị kết án phạt tù được hưởng án treo)\n\nLưu ý: Có các trường hợp không được hưởng án treo quy định tại Điều 3 Nghị quyết này (ví dụ: chủ mưu, cầm đầu, tái phạm nguy hiểm, phạm nhiều tội, v.v.). Nếu cần chi tiết về các trường hợp không được hưởng án treo, bạn có thể hỏi thêm.",
+   "iterations": 2,
+   "latency_s": 5.493929147720337,
+   "cost_usd": 0.027264,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "điều kiện hưởng án treo"
+     },
+     "n_hits": 10
+    }
+   ]
+  },
+  {
+   "case": "def_notice",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Thời hạn báo trước khi đơn phương nghỉ việc (đơn phương chấm dứt hợp đồng lao động) phụ thuộc vào loại hợp đồng và ngành nghề bạn đang làm việc. Cụ thể:\n\n1. Đối với người lao động làm việc theo hợp đồng lao động thông thường (không thuộc ngành, nghề đặc thù):\n- Ít nhất 45 ngày nếu làm việc theo hợp đồng lao động không xác định thời hạn.\n- Ít nhất 30 ngày nếu làm việc theo hợp đồng lao động xác định thời hạn từ 12 tháng đến 36 tháng.\n- Ít nhất 03 ngày làm việc nếu làm việc theo hợp đồng lao động xác định thời hạn dưới 12 tháng.\n- Đối với một số ngành, nghề, công việc đặc thù thì thời hạn báo trước thực hiện theo quy định của Chính phủ.\n\n(Căn cứ: Điều 35 Bộ luật số 45/2019/QH14, tên điều: Quyền đơn phương chấm dứt hợp đồng lao động của người lao động)\n\n2. Đối với ngành, nghề, công việc đặc thù (ví dụ: thành viên tổ lái tàu bay, nhân viên kỹ thuật bảo dưỡng tàu bay, thuyền viên làm việc trên tàu biển nước ngoài, người quản lý doanh nghiệp...):\n- Ít nhất 120 ngày đối với hợp đồng lao động không xác định thời hạn hoặc hợp đồng xác định thời hạn từ 12 tháng trở lên.\n- Ít nhất bằng một phần tư thời hạn của hợp đồng đối với hợp đồng lao động có thời hạn dưới 12 tháng.\n\n(Căn cứ: Điều 7 Nghị định 145/2020/NĐ-CP, tên điều: Thời hạn báo trước khi đơn phương chấm dứt hợp đồng lao động đối với một số ngành, nghề, công việc đặc thù)\n\nLưu ý: Có một số trường hợp người lao động được quyền đơn phương nghỉ việc mà không cần báo trước (ví dụ: không được trả lương, bị ngược đãi, bị quấy rối tình dục tại nơi làm việc...), cũng được quy định tại Điều 35 Bộ luật Lao động.\n\nBạn cần xác định rõ loại hợp đồng và ngành nghề của mình để áp dụng đúng thời hạn báo trước. Nếu cần tra cứu trường hợp cụ thể hơn, bạn có thể cung cấp thêm thông tin.",
+   "iterations": 3,
+   "latency_s": 6.2569169998168945,
+   "cost_usd": 0.037364,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "thời hạn báo trước khi đơn phương chấm dứt hợp đồng lao động"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "graph_traverse",
+     "args": {
+      "mapcs": [
+       "20.2.LQ.35",
+       "20.2.NĐ.3.7"
+      ]
+     },
+     "n_hits": 0
+    }
+   ]
+  },
+  {
+   "case": "def_marriage_docs",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Theo quy định hiện hành, thủ tục đăng ký kết hôn tại Việt Nam yêu cầu các giấy tờ sau (tùy trường hợp):\n\n1. Đối với kết hôn giữa công dân Việt Nam với nhau tại Ủy ban nhân dân cấp xã:\n- Tờ khai đăng ký kết hôn theo mẫu quy định.\n- Hai bên nam, nữ phải cùng có mặt khi đăng ký kết hôn.\n\n(Căn cứ: Điều 18 Luật số 60/2014/QH13 – Thủ tục đăng ký kết hôn)\n\n2. Đối với kết hôn có yếu tố nước ngoài (giữa công dân Việt Nam với người nước ngoài, hoặc công dân Việt Nam định cư ở nước ngoài, hoặc giữa người nước ngoài với nhau tại Việt Nam) tại Ủy ban nhân dân cấp huyện:\n- Tờ khai đăng ký kết hôn theo mẫu quy định.\n- Giấy xác nhận của tổ chức y tế có thẩm quyền (Việt Nam hoặc nước ngoài) xác nhận người đó không mắc bệnh tâm thần hoặc bệnh khác mà không có khả năng nhận thức, làm chủ hành vi.\n- Người nước ngoài, công dân Việt Nam định cư ở nước ngoài phải nộp thêm:\n  + Giấy tờ chứng minh tình trạng hôn nhân.\n  + Bản sao hộ chiếu hoặc giấy tờ có giá trị thay hộ chiếu.\n\n(Căn cứ: Điều 38 Luật số 60/2014/QH13 – Thủ tục đăng ký kết hôn)\n\nLưu ý:\n- Một số giấy tờ của nước ngoài cần hợp pháp hóa lãnh sự theo quy định (trừ trường hợp được miễn).\n- Có thể có quy định bổ sung về giấy tờ hoặc xác minh/phỏng vấn tùy từng trường hợp cụ thể theo hướng dẫn của Chính phủ.\n\nTóm lại, giấy tờ cơ bản cần chuẩn bị:\n- Tờ khai đăng ký kết hôn (theo mẫu).\n- Giấy tờ tùy thân (CMND/CCCD/hộ chiếu).\n- Giấy xác nhận tình trạng hôn nhân (nếu có yếu tố nước ngoài).\n- Giấy xác nhận không mắc bệnh tâm thần (nếu có yếu tố nước ngoài).\n\nBạn nên liên hệ trực tiếp UBND nơi đăng ký để được hướng dẫn chi tiết theo trường hợp cụ thể.\n\nTrích dẫn:\n- Điều 18, Điều 38 Luật số 60/2014/QH13 (Luật Hộ tịch) – Thủ tục đăng ký kết hôn.",
+   "iterations": 4,
+   "latency_s": 8.480823755264282,
+   "cost_usd": 0.054214,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "thủ tục đăng ký kết hôn cần giấy tờ gì"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "graph_traverse",
+     "args": {
+      "mapcs": [
+       "150030000000000020000002000000000000000001800000000000000000"
+      ],
+      "hop": 1
+     },
+     "n_hits": 5
+    },
+    {
+     "name": "graph_traverse",
+     "args": {
+      "mapcs": [
+       "150030000000000030000002000000000000000003800000000000000000"
+      ],
+      "hop": 1
+     },
+     "n_hits": 3
+    },
+    {
+     "name": "web_search",
+     "args": {
+      "query": "hồ sơ đăng ký kết hôn gồm những giấy tờ gì theo quy định mới nhất"
+     },
+     "n_hits": 0
+    }
+   ]
+  },
+  {
+   "case": "scope_helmet",
+   "rep": 0,
+   "forced_web": true,
+   "max_iterations": 6,
+   "forced_reason": "câu hỏi về mức phạt / mức tiền / quy định hiện hành, có thể đã bị văn bản mới sửa đổi hoặc thay thế",
+   "answer": "Theo quy định hiện hành tại Điều 8 Nghị định 100/2019/NĐ-CP (Xử phạt người điều khiển xe đạp, xe đạp máy (kể cả xe đạp điện), người điều khiển xe thô sơ khác vi phạm quy tắc giao thông đường bộ), không có quy định xử phạt đối với hành vi đi xe đạp thông thường mà không đội mũ bảo hiểm.\n\nChỉ có quy định xử phạt đối với người điều khiển xe đạp máy, xe đạp điện không đội mũ bảo hiểm (hoặc đội không đúng quy cách) khi tham gia giao thông trên đường bộ, với mức phạt từ 200.000 đồng đến 300.000 đồng (theo điểm d khoản 3 Điều 8 Nghị định 100/2019/NĐ-CP).\n\nTóm lại:\n- Người đi xe đạp thông thường không bắt buộc phải đội mũ bảo hiểm và không bị xử phạt nếu không đội mũ bảo hiểm.\n- Người đi xe đạp điện, xe đạp máy bắt buộc phải đội mũ bảo hiểm đúng quy cách, nếu không sẽ bị xử phạt.\n\nBạn nên đối chiếu với văn bản pháp luật chính thức hoặc cập nhật mới nhất nếu có thay đổi sau thời điểm này.",
+   "iterations": 4,
+   "latency_s": 7.070300817489624,
+   "cost_usd": 0.06691,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "xử phạt đi xe đạp không đội mũ bảo hiểm"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "web_search",
+     "args": {
+      "query": "đi xe đạp không đội mũ bảo hiểm có bị phạt không năm 2026"
+     },
+     "n_hits": 0
+    }
+   ]
+  },
+  {
+   "case": "scope_pregnant",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Lao động nữ đang mang thai có được pháp luật bảo vệ, không bị sa thải hoặc đơn phương chấm dứt hợp đồng lao động chỉ vì lý do mang thai.\n\nCụ thể, theo Điều 137 Bộ luật Lao động số 45/2019/QH14 (tên điều: \"Bảo vệ thai sản\"):\n\n\"Người sử dụng lao động không được sa thải hoặc đơn phương chấm dứt hợp đồng lao động đối với người lao động vì lý do kết hôn, mang thai, nghỉ thai sản, nuôi con dưới 12 tháng tuổi, trừ trường hợp người sử dụng lao động là cá nhân chết, bị Tòa án tuyên bố mất năng lực hành vi dân sự, mất tích hoặc đã chết hoặc người sử dụng lao động không phải là cá nhân chấm dứt hoạt động hoặc bị cơ quan chuyên môn về đăng ký kinh doanh thuộc Ủy ban nhân dân cấp tỉnh ra thông báo không có người đại diện theo pháp luật, người được ủy quyền thực hiện quyền và nghĩa vụ của người đại diện theo pháp luật.\"\n\nNhư vậy:\n- Người sử dụng lao động KHÔNG ĐƯỢC sa thải lao động nữ chỉ vì lý do mang thai.\n- Chỉ trong các trường hợp đặc biệt như người sử dụng lao động là cá nhân chết, mất tích, mất năng lực hành vi dân sự, hoặc doanh nghiệp chấm dứt hoạt động... thì hợp đồng mới có thể chấm dứt.\n\nCăn cứ: Điều 137 Bộ luật số 45/2019/QH14, \"Bảo vệ thai sản\".\n\nNếu người sử dụng lao động sa thải lao động nữ vì lý do mang thai, đây là hành vi trái pháp luật và có thể bị xử phạt theo quy định hiện hành.",
+   "iterations": 5,
+   "latency_s": 8.507543087005615,
+   "cost_usd": 0.112376,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "sa thải lao động nữ đang mang thai"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "cấm sa thải lao động nữ mang thai"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "cấm sa thải lao động nữ mang thai Bộ luật Lao động"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "get_full_article",
+     "args": {
+      "mapc": "2000200000000001000013700000000000000000"
+     },
+     "n_hits": 1
+    }
+   ]
+  },
+  {
+   "case": "scope_theft",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Theo quy định tại Điều 173 Bộ luật số 100/2015/QH13 (sửa đổi, bổ sung bởi Luật số 12/2017/QH14), hành vi trộm cắp tài sản chỉ bị truy cứu trách nhiệm hình sự khi:\n\n- Giá trị tài sản bị trộm cắp từ 2.000.000 đồng trở lên;\n- Hoặc dưới 2.000.000 đồng nhưng thuộc một trong các trường hợp đặc biệt như: đã bị xử phạt vi phạm hành chính về hành vi chiếm đoạt tài sản mà còn vi phạm; đã bị kết án về các tội chiếm đoạt tài sản mà chưa được xóa án tích; gây ảnh hưởng xấu đến an ninh, trật tự, an toàn xã hội; tài sản là phương tiện kiếm sống chính của người bị hại và gia đình họ; tài sản là di vật, cổ vật.\n\nNhư vậy, trộm cắp tài sản trị giá 1,5 triệu đồng sẽ KHÔNG bị truy cứu trách nhiệm hình sự, trừ khi thuộc một trong các trường hợp đặc biệt nêu trên.\n\nTrích dẫn quy định:\n“Người nào trộm cắp tài sản của người khác trị giá từ 2.000.000 đồng đến dưới 50.000.000 đồng hoặc dưới 2.000.000 đồng nhưng thuộc một trong các trường hợp sau đây, thì bị phạt cải tạo không giam giữ đến 03 năm hoặc phạt tù từ 06 tháng đến 03 năm...” (Điều 173 Bộ luật số 100/2015/QH13, tên điều: Tội trộm cắp tài sản).\n\nTóm lại:\n- Nếu chỉ trộm cắp tài sản trị giá 1,5 triệu đồng, không thuộc các trường hợp đặc biệt: KHÔNG bị truy cứu trách nhiệm hình sự.\n- Nếu thuộc một trong các trường hợp đặc biệt nêu trên: CÓ thể bị truy cứu trách nhiệm hình sự.",
+   "iterations": 3,
+   "latency_s": 6.659319162368774,
+   "cost_usd": 0.036012,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "trộm cắp tài sản trị giá 1,5 triệu đồng có bị truy cứu trách nhiệm hình sự"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "get_full_article",
+     "args": {
+      "mapc": "160010000000000020000160000000000000000017300000000000000000"
+     },
+     "n_hits": 1
+    }
+   ]
+  },
+  {
+   "case": "scope_debt",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Vay tiền bạn không trả có thể bị đi tù trong một số trường hợp nhất định, nhưng không phải cứ vay không trả là bị truy cứu trách nhiệm hình sự.\n\nCụ thể:\n\n- Nếu bạn vay tiền, đến hạn trả mà không trả, chỉ bị kiện dân sự để đòi nợ, không bị xử lý hình sự nếu chỉ là tranh chấp dân sự thông thường (ví dụ: thực sự không có khả năng trả, không có hành vi gian dối hoặc bỏ trốn).\n- Tuy nhiên, nếu bạn vay tiền rồi dùng thủ đoạn gian dối, bỏ trốn để chiếm đoạt tài sản, hoặc đến hạn trả mà có điều kiện, khả năng nhưng cố tình không trả, hoặc sử dụng tiền vay vào mục đích bất hợp pháp dẫn đến không có khả năng trả lại, thì có thể bị truy cứu trách nhiệm hình sự về \"Tội lạm dụng tín nhiệm chiếm đoạt tài sản\" theo Điều 175 Bộ luật Hình sự 2015 (sửa đổi, bổ sung 2017).\n\nCụ thể, Điều 175 Bộ luật số 100/2015/QH13 quy định:\n- Nếu chiếm đoạt tài sản từ 4 triệu đồng trở lên, hoặc dưới 4 triệu đồng nhưng đã bị xử phạt vi phạm hành chính hoặc đã bị kết án về tội chiếm đoạt tài sản mà chưa được xóa án tích, hoặc tài sản là phương tiện kiếm sống chính của người bị hại, thì bị phạt cải tạo không giam giữ đến 3 năm hoặc phạt tù từ 6 tháng đến 3 năm.\n- Nếu chiếm đoạt số tiền lớn hơn, hoặc có các tình tiết tăng nặng, mức phạt tù có thể lên đến 20 năm.\n\nTóm lại:\n- Nếu chỉ vay tiền không trả do khó khăn tài chính, không có hành vi gian dối, bỏ trốn, không dùng tiền vào mục đích bất hợp pháp thì không bị đi tù, chỉ bị kiện dân sự.\n- Nếu có hành vi gian dối, bỏ trốn, cố tình không trả khi có khả năng, hoặc dùng tiền vay vào mục đích bất hợp pháp dẫn đến không trả được, thì có thể bị truy cứu trách nhiệm hình sự và bị phạt tù.\n\nCăn cứ pháp lý: Điều 175 Bộ luật số 100/2015/QH13 (Tội lạm dụng tín nhiệm chiếm đoạt tài sản).\n\nBạn nên đối chiếu tình huống cụ thể của mình với các dấu hiệu trên để xác định có thể bị truy cứu trách nhiệm hình sự hay không.",
+   "iterations": 5,
+   "latency_s": 9.67221975326538,
+   "cost_usd": 0.134238,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "vay tiền không trả có bị đi tù không"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "vay tiền không trả có bị truy cứu trách nhiệm hình sự"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "tội lạm dụng tín nhiệm chiếm đoạt tài sản"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "get_full_article",
+     "args": {
+      "mapc": "160010000000000020000160000000000000000017500000000000000000"
+     },
+     "n_hits": 1
+    }
+   ]
+  },
+  {
+   "case": "scope_age_marry",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "1. Bạn có được kết hôn không?\n\nTheo quy định tại điểm a khoản 1 Điều 8 Luật số 52/2014/QH13 (Luật Hôn nhân và gia đình), điều kiện về tuổi kết hôn là:\n- \"Nam từ đủ 20 tuổi trở lên, nữ từ đủ 18 tuổi trở lên\".\n\nBạn là nam, 19 tuổi (tính đến năm 2026), nên bạn CHƯA đủ tuổi kết hôn theo quy định pháp luật hiện hành. Bạn chỉ được kết hôn khi đủ 20 tuổi trở lên.\n\nCăn cứ: Điều 8 Luật số 52/2014/QH13, tên điều: \"Điều kiện kết hôn\".\n\n2. Nếu kết hôn trái pháp luật thì bị xử lý thế nào?\n\n- Nếu bạn kết hôn khi chưa đủ tuổi, đây là hành vi kết hôn trái pháp luật. Khi có yêu cầu, Tòa án sẽ hủy việc kết hôn trái pháp luật (Điều 11, Điều 12 Luật số 52/2014/QH13).\n- Hậu quả: Hai bên phải chấm dứt quan hệ vợ chồng; quyền, nghĩa vụ với con, tài sản được giải quyết như trường hợp ly hôn (Điều 12 Luật số 52/2014/QH13).\n- Ngoài ra, người tổ chức lấy vợ, lấy chồng cho người chưa đủ tuổi kết hôn có thể bị phạt tiền từ 1.000.000 đồng đến 3.000.000 đồng (Điều 58 Nghị định số 82/2020/NĐ-CP, tên điều: \"Hành vi tảo hôn, tổ chức tảo hôn\").\n- Nếu đã bị xử phạt hành chính mà còn vi phạm, có thể bị truy cứu trách nhiệm hình sự về tội tổ chức tảo hôn (Điều 183 Bộ luật số 100/2015/QH13).\n\nTóm lại: Bạn chưa đủ tuổi kết hôn. Nếu kết hôn trái pháp luật, quan hệ hôn nhân sẽ bị hủy, các bên phải chấm dứt quan hệ vợ chồng và có thể bị xử phạt hành chính hoặc hình sự tùy mức độ vi phạm.\n\nTrích dẫn quy định:\n- Điều 8 Luật số 52/2014/QH13, \"Điều kiện kết hôn\"\n- Điều 11, 12 Luật số 52/2014/QH13, \"Xử lý việc kết hôn trái pháp luật\", \"Hậu quả pháp lý của việc hủy kết hôn trái pháp luật\"\n- Điều 58 Nghị định số 82/2020/NĐ-CP, \"Hành vi tảo hôn, tổ chức tảo hôn\"\n- Điều 183 Bộ luật số 100/2015/QH13, \"Tội tổ chức tảo hôn\"",
+   "iterations": 3,
+   "latency_s": 7.8387062549591064,
+   "cost_usd": 0.052886,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "độ tuổi kết hôn nam nữ"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "graph_traverse",
+     "args": {
+      "mapcs": [
+       "0800400000000000200000800000000000000000"
+      ],
+      "hop": 1
+     },
+     "n_hits": 5
+    },
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "xử lý kết hôn trái pháp luật, tảo hôn"
+     },
+     "n_hits": 10
+    }
+   ]
+  },
+  {
+   "case": "pen_helmet_motor",
+   "rep": 0,
+   "forced_web": true,
+   "max_iterations": 6,
+   "forced_reason": "câu hỏi về mức phạt / mức tiền / quy định hiện hành, có thể đã bị văn bản mới sửa đổi hoặc thay thế",
+   "answer": "Theo quy định hiện hành tại Điều 6 Nghị định 100/2019/NĐ-CP (tên điều: \"Xử phạt người điều khiển xe mô tô, xe gắn máy (kể cả xe máy điện), các loại xe tương tự xe mô tô và các loại xe tương tự xe gắn máy vi phạm quy tắc giao thông đường bộ\"):\n\n- Người điều khiển xe mô tô, xe gắn máy (kể cả xe máy điện) không đội “mũ bảo hiểm cho người đi mô tô, xe máy” hoặc đội mũ bảo hiểm không cài quai đúng quy cách khi tham gia giao thông trên đường bộ sẽ bị phạt tiền từ 200.000 đồng đến 300.000 đồng.\n\nCăn cứ: Điều 6 Nghị định 100/2019/NĐ-CP.\n\nLưu ý: Hiện tại chưa có thông tin cập nhật về việc thay đổi mức phạt này đến năm 2026. Bạn nên đối chiếu với văn bản chính thức hoặc cập nhật mới nhất từ cơ quan nhà nước nếu cần xác nhận lại mức phạt tại thời điểm cụ thể.",
+   "iterations": 5,
+   "latency_s": 9.095585107803345,
+   "cost_usd": 0.109516,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "mức phạt không đội mũ bảo hiểm khi đi xe máy"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "get_full_article",
+     "args": {
+      "mapc": "39013000000000002000000400000000000000000044000000000000000000402714701000000600"
+     },
+     "n_hits": 1
+    },
+    {
+     "name": "web_search",
+     "args": {
+      "query": "mức phạt không đội mũ bảo hiểm khi đi xe máy năm 2026"
+     },
+     "n_hits": 0
+    }
+   ]
+  },
+  {
+   "case": "pen_alcohol",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Theo quy định hiện hành tại Điều 6 Nghị định 100/2019/NĐ-CP (Xử phạt người điều khiển xe mô tô, xe gắn máy (kể cả xe máy điện), các loại xe tương tự xe mô tô và các loại xe tương tự xe gắn máy vi phạm quy tắc giao thông đường bộ), mức phạt đối với hành vi điều khiển xe máy có nồng độ cồn như sau:\n\n1. Nồng độ cồn trong máu hoặc hơi thở nhưng chưa vượt quá 50 miligam/100 mililít máu hoặc chưa vượt quá 0,25 miligam/1 lít khí thở:\n- Phạt tiền từ 2.000.000 đồng đến 3.000.000 đồng.\n\n2. Nồng độ cồn vượt quá 50 miligam đến 80 miligam/100 mililít máu hoặc vượt quá 0,25 miligam đến 0,4 miligam/1 lít khí thở:\n- Phạt tiền từ 4.000.000 đồng đến 5.000.000 đồng.\n\n3. Nồng độ cồn vượt quá 80 miligam/100 mililít máu hoặc vượt quá 0,4 miligam/1 lít khí thở:\n- Phạt tiền từ 6.000.000 đồng đến 8.000.000 đồng.\n\nNgoài ra, người vi phạm còn có thể bị tước quyền sử dụng Giấy phép lái xe từ 10 tháng đến 12 tháng (mức cao nhất đối với trường hợp vi phạm nồng độ cồn cao nhất).\n\nCăn cứ: Điều 6 Nghị định 100/2019/NĐ-CP, có hiệu lực thi hành kể từ ngày 01/01/2020.\n\nLưu ý: Hiện tại chưa có thông tin cập nhật mới hơn về mức phạt này trên các nguồn chính thống. Nếu có thay đổi, bạn nên đối chiếu với văn bản pháp luật mới nhất.",
+   "iterations": 4,
+   "latency_s": 7.152345895767212,
+   "cost_usd": 0.109568,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "mức phạt nồng độ cồn khi điều khiển xe máy"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "get_full_article",
+     "args": {
+      "mapc": "39013000000000002000000400000000000000000044000000000000000000402714701000000600"
+     },
+     "n_hits": 1
+    },
+    {
+     "name": "web_search",
+     "args": {
+      "query": "mức phạt nồng độ cồn xe máy cập nhật mới nhất"
+     },
+     "n_hits": 0
+    }
+   ]
+  },
+  {
+   "case": "pen_redlight_bike",
+   "rep": 0,
+   "forced_web": true,
+   "max_iterations": 6,
+   "forced_reason": "câu hỏi về mức phạt / mức tiền / quy định hiện hành, có thể đã bị văn bản mới sửa đổi hoặc thay thế",
+   "answer": "Theo quy định hiện hành tại Điều 8 Nghị định 100/2019/NĐ-CP (Xử phạt người điều khiển xe đạp, xe đạp máy (kể cả xe đạp điện), người điều khiển xe thô sơ khác vi phạm quy tắc giao thông đường bộ):\n\n- Người điều khiển xe đạp vượt đèn đỏ (không chấp hành hiệu lệnh của đèn tín hiệu giao thông) sẽ bị phạt tiền từ 100.000 đồng đến 200.000 đồng.\n\nCăn cứ: Điểm đ khoản 2 Điều 8 Nghị định 100/2019/NĐ-CP, tên điều: \"Xử phạt người điều khiển xe đạp, xe đạp máy (kể cả xe đạp điện), người điều khiển xe thô sơ khác vi phạm quy tắc giao thông đường bộ\".\n\nHiện tại, chưa có thông tin cập nhật nào cho thấy mức phạt này đã thay đổi đến năm 2026. Bạn nên đối chiếu với văn bản chính thức nếu cần xác nhận mức phạt mới nhất.",
+   "iterations": 5,
+   "latency_s": 10.383738279342651,
+   "cost_usd": 0.119166,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "mức phạt đi xe đạp vượt đèn đỏ"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "get_full_article",
+     "args": {
+      "mapc": "39013000000000002000000400000000000000000044000000000000000000402714701000000800"
+     },
+     "n_hits": 1
+    },
+    {
+     "name": "web_search",
+     "args": {
+      "query": "mức phạt đi xe đạp vượt đèn đỏ mới nhất 2026"
+     },
+     "n_hits": 0
+    }
+   ]
+  },
+  {
+   "case": "pen_id_fee",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Theo quy định tại Điều 4 Thông tư số 256/2016/TT-BTC (được sửa đổi, bổ sung bởi Thông tư số 331/2016/TT-BTC), mức lệ phí cấp lại thẻ Căn cước công dân là:\n\n- 70.000 đồng/thẻ Căn cước công dân (trường hợp cấp lại do bị mất thẻ hoặc được trở lại quốc tịch Việt Nam).\n\nTrích dẫn: \"Cấp lại thẻ Căn cước công dân khi bị mất thẻ Căn cước công dân, được trở lại quốc tịch Việt Nam theo quy định của Luật quốc tịch Việt Nam: 70.000 đồng/thẻ Căn cước công dân.\" (Điều 4 Thông tư số 256/2016/TT-BTC, có hiệu lực thi hành kể từ ngày 01/01/2017, có nội dung được sửa đổi, bổ sung bởi Điều 1 Thông tư số 331/2016/TT-BTC).\n\nLưu ý: Một số trường hợp đặc biệt được miễn hoặc không phải nộp lệ phí theo Điều 5 Thông tư số 256/2016/TT-BTC (sửa đổi, bổ sung). Nếu bạn thuộc diện ưu tiên (hộ nghèo, người có công, vùng sâu vùng xa...), có thể được miễn lệ phí.\n\nHiện tại, chưa có thông tin cập nhật mới hơn trong các nguồn chính thống về việc thay đổi mức lệ phí này đến năm 2026. Bạn nên đối chiếu với cơ quan Công an nơi làm thủ tục để xác nhận mức phí thực tế tại thời điểm nộp hồ sơ.",
+   "iterations": 3,
+   "latency_s": 5.29548192024231,
+   "cost_usd": 0.034358,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "lệ phí cấp lại căn cước công dân"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "web_search",
+     "args": {
+      "query": "mức lệ phí cấp lại căn cước công dân năm 2026"
+     },
+     "n_hits": 0
+    }
+   ]
+  },
+  {
+   "case": "pen_min_wage",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Theo quy định mới nhất tại Điều 3 Nghị định 293/2025/NĐ-CP (có hiệu lực từ ngày 01/01/2026), mức lương tối thiểu vùng 1 là:\n\n- 5.310.000 đồng/tháng\n- 25.500 đồng/giờ\n\n(Nguồn: Điều 3 Nghị định 293/2025/NĐ-CP, dẫn chiếu từ LuatVietnam.vn: https://luatvietnam.vn/linh-vuc-khac/tai-nghi-dinh-293-2025-nd-cp-cua-chinh-phu-quy-dinh-muc-luong-toi-thieu-186-105236-article.html)\n\nLưu ý: Danh mục các địa bàn thuộc vùng 1 được quy định chi tiết tại Phụ lục kèm theo Nghị định này. Bạn cần đối chiếu địa bàn cụ thể để xác định chính xác vùng áp dụng.",
+   "iterations": 5,
+   "latency_s": 10.888552904129028,
+   "cost_usd": 0.05685,
+   "calls": [
+    {
+     "name": "web_search",
+     "args": {
+      "query": "lương tối thiểu vùng 1 năm 2026"
+     },
+     "n_hits": 0
+    },
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "mức lương tối thiểu vùng 1"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "get_full_article",
+     "args": {
+      "mapc": "200020000000000060000910000000000000000000402928902930000300"
+     },
+     "n_hits": 1
+    },
+    {
+     "name": "web_search",
+     "args": {
+      "query": "mức lương tối thiểu vùng 1 theo Nghị định 293/2025/NĐ-CP"
+     },
+     "n_hits": 3
+    }
+   ]
+  },
+  {
+   "case": "pen_drugs",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Hành vi tàng trữ trái phép chất ma tuý có thể bị xử lý hình sự hoặc xử phạt hành chính, tuỳ theo tính chất, mức độ và số lượng chất ma tuý tàng trữ:\n\n1. Xử lý hình sự:\n- Người nào tàng trữ trái phép chất ma tuý (không nhằm mục đích mua bán, vận chuyển, sản xuất) với số lượng từ mức luật định trở lên sẽ bị truy cứu trách nhiệm hình sự theo Điều 249 Bộ luật Hình sự.\n- Mức phạt thấp nhất là từ 1 năm đến 5 năm tù nếu thuộc một trong các trường hợp như: đã bị xử phạt hành chính về hành vi này mà còn vi phạm, hoặc tàng trữ các loại chất ma tuý với khối lượng nhất định (ví dụ: heroin, cocaine, methamphetamine từ 0,1 gam đến dưới 5 gam; các chất ma tuý khác ở thể rắn từ 1 gam đến dưới 20 gam...).\n- Nếu số lượng lớn hơn hoặc có các tình tiết tăng nặng (có tổ chức, tái phạm nguy hiểm, sử dụng người dưới 16 tuổi...), mức phạt có thể lên tới 20 năm tù, tù chung thân hoặc tử hình.\n\nCăn cứ: Điều 249 Bộ luật số 100/2015/QH13 (sửa đổi, bổ sung bởi Luật số 12/2017/QH14), tên điều: \"Tội tàng trữ trái phép chất ma túy\".\n\n2. Xử phạt hành chính:\n- Nếu hành vi tàng trữ trái phép chất ma tuý chưa đủ yếu tố cấu thành tội phạm hình sự (số lượng nhỏ, chưa đến mức truy cứu trách nhiệm hình sự), sẽ bị phạt tiền từ 2.000.000 đồng đến 5.000.000 đồng.\n\nCăn cứ: Điều 23 Nghị định số 144/2021/NĐ-CP, tên điều: \"Vi phạm các quy định về phòng, chống và kiểm soát ma túy\".\n\nTóm lại:\n- Tàng trữ trái phép chất ma tuý có thể bị phạt hành chính hoặc truy cứu trách nhiệm hình sự tuỳ theo số lượng, loại chất ma tuý và các tình tiết liên quan.\n- Trường hợp bị xử lý hình sự, mức phạt rất nghiêm khắc, có thể lên tới tù chung thân hoặc tử hình đối với các trường hợp đặc biệt nghiêm trọng.\n\nBạn cần đối chiếu cụ thể loại chất ma tuý, số lượng và các tình tiết liên quan để xác định mức xử lý cụ thể.",
+   "iterations": 3,
+   "latency_s": 7.049559116363525,
+   "cost_usd": 0.053746,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "tàng trữ trái phép chất ma tuý bị xử lý thế nào"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "graph_traverse",
+     "args": {
+      "mapcs": [
+       "160010000000000020000200000000000000000024900000000000000000000"
+      ],
+      "hop": 1
+     },
+     "n_hits": 0
+    },
+    {
+     "name": "graph_traverse",
+     "args": {
+      "mapcs": [
+       "39013000000000002000000400000000000000000030000000000000000000402787901440002300"
+      ],
+      "hop": 1
+     },
+     "n_hits": 2
+    }
+   ]
+  },
+  {
+   "case": "gap_land_term",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Theo quy định mới nhất tại Luật Đất đai 2024 (có hiệu lực từ 01/01/2025):\n\n- Thời hạn giao đất, công nhận quyền sử dụng đất nông nghiệp đối với cá nhân trực tiếp sản xuất nông nghiệp (bao gồm: đất trồng cây hàng năm, đất nuôi trồng thủy sản, đất làm muối, đất trồng cây lâu năm, đất rừng sản xuất là rừng trồng) là 50 năm. Khi hết thời hạn sử dụng đất, người sử dụng đất được tiếp tục sử dụng đất theo thời hạn quy định mà không phải làm thủ tục gia hạn.\n\n- Thời hạn cho thuê đất nông nghiệp đối với cá nhân cũng không quá 50 năm. Khi hết thời hạn thuê đất, nếu có nhu cầu thì được Nhà nước xem xét tiếp tục cho thuê nhưng không quá 50 năm.\n\n- Đối với các dự án đầu tư có sử dụng đất, thời hạn giao đất hoặc cho thuê đất được xác định theo thời hạn hoạt động của dự án nhưng tối đa không quá 50 năm; trường hợp đặc biệt có thể lên đến 70 năm nếu dự án có thời hạn hoạt động trên 50 năm theo quy định của Luật Đầu tư.\n\nCăn cứ:\n- Điều 172 Luật Đất đai 2024 (xem chi tiết tại: https://thuvienphapluat.vn/chinh-sach-phap-luat-moi/vn/ho-tro-phap-luat/bat-dong-san/59753/thoi-han-su-dung-dat-theo-luat-dat-dai-2024)\n- Trả lời của Bộ Tài nguyên và Môi trường trên Báo Chính phủ (https://baochinhphu.vn/chi-duoc-thuc-hien-cac-quyen-khi-dat-con-thoi-han-su-dung-102250110135013786.htm)\n\nTóm lại: Thời hạn sử dụng đất nông nghiệp phổ biến là 50 năm, hết thời hạn này người sử dụng đất vẫn được tiếp tục sử dụng mà không phải làm thủ tục gia hạn đối với trường hợp trực tiếp sản xuất nông nghiệp.",
+   "iterations": 5,
+   "latency_s": 18.763282299041748,
+   "cost_usd": 0.135534,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "thời hạn sử dụng đất nông nghiệp"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "thời hạn sử dụng đất nông nghiệp theo Luật Đất đai"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "web_search",
+     "args": {
+      "query": "thời hạn sử dụng đất nông nghiệp theo Luật Đất đai 2013, Luật Đất đai 2024"
+     },
+     "n_hits": 5
+    },
+    {
+     "name": "web_search",
+     "args": {
+      "query": "thời hạn sử dụng đất nông nghiệp theo Luật Đất đai 2024"
+     },
+     "n_hits": 5
+    }
+   ]
+  },
+  {
+   "case": "gap_license_age",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Theo quy định hiện hành:\n\n- Để được thi bằng lái xe ô tô hạng B1, B2 (lái xe con, xe dưới 9 chỗ, xe tải dưới 3,5 tấn), bạn phải đủ 18 tuổi trở lên tính đến ngày dự thi sát hạch (theo Luật Giao thông đường bộ và các hướng dẫn mới nhất, tham khảo tại https://trungtamthanhcong.vn/news/kien-thuc-ve-dao-tao-lai-xe/quy-trinh-thi-bang-lai-xe-b1-b-so-tu-dong-203.html).\n\n- Để được thi bằng lái xe ô tô hạng C (lái xe tải trên 3,5 tấn), bạn phải đủ 21 tuổi trở lên tính đến ngày dự thi sát hạch (theo Điều 59, 60 Luật Giao thông đường bộ và xác nhận tại Thư viện Pháp luật: https://thuvienphapluat.vn/phap-luat-doanh-nghiep/bai-viet/quy-dinh-do-tuoi-bang-lai-xe-2026-tuong-ung-toi-thieu-toi-da-20081.html).\n\nTóm lại:\n- Bằng B1, B2: Đủ 18 tuổi trở lên.\n- Bằng C: Đủ 21 tuổi trở lên.\n\nBạn cần đối chiếu ngày sinh của mình với ngày dự thi để xác định đã đủ tuổi theo quy định chưa.",
+   "iterations": 6,
+   "latency_s": 18.118870973587036,
+   "cost_usd": 0.27828,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "độ tuổi thi bằng lái xe ô tô"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "độ tuổi tối thiểu được cấp giấy phép lái xe ô tô"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "độ tuổi tối thiểu học và thi sát hạch giấy phép lái xe ô tô"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "web_search",
+     "args": {
+      "query": "độ tuổi tối thiểu thi bằng lái xe ô tô B1 B2 C mới nhất"
+     },
+     "n_hits": 1
+    },
+    {
+     "name": "web_search",
+     "args": {
+      "query": "độ tuổi tối thiểu thi bằng lái xe ô tô C mới nhất"
+     },
+     "n_hits": 3
+    }
+   ]
+  },
+  {
+   "case": "gap_encroach",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Trường hợp hàng xóm xây nhà lấn sang đất nhà bạn, bạn có thể xử lý theo các bước và quy định pháp luật sau:\n\n1. **Thương lượng, hòa giải**: \n   - Đầu tiên, bạn nên thương lượng, hòa giải trực tiếp với hàng xóm để yêu cầu trả lại phần đất bị lấn chiếm.\n   - Nếu không tự hòa giải được, bạn có thể gửi đơn đề nghị hòa giải đến Ủy ban nhân dân cấp xã nơi có đất tranh chấp (theo khoản 1 Điều 202 Luật Đất đai 2013).\n\n2. **Khởi kiện ra Tòa án**:\n   - Nếu hòa giải tại UBND xã không thành, bạn có quyền khởi kiện ra Tòa án nhân dân có thẩm quyền để yêu cầu giải quyết tranh chấp, buộc trả lại đất và tháo dỡ phần xây dựng lấn chiếm (theo Điều 203 Luật Đất đai 2013).\n\n3. **Xử phạt vi phạm hành chính**:\n   - Hành vi xây nhà lấn chiếm đất của người khác là hành vi lấn, chiếm đất và sẽ bị xử phạt hành chính theo Điều 14 Nghị định 91/2019/NĐ-CP (được sửa đổi, bổ sung bởi Nghị định 04/2022/NĐ-CP). Mức phạt tùy thuộc vào loại đất, diện tích lấn chiếm và khu vực (nông thôn/đô thị), ví dụ:\n     - Đối với đất ở tại khu vực nông thôn: phạt tiền từ 10.000.000 đồng đến 20.000.000 đồng nếu diện tích lấn chiếm dưới 0,05 héc ta.\n     - Tại khu vực đô thị, mức phạt gấp đôi so với khu vực nông thôn.\n   - Ngoài ra, người vi phạm còn bị buộc khôi phục lại tình trạng ban đầu của đất trước khi vi phạm và trả lại đất đã lấn chiếm.\n\n**Tóm lại:**  \n- Bạn nên xác định rõ ranh giới đất (có thể nhờ đo đạc địa chính).\n- Thương lượng, hòa giải trước.\n- Nếu không thành, gửi đơn hòa giải tại UBND xã, sau đó có thể khởi kiện ra Tòa án.\n- Có thể đề nghị cơ quan chức năng xử phạt hành chính đối với người lấn chiếm đất.\n\n**Căn cứ pháp lý:**\n- Điều 14 Nghị định 91/2019/NĐ-CP (sửa đổi bởi Nghị định 04/2022/NĐ-CP) – Xử phạt hành vi lấn, chiếm đất.\n- Điều 202, 203 Luật Đất đai 2013 – Trình tự giải quyết tranh chấp đất đai.\n\n**Tham khảo chi tiết:**  \n- [LuatVietnam.vn: Hàng xóm lấn chiếm đất: Giải quyết thế nào?](https://luatvietnam.vn/dat-dai-nha-o/hang-xom-lan-chiem-dat-567-93130-article.html)\n- [Thuvienphapluat.vn: Hàng xóm xây nhà lấn đất, kiện được không?](https://thuvienphapluat.vn/phap-luat/hang-xom-xay-nha-lan-dat-kien-duoc-khong-cach-xu-ly-theo-luat-dat-dai-2024-922132-244278.html)\n\nNếu bạn cần mẫu đơn hoặc hướng dẫn chi tiết về thủ tục khởi kiện, vui lòng cung cấp thêm thông tin!",
+   "iterations": 5,
+   "latency_s": 16.280589818954468,
+   "cost_usd": 0.108964,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "xử lý xây nhà lấn chiếm đất của hàng xóm"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "graph_traverse",
+     "args": {
+      "mapcs": [
+       "39.13.NĐ.74.14"
+      ]
+     },
+     "n_hits": 0
+    },
+    {
+     "name": "web_search",
+     "args": {
+      "query": "xử lý xây nhà lấn chiếm đất ở của hàng xóm theo quy định mới nhất"
+     },
+     "n_hits": 5
+    },
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "trình tự giải quyết tranh chấp đất đai lấn chiếm giữa hàng xóm"
+     },
+     "n_hits": 10
+    }
+   ]
+  },
+  {
+   "case": "rel_marriage_ban",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Ngoài điều kiện về độ tuổi, pháp luật Việt Nam còn quy định nhiều trường hợp bị cấm kết hôn. Cụ thể, theo Điều 5 Luật số 52/2014/QH13 (Luật Hôn nhân và Gia đình), các trường hợp bị cấm kết hôn bao gồm:\n\n1. Kết hôn giả tạo (kết hôn nhằm mục đích xuất cảnh, nhập quốc tịch, hưởng chế độ… mà không nhằm mục đích xây dựng gia đình) hoặc ly hôn giả tạo.\n2. Tảo hôn (kết hôn khi chưa đủ tuổi), cưỡng ép kết hôn, lừa dối kết hôn, cản trở kết hôn.\n3. Người đang có vợ hoặc có chồng mà kết hôn hoặc chung sống như vợ chồng với người khác; hoặc chưa có vợ, chưa có chồng mà kết hôn hoặc chung sống như vợ chồng với người đang có chồng, có vợ.\n4. Kết hôn hoặc chung sống như vợ chồng giữa:\n   - Những người cùng dòng máu về trực hệ;\n   - Những người có họ trong phạm vi ba đời;\n   - Giữa cha, mẹ nuôi với con nuôi;\n   - Giữa người đã từng là cha, mẹ nuôi với con nuôi;\n   - Giữa cha chồng với con dâu, mẹ vợ với con rể, cha dượng với con riêng của vợ, mẹ kế với con riêng của chồng.\n5. Yêu sách của cải trong kết hôn (đòi hỏi tài sản để cho phép kết hôn).\n6. Các hành vi khác như: cưỡng ép ly hôn, lừa dối ly hôn, cản trở ly hôn; thực hiện sinh con bằng kỹ thuật hỗ trợ sinh sản vì mục đích thương mại, mang thai hộ vì mục đích thương mại, lựa chọn giới tính thai nhi, sinh sản vô tính; bạo lực gia đình; lợi dụng việc thực hiện quyền về hôn nhân và gia đình để mua bán người, bóc lột sức lao động, xâm phạm tình dục hoặc có hành vi khác nhằm mục đích trục lợi.\n\nTrích dẫn căn cứ pháp lý:\n- Điều 5 Luật số 52/2014/QH13, tên điều: \"Bảo vệ chế độ hôn nhân và gia đình\".\n\nNgoài ra, Điều 8 Luật số 52/2014/QH13 cũng quy định điều kiện kết hôn, trong đó có điều kiện \"việc kết hôn không thuộc một trong các trường hợp cấm kết hôn theo quy định tại các điểm a, b, c và d khoản 2 Điều 5 của Luật này\".\n\nTóm lại, ngoài độ tuổi, các trường hợp bị cấm kết hôn chủ yếu liên quan đến tình trạng hôn nhân, quan hệ huyết thống, hành vi cưỡng ép/lừa dối, và các hành vi trái đạo đức xã hội hoặc pháp luật khác như nêu trên.",
+   "iterations": 4,
+   "latency_s": 8.358757019042969,
+   "cost_usd": 0.087114,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "các trường hợp bị cấm kết hôn ngoài độ tuổi"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "các trường hợp cấm kết hôn theo Luật hôn nhân và gia đình"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "get_full_article",
+     "args": {
+      "mapc": "0800400000000000100000500000000000000000"
+     },
+     "n_hits": 1
+    }
+   ]
+  },
+  {
+   "case": "detail_full_article",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Toàn văn quy định về bảo vệ thai sản của lao động nữ như sau:\n\nĐiều 137 Bộ luật số 45/2019/QH14 (Bộ luật Lao động 2019), có hiệu lực thi hành kể từ ngày 01/01/2021 – Bảo vệ thai sản:\n\n1. Người sử dụng lao động không được sử dụng người lao động làm việc ban đêm, làm thêm giờ và đi công tác xa trong trường hợp sau đây:\n   a) Mang thai từ tháng thứ 07 hoặc từ tháng thứ 06 nếu làm việc ở vùng cao, vùng sâu, vùng xa, biên giới, hải đảo;\n   b) Đang nuôi con dưới 12 tháng tuổi, trừ trường hợp được người lao động đồng ý.\n\n2. Lao động nữ làm nghề, công việc nặng nhọc, độc hại, nguy hiểm hoặc đặc biệt nặng nhọc, độc hại, nguy hiểm hoặc làm nghề, công việc có ảnh hưởng xấu tới chức năng sinh sản và nuôi con khi mang thai và có thông báo cho người sử dụng lao động biết thì được người sử dụng lao động chuyển sang làm công việc nhẹ hơn, an toàn hơn hoặc giảm bớt 01 giờ làm việc hằng ngày mà không bị cắt giảm tiền lương và quyền, lợi ích cho đến hết thời gian nuôi con dưới 12 tháng tuổi.\n\n3. Người sử dụng lao động không được sa thải hoặc đơn phương chấm dứt hợp đồng lao động đối với người lao động vì lý do kết hôn, mang thai, nghỉ thai sản, nuôi con dưới 12 tháng tuổi, trừ trường hợp người sử dụng lao động là cá nhân chết, bị Tòa án tuyên bố mất năng lực hành vi dân sự, mất tích hoặc đã chết hoặc người sử dụng lao động không phải là cá nhân chấm dứt hoạt động hoặc bị cơ quan chuyên môn về đăng ký kinh doanh thuộc Ủy ban nhân dân cấp tỉnh ra thông báo không có người đại diện theo pháp luật, người được ủy quyền thực hiện quyền và nghĩa vụ của người đại diện theo pháp luật.\n\nTrường hợp hợp đồng lao động hết hạn trong thời gian lao động nữ mang thai hoặc nuôi con dưới 12 tháng tuổi thì được ưu tiên giao kết hợp đồng lao động mới.\n\n4. Lao động nữ trong thời gian hành kinh được nghỉ mỗi ngày 30 phút, trong thời gian nuôi con dưới 12 tháng tuổi được nghỉ mỗi ngày 60 phút trong thời gian làm việc. Thời gian nghỉ vẫn được hưởng đủ tiền lương theo hợp đồng lao động.\n\n(Trích Điều 137 Bộ luật số 45/2019/QH14, Bảo vệ thai sản)",
+   "iterations": 3,
+   "latency_s": 5.451930046081543,
+   "cost_usd": 0.038952,
+   "calls": [
+    {
+     "name": "vector_search",
+     "args": {
+      "query": "bảo vệ thai sản của lao động nữ"
+     },
+     "n_hits": 10
+    },
+    {
+     "name": "get_full_article",
+     "args": {
+      "mapc": "2000200000000001000013700000000000000000"
+     },
+     "n_hits": 1
+    }
+   ]
+  },
+  {
+   "case": "chat_identity",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Tôi là trợ lý pháp luật Việt Nam thông minh, được thiết kế để hỗ trợ bạn tra cứu, giải thích và áp dụng các quy định pháp luật Việt Nam một cách chính xác, cập nhật và cá nhân hóa. Tôi có khả năng tìm kiếm, trích dẫn điều luật cụ thể từ các văn bản pháp luật, đối chiếu với tình huống thực tế của bạn, và đưa ra câu trả lời rõ ràng, dễ hiểu. Nếu bạn có bất kỳ câu hỏi nào liên quan đến pháp luật Việt Nam, hãy đặt câu hỏi — tôi sẽ giúp bạn tìm câu trả lời chính xác nhất!",
+   "iterations": 1,
+   "latency_s": 1.5330722332000732,
+   "cost_usd": 0.004064,
+   "calls": []
+  },
+  {
+   "case": "chat_thanks",
+   "rep": 0,
+   "forced_web": false,
+   "max_iterations": 6,
+   "answer": "Bạn không có câu hỏi pháp luật cụ thể nào trong tin nhắn này. Nếu bạn cần tư vấn hoặc tra cứu quy định pháp luật về vấn đề gì, hãy đặt câu hỏi chi tiết nhé! Mình luôn sẵn sàng hỗ trợ bạn.",
+   "iterations": 1,
+   "latency_s": 1.1450912952423096,
+   "cost_usd": 0.003488,
+   "calls": []
+  }
+ ]
+}

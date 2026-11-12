@@ -1,0 +1,24 @@
+@startuml SEQ_Feedback
+!include _style.iuml
+title Biểu đồ tuần tự — UC06 Đánh giá câu trả lời
+autonumber
+
+actor "Người dùng" as U
+participant "Giao diện" as UI
+participant "/api/feedback" as Proxy
+participant "rag_api\n/rag/feedback" as API
+database "MongoDB" as Mongo
+
+U -> UI : Nhấn "Thích" / "Không thích" trên câu trả lời
+UI -> UI : cập nhật trạng thái hiển thị
+UI -> Proxy : POST {chat_id, msg_idx, rating}
+Proxy -> API : POST /rag/feedback
+API -> Mongo : update_one({_id: chat_id},\n$set messages.{msg_idx}.feedback)
+alt MongoDB khả dụng
+  Mongo --> API : modified
+  API --> Proxy : {ok: true}
+else không khả dụng
+  API --> Proxy : {ok: true} (bỏ qua lưu)
+end
+Proxy --> UI : kết quả
+@enduml

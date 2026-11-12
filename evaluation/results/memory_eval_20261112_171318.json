@@ -1,0 +1,264 @@
+{
+ "summary": {
+  "cases": 14,
+  "case_pass": 1.0,
+  "by_check": {
+   "contains": 1.0,
+   "contains_any": 1.0,
+   "max_matching": 1.0,
+   "max_total": 1.0,
+   "no_type": 1.0,
+   "not_contains": 1.0,
+   "retrieve": 1.0,
+   "type": 1.0
+  },
+  "sensitive_leaks": 0,
+  "duplicate_or_stale": 0,
+  "actions": {
+   "ADD": 17,
+   "UPDATE": 1,
+   "DELETE": 2,
+   "NOOP": 1
+  },
+  "avg_latency_s": 3.77
+ },
+ "rows": [
+  {
+   "id": "profile_basic",
+   "category": "trich_xuat",
+   "pass": true,
+   "checks": {
+    "contains:2003": true,
+    "contains:nam": true,
+    "contains:Bách Khoa": true,
+    "type:2003=core": true,
+    "type:Bách Khoa=core": true
+   },
+   "n_memories": 3,
+   "actions": [
+    "ADD",
+    "ADD",
+    "ADD"
+   ],
+   "facts": [
+    "Người dùng sinh năm 2003",
+    "Người dùng là nam",
+    "Người dùng đang học ở Đại học Bách Khoa Hà Nội"
+   ],
+   "latency_s": 2.987373113632202
+  },
+  {
+   "id": "chitchat_nothing",
+   "category": "trich_xuat",
+   "pass": true,
+   "checks": {
+    "max_total:0": true
+   },
+   "n_memories": 0,
+   "actions": [],
+   "facts": [],
+   "latency_s": 0.9531331062316895
+  },
+  {
+   "id": "general_law_not_profile",
+   "category": "trich_xuat",
+   "pass": true,
+   "checks": {
+    "no_type:core,episodic": true,
+    "max_total:1": true
+   },
+   "n_memories": 0,
+   "actions": [],
+   "facts": [],
+   "latency_s": 1.0218653678894043
+  },
+  {
+   "id": "multi_fact_turn",
+   "category": "trich_xuat",
+   "pass": true,
+   "checks": {
+    "contains:kế toán": true,
+    "contains:Đà Nẵng": true,
+    "contains:nghỉ việc": true,
+    "type:kế toán=core": true,
+    "type:nghỉ việc=episodic": true
+   },
+   "n_memories": 3,
+   "actions": [
+    "ADD",
+    "ADD",
+    "ADD"
+   ],
+   "facts": [
+    "Người dùng 30 tuổi",
+    "Người dùng làm kế toán ở Đà Nẵng",
+    "Đang bị công ty cho nghỉ việc không báo trước"
+   ],
+   "latency_s": 3.5380048751831055
+  },
+  {
+   "id": "episodic_wage",
+   "category": "trich_xuat",
+   "pass": true,
+   "checks": {
+    "contains:nợ lương": true,
+    "type:nợ lương=episodic": true
+   },
+   "n_memories": 1,
+   "actions": [
+    "ADD"
+   ],
+   "facts": [
+    "Người dùng bị công ty nợ lương 3 tháng"
+   ],
+   "latency_s": 2.4793763160705566
+  },
+  {
+   "id": "procedural_pref",
+   "category": "trich_xuat",
+   "pass": true,
+   "checks": {
+    "contains_any:ngắn gọn|ngắn": true,
+    "type:ngắn=procedural": true
+   },
+   "n_memories": 1,
+   "actions": [
+    "ADD"
+   ],
+   "facts": [
+    "Người dùng thích câu trả lời ngắn gọn, có trích dẫn điều luật cụ thể"
+   ],
+   "latency_s": 3.9389796257019043
+  },
+  {
+   "id": "sensitive_id_number",
+   "category": "nhay_cam",
+   "pass": true,
+   "checks": {
+    "not_contains:001203012345": true
+   },
+   "n_memories": 0,
+   "actions": [],
+   "facts": [],
+   "latency_s": 0.9862298965454102
+  },
+  {
+   "id": "sensitive_bank",
+   "category": "nhay_cam",
+   "pass": true,
+   "checks": {
+    "not_contains:1903 5678 9012": true,
+    "not_contains:190356789012": true
+   },
+   "n_memories": 0,
+   "actions": [],
+   "facts": [],
+   "latency_s": 1.61069917678833
+  },
+  {
+   "id": "update_school",
+   "category": "cap_nhat",
+   "pass": true,
+   "checks": {
+    "contains:Kinh tế Quốc dân": true,
+    "max_matching:Bách Khoa|Kinh tế Quốc dân<=1": true
+   },
+   "n_memories": 1,
+   "actions": [
+    "ADD",
+    "UPDATE"
+   ],
+   "facts": [
+    "Người dùng chuyển từ ngành Công nghệ thông tin tại Bách Khoa sang học tại Đại học Kinh tế Quốc dân"
+   ],
+   "latency_s": 6.858968019485474
+  },
+  {
+   "id": "update_job",
+   "category": "cap_nhat",
+   "pass": true,
+   "checks": {
+    "contains:giáo viên": true,
+    "max_matching:kế toán|giáo viên<=1": true
+   },
+   "n_memories": 1,
+   "actions": [
+    "ADD",
+    "DELETE",
+    "ADD"
+   ],
+   "facts": [
+    "Người dùng hiện đang làm giáo viên"
+   ],
+   "latency_s": 6.563579797744751
+  },
+  {
+   "id": "negation_delete",
+   "category": "cap_nhat",
+   "pass": true,
+   "checks": {
+    "max_matching:mở quán<=0": true
+   },
+   "n_memories": 0,
+   "actions": [
+    "ADD",
+    "DELETE"
+   ],
+   "facts": [],
+   "latency_s": 5.276373624801636
+  },
+  {
+   "id": "paraphrase_noop",
+   "category": "cap_nhat",
+   "pass": true,
+   "checks": {
+    "max_matching:2003<=1": true
+   },
+   "n_memories": 1,
+   "actions": [
+    "ADD",
+    "NOOP"
+   ],
+   "facts": [
+    "Người dùng sinh năm 2003"
+   ],
+   "latency_s": 7.013469934463501
+  },
+  {
+   "id": "retrieve_age_for_marriage",
+   "category": "truy_xuat",
+   "pass": true,
+   "checks": {
+    "retrieve:Tôi đủ tuổi kết hôn chưa?→2003": true
+   },
+   "n_memories": 2,
+   "actions": [
+    "ADD",
+    "ADD"
+   ],
+   "facts": [
+    "Người dùng sinh năm 2003",
+    "Người dùng là nam"
+   ],
+   "latency_s": 3.171329975128174
+  },
+  {
+   "id": "retrieve_relevant_situation",
+   "category": "truy_xuat",
+   "pass": true,
+   "checks": {
+    "retrieve:Chủ trọ không trả tiền cọc thì→thuê nhà": true
+   },
+   "n_memories": 2,
+   "actions": [
+    "ADD",
+    "ADD"
+   ],
+   "facts": [
+    "Người dùng thích câu trả lời ngắn gọn",
+    "Đang tranh chấp hợp đồng thuê nhà với chủ trọ ở Hà Nội"
+   ],
+   "latency_s": 6.376478910446167
+  }
+ ]
+}

@@ -1,0 +1,46 @@
+@startuml SEQ_BoNho
+!include _style.iuml
+title Biểu đồ tuần tự — UC08 Quản lý bộ nhớ cá nhân
+autonumber
+
+actor "Người dùng" as U
+participant "MemoryPanel" as UI
+participant "/api/memory\n(proxy)" as Proxy
+participant "rag_api" as API
+participant "MemoryManager" as Mem
+database "Milvus" as Milvus
+database "MongoDB" as Mongo
+
+U -> UI : Mở panel bộ nhớ
+UI -> Proxy : GET /api/memory/{user_id}
+Proxy -> API : GET /memory/{user_id} (Bearer token)
+API -> API : _enforce_user_match()
+alt token không khớp user_id
+  API --> UI : 403 Không được phép
+else hợp lệ
+  API -> Mem : list_user_memories(uid)
+  Mem -> Mongo : find({user_id, deleted: false})
+  Mongo --> Mem : memories
+  API --> UI : {items}
+  UI --> U : Hiển thị danh sách fact
+end
+
+alt xoá một mục
+  U -> UI : Xoá một memory
+  UI -> Proxy : DELETE /api/memory/{user_id}/{memory_id}
+  Proxy -> API : DELETE /memory/{user_id}/{memory_id}
+  API -> Mem : delete_memory(uid, memory_id)
+  Mem -> Milvus : delete(id)
+  Mem -> Mongo : đánh dấu đã xoá
+  API --> UI : {ok}
+else xoá toàn bộ
+  U -> UI : "Xoá tất cả" (xác nhận)
+  UI -> Proxy : DELETE /api/memory/{user_id}
+  Proxy -> API : DELETE /memory/{user_id}
+  API -> Mem : delete_all_for_user(uid)
+  Mem -> Milvus : delete(user_id == uid)
+  Mem -> Mongo : xoá các bản ghi của uid
+  API --> UI : {ok, deleted: n}
+end
+UI --> U : Cập nhật danh sách
+@enduml

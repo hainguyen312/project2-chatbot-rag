@@ -68,7 +68,7 @@ def main():
     items = mm.list_user_memories(user_id)
     print(f"  Tổng {len(items)} memory active:")
     for m in items:
-        print(f"   - id={m.get('milvus_id')} [{m.get('mem_type')}] v{m.get('version', 1)} {m.get('fact')}")
+        print(f"   - id={m.get('mem_id')} [{m.get('mem_type')}] v{m.get('version', 1)} {m.get('fact')}")
 
     # Cleanup
     print("\n>> Xoá test user…")

@@ -1,0 +1,51 @@
+@startuml UC_TaiKhoan
+!include _style.iuml
+title Phân rã Use Case — Tài khoản, hội thoại và bộ nhớ cá nhân
+left to right direction
+
+actor "Khách\n(ẩn danh)" as Guest
+actor "Người dùng\nđã đăng nhập" as Member
+actor "Firebase Auth" as Firebase <<hệ thống>>
+Member -|> Guest
+
+rectangle "Tài khoản" {
+  usecase "Đăng ký bằng email" as SignUp
+  usecase "Đăng nhập bằng email" as SignInEmail
+  usecase "Đăng nhập bằng Google" as SignInGoogle
+  usecase "Đồng bộ dữ liệu ẩn danh\nsang tài khoản" as Claim
+  usecase "Đăng xuất" as SignOut
+}
+rectangle "Quản lý hội thoại" {
+  usecase "Tạo hội thoại mới" as Create
+  usecase "Xem danh sách / mở hội thoại" as List
+  usecase "Đổi tên hội thoại" as Rename
+  usecase "Ghim / bỏ ghim hội thoại" as Pin
+  usecase "Xoá hội thoại" as Del
+}
+rectangle "Bộ nhớ cá nhân" {
+  usecase "Xem bộ nhớ đã lưu" as MemList
+  usecase "Xoá một mục bộ nhớ" as MemDel
+  usecase "Xoá toàn bộ bộ nhớ\n(quyền được quên)" as MemDelAll
+}
+
+Guest --> SignUp
+Guest --> SignInEmail
+Guest --> SignInGoogle
+Member --> SignOut
+SignUp ..> Claim : <<include>>
+SignInEmail ..> Claim : <<include>>
+SignInGoogle ..> Claim : <<include>>
+SignUp --> Firebase
+SignInEmail --> Firebase
+SignInGoogle --> Firebase
+
+Guest --> Create
+Guest --> List
+Guest --> Rename
+Guest --> Pin
+Guest --> Del
+
+Guest --> MemList
+MemDel .> MemList : <<extend>>
+MemDelAll .> MemList : <<extend>>
+@enduml

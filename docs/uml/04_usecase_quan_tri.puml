@@ -1,0 +1,32 @@
+@startuml UC_QuanTri
+!include _style.iuml
+title Phân rã Use Case — Quản trị dữ liệu và đánh giá
+left to right direction
+
+actor "Quản trị viên" as Admin
+actor "Cổng Pháp Điển\n(phapdien.moj.gov.vn)" as PD <<hệ thống>>
+actor "OpenAI API" as OpenAI <<hệ thống>>
+
+rectangle "Quản trị" {
+  usecase "Thu thập dữ liệu Pháp Điển\nvào MySQL" as Crawl
+  usecase "Lập chỉ mục vector Milvus" as Index
+  usecase "Tiếp tục lập chỉ mục\nkhi bị gián đoạn (--resume)" as Resume
+  usecase "Sinh embedding" as Embed
+  usecase "Xây dựng đồ thị Neo4j" as Graph
+  usecase "Đánh giá truy xuất\n(Recall, MRR, ...)" as EvalR
+  usecase "Đánh giá câu trả lời" as EvalA
+  usecase "Trực quan hoá kết quả" as Viz
+}
+
+Admin --> Crawl
+Admin --> Index
+Admin --> Graph
+Admin --> EvalR
+Admin --> EvalA
+Crawl --> PD
+Index ..> Embed : <<include>>
+Resume .> Index : <<extend>>
+Embed --> OpenAI
+Viz .> EvalR : <<extend>>
+Viz .> EvalA : <<extend>>
+@enduml

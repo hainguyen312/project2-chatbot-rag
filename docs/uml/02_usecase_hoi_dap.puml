@@ -1,0 +1,63 @@
+@startuml UC_HoiDap
+!include _style.iuml
+title Phân rã Use Case UC01 — Hỏi đáp pháp luật
+left to right direction
+
+actor "Người dùng" as User
+actor "OpenAI API" as OpenAI <<hệ thống>>
+actor "Tavily Search" as Tavily <<hệ thống>>
+
+rectangle "Hỏi đáp pháp luật" {
+  usecase "Gửi câu hỏi" as Ask
+  usecase "Chọn chế độ hỏi\n(thường / tình huống)" as Mode
+
+  package "Tiền xử lý" {
+    usecase "Phân loại yêu cầu" as Classify
+    usecase "Trả lời nhanh FAQ" as Quick
+    usecase "Từ chối spam" as Spam
+    usecase "Đề xuất chuyển cán bộ" as Escalate
+    usecase "Chuẩn hoá câu hỏi\n(rewrite + intent)" as Rewrite
+    usecase "Từ chối ngoài phạm vi" as OutScope
+  }
+
+  package "Truy xuất và trả lời" {
+    usecase "Tra bộ nhớ cá nhân" as Memory
+    usecase "Tra semantic cache" as Cache
+    usecase "Sinh câu trả lời" as Gen
+    usecase "Tìm điều luật (vector)" as Vector
+    usecase "Mở rộng theo đồ thị" as Graph
+    usecase "Lấy toàn văn điều luật" as Full
+    usecase "Tìm kiếm web" as Web
+  }
+
+  package "Hậu xử lý" {
+    usecase "Cập nhật bộ nhớ dài hạn" as MemUpd
+    usecase "Lưu hội thoại" as Save
+  }
+}
+
+User --> Ask
+Ask <.. Mode : <<extend>>
+
+Ask ..> Classify : <<include>>
+Classify <.. Quick : <<extend>>
+Classify <.. Spam : <<extend>>
+Classify <.. Escalate : <<extend>>
+Ask ..> Rewrite : <<include>>
+Rewrite <.. OutScope : <<extend>>
+
+Ask ..> Memory : <<include>>
+Ask ..> Cache : <<include>>
+Ask ..> Gen : <<include>>
+Gen <.. Vector : <<extend>>
+Gen <.. Graph : <<extend>>
+Gen <.. Full : <<extend>>
+Gen <.. Web : <<extend>>
+
+Ask ..> MemUpd : <<include>>
+Ask ..> Save : <<include>>
+
+Rewrite --> OpenAI
+Gen --> OpenAI
+Web --> Tavily
+@enduml

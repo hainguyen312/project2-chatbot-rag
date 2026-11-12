@@ -32,7 +32,7 @@ MONGODB_DB  = (os.getenv("MONGODB_DB") or "chatbot_rag").strip()
 MONGODB_TIMEOUT_MS = int((os.getenv("MONGODB_TIMEOUT_MS") or "8000").strip())
 
 _CACHE_COLLECTION = "semantic_cache"
-_SIMILARITY_THRESHOLD = float(os.getenv("CACHE_SIMILARITY_THRESHOLD", "0.92"))
+_SIMILARITY_THRESHOLD = float(os.getenv("CACHE_SIMILARITY_THRESHOLD", "0.97"))
 _TTL_SECONDS = int(os.getenv("CACHE_TTL_SECONDS", "86400"))  # 24 giờ mặc định
 # Giới hạn số entry đọc mỗi lần tìm kiếm (tránh scan toàn bộ collection)
 _SCAN_LIMIT = int(os.getenv("CACHE_SCAN_LIMIT", "500"))

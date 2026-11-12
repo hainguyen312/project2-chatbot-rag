@@ -5,19 +5,43 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import { chatActions, Chat, Message, useChatStore, Passage, MemoryUsed } from "@/store/chat-store";
 import {
-  Plus, Search, MoreHorizontal, Pin, Trash2, Pencil,
-  MessageCircle, ChevronLeft, ChevronRight, ChevronDown,
-  Clock, BookOpen, Folder, Menu, X,
+  Search, MoreHorizontal, Pin, Trash2, Pencil,
+  BookOpen, Menu, X, PanelLeftClose, PanelLeftOpen, SquarePen,
+  ArrowUp, Building2, Mic, Moon, Square, Sun,
 } from "lucide-react";
 import { useTTS } from "@/hooks/useTTS";
 import { useSTT } from "@/hooks/useSTT";
-import { MessageRow, Avatar, BotBubble } from "@/components/chat/MessageRow";
+import { MessageRow, BotBubble } from "@/components/chat/MessageRow";
 import { PassagePanel, PassageFullModal } from "@/components/chat/PassagePanel";
 import { LiveWaveform } from "@/components/chat/LiveWaveform";
 import { VoiceMessage } from "@/components/chat/VoiceMessage";
 import { MemoryPanelButton } from "@/components/chat/MemoryPanel";
 import { AuthButton } from "@/components/auth/AuthButton";
 import { useAuth } from "@/hooks/useAuth";
+import { useThemeMode } from "@/hooks/useThemeMode";
+
+/** Câu hỏi mẫu ở màn hình trống — câu thật, mỗi câu một lĩnh vực người dân hay hỏi. */
+const SUGGESTIONS = [
+  { topic: "Lao động", q: "Lao động nữ đang mang thai có bị sa thải không?" },
+  { topic: "Hôn nhân và gia đình", q: "Điều kiện để được kết hôn là gì?" },
+  { topic: "Dân sự và hình sự", q: "Vay tiền không trả thì có bị đi tù không?" },
+  { topic: "Giao thông", q: "Đi xe đạp điện không đội mũ bảo hiểm bị phạt bao nhiêu?" },
+];
+const SIDEBAR_KEY = "vnlaw-sidebar";
+const SIDEBAR_W = 272;
+const RAIL_W = 60;
+
+function SidebarIconButton({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button" onClick={onClick} title={label} aria-label={label}
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+      style={{ color: "var(--text-secondary)" }}
+    >
+      {children}
+    </button>
+  );
+}
 
 if (typeof CanvasRenderingContext2D !== "undefined" &&
   !CanvasRenderingContext2D.prototype.roundRect) {
@@ -143,7 +167,9 @@ export default function Home() {
   const [revealedStreamText, setRevealedStreamText] = useState("");
   /** true trong lúc reveal (kể cả chưa có ký tự nào — hiện bubble chờ). */
   const [postStreamReveal, setPostStreamReveal] = useState(false);
-  const [darkMode, setDarkMode]           = useState(true);
+  const [darkMode, toggleDarkMode]       = useThemeMode();
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const [queryMode, setQueryMode]         = useState<"normal" | "situation">("normal");
   const { user: authUser, getIdToken } = useAuth();
   const [anonId, setAnonId]               = useState<string>("");
@@ -178,9 +204,18 @@ export default function Home() {
     recording, audioBlob, duration, supported: sttSupported,
   } = useSTT();
 
+  // Nhớ trạng thái thanh bên (mở / thu gọn) giữa các lần vào
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-  }, [darkMode]);
+    try { if (localStorage.getItem(SIDEBAR_KEY) === "collapsed") setSidebarOpen(false); } catch {}
+  }, []);
+  useEffect(() => {
+    try { localStorage.setItem(SIDEBAR_KEY, sidebarOpen ? "open" : "collapsed"); } catch {}
+  }, [sidebarOpen]);
+
+  // Ô nhập tự giãn: thu về một dòng khi đã gửi xong
+  useEffect(() => {
+    if (!input && inputRef.current) inputRef.current.style.height = "auto";
+  }, [input]);
 
   useEffect(() => {
     if (!userId) return;
@@ -253,11 +288,11 @@ export default function Home() {
     setRenameValue("");
   };
 
-  async function onSend(e: FormEvent) {
-    e.preventDefault();
+  async function onSend(e?: FormEvent, override?: string) {
+    e?.preventDefault();
     // Chặn re-entrant: nếu đang xử lý 1 request trước đó, bỏ qua submit này.
     if (sendingRef.current) return;
-    const promptSent = input.trim();
+    const promptSent = (override ?? input).trim();
     if (!promptSent) return;
 
     sendingRef.current = true;
@@ -456,11 +491,11 @@ export default function Home() {
           top: menuAnchor.top,
           left: menuAnchor.left,
           width: 200,
-          borderRadius: 12,
+          borderRadius: 10,
           padding: 4,
           background: "var(--bg-surface)",
-          border: "0.5px solid var(--border-strong)",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.35)",
+          border: "1px solid var(--border)",
+          boxShadow: "0 8px 24px rgba(14, 19, 27, 0.16)",
           zIndex: 9000,
         }}
       >
@@ -523,206 +558,216 @@ export default function Home() {
   }
 
   function ChatItem({ chat }: { chat: Chat }) {
+    const active = activeId === chat._id;
+    const menuOpen = openMenuChatId === chat._id;
     return (
       <div
-        className="group relative flex items-center gap-1 rounded-lg"
-        style={{ background: activeId === chat._id ? "var(--bg-surface)" : "transparent" }}
-        onMouseEnter={(e) => { if (activeId !== chat._id) (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)"; }}
-        onMouseLeave={(e) => { if (activeId !== chat._id) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+        className={`group relative flex h-9 items-center rounded-md transition-colors ${active ? "" : "hover:bg-[var(--bg-hover)]"}`}
+        style={active ? { background: "var(--bg-surface)", boxShadow: "var(--shadow-sm)" } : undefined}
       >
         <button
-          onClick={() => chatActions.setActiveChat(chat._id)}
-          className="flex-1 truncate rounded-lg px-3 py-2 text-left text-sm"
-          style={{ color: activeId === chat._id ? "var(--text-primary)" : "var(--text-secondary)" }}
+          onClick={() => { chatActions.setActiveChat(chat._id); setMobileSidebarOpen(false); }}
+          aria-current={active ? "page" : undefined}
+          className="h-full min-w-0 flex-1 truncate rounded-md pl-2.5 pr-1 text-left text-sm"
+          style={{ color: active ? "var(--text-primary)" : "var(--text-secondary)", fontWeight: active ? 500 : 400 }}
         >
           {chat.title ?? "Cuộc trò chuyện mới"}
         </button>
 
-        {/* "..." toggle button — calculates anchor position for the portal */}
+        {/* Nút "…" — tính vị trí để menu (portal) không bị cắt bởi overflow */}
         <button
+          aria-label={`Tuỳ chọn cho “${chat.title ?? "đoạn chat"}”`}
+          aria-expanded={menuOpen}
           onPointerDown={(e) => {
             e.stopPropagation();
-            // Mark this gesture as the one that opened the menu
-            // so the document-level outside-click handler ignores it
+            // Đánh dấu cử chỉ mở menu để handler click-ra-ngoài bỏ qua
             openingRef.current = true;
           }}
           onClick={(e) => {
             e.stopPropagation();
-            if (openMenuChatId === chat._id) {
-              // Already open → close
+            if (menuOpen) {
               setOpenMenuChatId(null);
               setMenuAnchor(null);
               openingRef.current = false;
               return;
             }
-            // Compute position: place menu below-left of this button
             const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
             const MENU_WIDTH = 200;
-            // Try right-aligned to button; clamp so it doesn't go off screen
             let left = rect.right - MENU_WIDTH;
             if (left < 8) left = 8;
             if (left + MENU_WIDTH > window.innerWidth - 8) left = window.innerWidth - MENU_WIDTH - 8;
             setMenuAnchor({ top: rect.bottom + 4, left });
             setOpenMenuChatId(chat._id);
           }}
-          className="mr-1 w-8 rounded-md py-1 text-center opacity-100 transition md:opacity-0 md:group-hover:opacity-100"
+          className={`mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded transition-opacity hover:bg-[var(--bg-hover)] focus-visible:opacity-100 ${
+            menuOpen || active ? "opacity-100" : "opacity-100 md:opacity-0 md:group-hover:opacity-100"}`}
           style={{ color: "var(--text-muted)" }}
         >
-          <MoreHorizontal size={18} />
+          <MoreHorizontal size={16} />
         </button>
 
-        {/* Portal menu — rendered in document.body, never clipped */}
         <ChatMenuPortal chat={chat} />
       </div>
     );
   }
 
-  const sidebarContent = (
-    <>
-      <div>
-        <div className="mb-3 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-lg font-semibold" style={{ color: "var(--text-primary)" }}>
-            <Image src="/logo.png" alt="VNLaw Logo" width={52} height={52} className="rounded" />
-            <span className="text-base">Chatbot VNLaw</span>
-          </div>
-          <button
-            className="flex h-8 w-8 items-center justify-center rounded-lg md:hidden"
-            style={{ background: "var(--bg-hover)", color: "var(--text-muted)" }}
-            onClick={() => setMobileSidebarOpen(false)}
-          >
-            <X size={16} />
-          </button>
+  const BrandMark = ({ size = 32 }: { size?: number }) => (
+    <span
+      className="flex shrink-0 items-center justify-center overflow-hidden rounded-lg"
+      style={{ width: size, height: size, background: "#FFFFFF", boxShadow: "0 0 0 1px var(--border)" }}
+    >
+      <Image src="/logo-mark.png" alt="" width={size - 4} height={size - 4} />
+    </span>
+  );
+
+  const sectionLabel = (text: string) => (
+    <div className="px-2.5 pb-1 pt-4 text-xs font-medium first:pt-1" style={{ color: "var(--text-muted)" }}>{text}</div>
+  );
+
+  const renderSidebarPanel = (mobile: boolean) => (
+    <div className="flex h-full w-full min-w-0 flex-col">
+      {/* Thương hiệu + đóng/thu gọn — cùng một hàng với header bên phải (h-14) */}
+      <div className="flex h-14 shrink-0 items-center justify-between gap-2 pl-3 pr-2">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <BrandMark />
+          <span className="truncate text-[15px] font-semibold tracking-tight" style={{ color: "var(--text-primary)" }}>
+            Chatbot VNLaw
+          </span>
         </div>
-
-        <button
-          className="mb-3 w-full rounded-lg px-3 py-2 text-left text-sm transition"
-          style={{ background: "var(--bg-surface)", color: "var(--text-secondary)", border: "0.5px solid var(--border)" }}
-          onClick={createChat}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-hover)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "var(--bg-surface)")}
+        <SidebarIconButton
+          label={mobile ? "Đóng danh sách đoạn chat" : "Thu gọn thanh bên"}
+          onClick={() => (mobile ? setMobileSidebarOpen(false) : setSidebarOpen(false))}
         >
-          <div className="flex items-center gap-2"><Plus size={16} />Đoạn chat mới</div>
-        </button>
-
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Tìm kiếm đoạn chat"
-          className="mb-3 w-full rounded-lg px-3 py-2 text-sm outline-none"
-          style={{ background: "var(--bg-input)", border: "0.5px solid var(--border)", color: "var(--text-primary)" }}
-        />
-
-        {error && (
-          <div className="mb-3 rounded-lg px-3 py-2 text-xs"
-            style={{ background: "var(--danger-bg)", border: "0.5px solid var(--danger-border)", color: "var(--danger-text)" }}>
-            {error}
-          </div>
-        )}
+          {mobile ? <X size={18} /> : <PanelLeftClose size={18} />}
+        </SidebarIconButton>
       </div>
 
-      <div className="flex-1 space-y-1 overflow-y-auto pr-1">
+      <div className="shrink-0 space-y-1 px-2 pb-2">
+        <button
+          onClick={() => { createChat(); setMobileSidebarOpen(false); }}
+          className="flex h-9 w-full items-center gap-2.5 rounded-md px-2.5 text-sm font-medium transition-colors hover:bg-[var(--bg-hover)]"
+          style={{ color: "var(--text-primary)" }}
+        >
+          <SquarePen size={17} aria-hidden />Đoạn chat mới
+        </button>
+        <label
+          className="flex h-9 items-center gap-2.5 rounded-md px-2.5 transition-shadow focus-within:shadow-[var(--focus-ring)]"
+          style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}
+        >
+          <Search size={16} aria-hidden style={{ color: "var(--text-muted)" }} />
+          <input
+            ref={searchRef}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Tìm đoạn chat"
+            aria-label="Tìm đoạn chat"
+            className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--text-muted)]"
+            style={{ color: "var(--text-primary)", boxShadow: "none" }}
+          />
+          {search && (
+            <button type="button" onClick={() => setSearch("")} aria-label="Xoá từ khoá tìm kiếm"
+              className="rounded p-0.5 hover:bg-[var(--bg-hover)]" style={{ color: "var(--text-muted)" }}>
+              <X size={14} />
+            </button>
+          )}
+        </label>
+      </div>
+
+      {error && (
+        <div className="mx-2 mb-2 rounded-md px-3 py-2 text-xs"
+          style={{ background: "var(--danger-bg)", border: "1px solid var(--danger-border)", color: "var(--danger-text)" }}>
+          {error}
+        </div>
+      )}
+
+      <nav className="min-h-0 flex-1 overflow-y-auto px-2 pb-3" aria-label="Các đoạn chat">
         {pinnedChats.length > 0 && (
           <>
-            <div className="flex items-center gap-1 mb-1 px-2">
-              <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-                <div className="flex items-center gap-1"><Pin size={14} /><span>Đã ghim</span></div>
-              </span>
-            </div>
-            {pinnedChats.map((chat) => <ChatItem key={chat._id} chat={chat} />)}
-            {unpinnedChats.length > 0 && <div className="my-2" style={{ borderTop: "0.5px solid var(--border)" }} />}
+            {sectionLabel("Đã ghim")}
+            <div className="space-y-0.5">{pinnedChats.map((chat) => <ChatItem key={chat._id} chat={chat} />)}</div>
           </>
         )}
         {unpinnedChats.length > 0 && (
           <>
-            <div className="flex items-center gap-1 mb-1 px-2">
-              <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-                <div className="flex items-center gap-1"><Clock size={14} /><span>Gần đây</span></div>
-              </span>
-            </div>
-            {unpinnedChats.map((chat) => <ChatItem key={chat._id} chat={chat} />)}
+            {sectionLabel("Gần đây")}
+            <div className="space-y-0.5">{unpinnedChats.map((chat) => <ChatItem key={chat._id} chat={chat} />)}</div>
           </>
         )}
-      </div>
-    </>
+        {filtered.length === 0 && (
+          <p className="px-2.5 pt-3 text-[13px] leading-relaxed" style={{ color: "var(--text-muted)" }}>
+            {search
+              ? `Không có đoạn chat nào khớp “${search}”.`
+              : "Chưa có đoạn chat nào. Câu hỏi đầu tiên của bạn sẽ được lưu ở đây."}
+          </p>
+        )}
+      </nav>
+    </div>
   );
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-base)", color: "var(--text-primary)" }}>
       <div className="mx-auto flex h-screen">
 
-        {/* MOBILE SIDEBAR OVERLAY */}
+        {/* MOBILE SIDEBAR (ngăn kéo) */}
         {mobileSidebarOpen && (
           <>
             <div
               className="fixed inset-0 z-40 md:hidden"
-              style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(2px)" }}
+              style={{ background: "rgba(14, 19, 27, 0.45)" }}
               onClick={() => setMobileSidebarOpen(false)}
+              aria-hidden
             />
             <aside
-              className="fixed left-0 top-0 z-50 flex h-full flex-col gap-3 md:hidden"
+              className="fixed left-0 top-0 z-50 flex h-full md:hidden"
+              role="dialog" aria-modal="true" aria-label="Danh sách đoạn chat"
               style={{
-                width: "min(85vw, 320px)",
-                padding: 14,
+                width: "min(85vw, 300px)",
                 background: "var(--bg-sidebar)",
-                borderRight: "0.5px solid var(--border)",
-                overflowY: "auto",
-                animation: "slideInLeft 0.22s ease",
+                borderRight: "1px solid var(--border)",
+                boxShadow: "8px 0 24px rgba(14, 19, 27, 0.18)",
+                animation: "slideInLeft 0.2s ease-out",
               }}
             >
-              {sidebarContent}
+              {renderSidebarPanel(true)}
             </aside>
           </>
         )}
 
-        {/* DESKTOP SIDEBAR */}
+        {/* DESKTOP SIDEBAR — mở: 272px · thu gọn: thanh icon 60px */}
         <aside
-          className="relative hidden md:flex flex-col gap-3 transition-all duration-200"
+          className="relative hidden shrink-0 overflow-hidden transition-[width] duration-200 ease-out md:flex"
           style={{
-            width: sidebarOpen ? 300 : 56,
-            padding: sidebarOpen ? 12 : 8,
+            width: sidebarOpen ? SIDEBAR_W : RAIL_W,
             height: "100vh",
-            overflow: "hidden",
             background: "var(--bg-sidebar)",
-            borderRight: "0.5px solid var(--border)",
-            flexShrink: 0,
+            borderRight: "1px solid var(--border)",
           }}
+          aria-label="Thanh bên"
         >
-          <button
-            onClick={() => setSidebarOpen((p) => !p)}
-            className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-lg text-sm transition"
-            style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border-strong)", color: "var(--text-secondary)" }}
-            title={sidebarOpen ? "Ẩn sidebar" : "Hiện sidebar"}
-          >
-            {sidebarOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
-          </button>
-
-          {!sidebarOpen && (
-            <div className="flex h-full flex-col items-center gap-3 mt-2">
-              <div className="h-9 w-9" />
-              {[
-                { icon: <Plus size={18} />, title: "Đoạn chat mới", action: createChat },
-                { icon: <Search size={18} />, title: "Tìm kiếm", action: () => setSidebarOpen(true) },
-              ].map(({ icon, title, action }) => (
-                <button key={title} onClick={action} title={title}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg"
-                  style={{ background: "var(--bg-surface)", color: "var(--text-secondary)" }}>
-                  {icon}
-                </button>
-              ))}
-              <div className="mt-2 flex w-full flex-1 flex-col items-center gap-2 overflow-y-auto pb-2" style={{ scrollbarWidth: "none" as any }}>
-                {filtered.map((chat) => (
-                  <button key={chat._id} onClick={() => chatActions.setActiveChat(chat._id)}
-                    className="h-9 w-9 rounded-lg text-xs flex items-center justify-center"
-                    style={{ background: activeId === chat._id ? "var(--bg-msgbtn)" : "var(--bg-surface)" }}
-                    title={chat.title ?? "Chat"}>
-                    <MessageCircle size={16} />
-                  </button>
-                ))}
-              </div>
+          {sidebarOpen ? (
+            // Bề rộng cố định: khi mở, nội dung được "lộ ra" thay vì bị bóp méo trong lúc chuyển động
+            <div className="flex h-full shrink-0" style={{ width: SIDEBAR_W }}>{renderSidebarPanel(false)}</div>
+          ) : (
+            <div className="flex h-full w-full flex-col items-center gap-1 pt-3">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                title="Mở thanh bên" aria-label="Mở thanh bên"
+                className="group relative mb-2 flex h-10 w-10 items-center justify-center rounded-lg transition-colors hover:bg-[var(--bg-hover)]"
+              >
+                <span className="transition-opacity group-hover:opacity-0 group-focus-visible:opacity-0"><BrandMark /></span>
+                <PanelLeftOpen size={18} aria-hidden
+                  className="absolute opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+                  style={{ color: "var(--text-secondary)" }} />
+              </button>
+              <SidebarIconButton label="Đoạn chat mới" onClick={createChat}><SquarePen size={18} /></SidebarIconButton>
+              <SidebarIconButton
+                label="Tìm đoạn chat"
+                onClick={() => { setSidebarOpen(true); setTimeout(() => searchRef.current?.focus(), 220); }}
+              >
+                <Search size={18} />
+              </SidebarIconButton>
             </div>
           )}
-
-          {sidebarOpen && <div className="flex flex-col gap-3 h-full">{sidebarContent}</div>}
         </aside>
 
         {/* MAIN CONTENT */}
@@ -731,59 +776,49 @@ export default function Home() {
             <div className="flex flex-1 flex-col overflow-hidden min-w-0">
 
               {/* Topbar */}
-              <div className="flex items-center justify-between px-3 py-3 md:px-6 md:py-4"
-                style={{ borderBottom: "0.5px solid var(--border)" }}>
-                <div className="flex items-center gap-2 min-w-0">
+              <header className="flex h-14 shrink-0 items-center justify-between gap-2 px-3 md:px-5"
+                style={{ borderBottom: "1px solid var(--border)" }}>
+                <div className="flex min-w-0 items-center gap-2">
                   <button
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg md:hidden"
-                    style={{ background: "var(--bg-surface)", color: "var(--text-secondary)", border: "0.5px solid var(--border)" }}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-[var(--bg-hover)] md:hidden"
+                    style={{ color: "var(--text-secondary)" }}
                     onClick={() => setMobileSidebarOpen(true)}
+                    aria-label="Mở danh sách đoạn chat"
                   >
-                    <Menu size={16} />
+                    <Menu size={18} />
                   </button>
-                  <div className="truncate text-sm font-semibold md:text-base" style={{ color: "var(--text-primary)" }}>
-                    {activeChat?.title ?? "Hệ thống hỏi đáp pháp luật"}
-                    {selectedPassages && (
-                      <span className="ml-2 hidden text-xs font-normal italic md:inline" style={{ color: "var(--text-muted)" }}>
-                        — {selectedPassages.length} văn bản liên quan
-                      </span>
-                    )}
-                  </div>
+                  <h1 className="truncate text-[15px] font-medium" style={{ color: "var(--text-primary)" }}>
+                    {activeChat?.title ?? "Hỏi đáp pháp luật"}
+                  </h1>
                 </div>
-                <div className="flex shrink-0 items-center gap-1 md:gap-2">
+                <div className="flex shrink-0 items-center gap-0.5 md:gap-1">
                   <a
                     href={activeChat ? `/office?chat=${encodeURIComponent(activeChat._id)}` : "/office?live=1"}
                     title="Xem văn phòng luật 3D (tiếp tục hội thoại đang mở)"
-                    className="rounded-lg px-2 py-1 text-xs font-medium hover:opacity-80"
-                    style={{ color: "var(--text-muted)", border: "1px solid var(--border, rgba(127,127,127,.3))" }}
-                  >
-                    🏢 <span className="hidden md:inline">Văn phòng 3D</span>
+                    className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+                    style={{ color: "var(--text-secondary)" }}>
+                    <Building2 size={16} aria-hidden /><span className="hidden lg:inline">Văn phòng 3D</span>
                   </a>
-                  <AuthButton />
                   {userId && <MemoryPanelButton userId={userId} />}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="hidden h-4 w-4 md:block"
-                    style={{ color: !darkMode ? "#f59e0b" : "var(--text-muted)" }}>
-                    <path fill="currentColor" d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.45-1.79l-1.79 1.79 1.41 1.42 1.8-1.8-1.42-1.41zM12 4V1h-1v3h1zm0 19v-3h-1v3h1zm8-11h3v-1h-3v1zM4 12H1v-1h3v1zm12.24 7.16l1.8 1.79 1.41-1.41-1.79-1.8-1.42 1.42zM4.22 19.54l1.79-1.8-1.41-1.41-1.8 1.79 1.42 1.42zM12 6a6 6 0 100 12 6 6 0 000-12z"/>
-                  </svg>
                   <button
-                    onClick={() => setDarkMode((p) => !p)}
-                    className="relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300"
-                    style={{ background: darkMode ? "#534AB7" : "var(--bg-input)", border: "0.5px solid var(--border)" }}
+                    onClick={toggleDarkMode}
+                    className="flex h-9 w-9 items-center justify-center rounded-md transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+                    style={{ color: "var(--text-secondary)" }}
+                    title={darkMode ? "Chuyển sang nền sáng" : "Chuyển sang nền tối"}
+                    aria-label={darkMode ? "Chuyển sang nền sáng" : "Chuyển sang nền tối"}
                   >
-                    <span className="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-all duration-300"
-                      style={{ transform: darkMode ? "translateX(20px)" : "translateX(4px)" }} />
+                    {darkMode ? <Sun size={17} /> : <Moon size={17} />}
                   </button>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="hidden h-4 w-4 md:block"
-                    style={{ color: darkMode ? "#6366f1" : "var(--text-muted)" }}>
-                    <path fill="currentColor" d="M21 12.79A9 9 0 0111.21 3c0-.34.02-.67.05-1A9 9 0 1021 12.79z"/>
-                  </svg>
+                  <span className="mx-1 hidden h-5 w-px md:block" style={{ background: "var(--border)" }} aria-hidden />
+                  <AuthButton />
                 </div>
-              </div>
+              </header>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto px-3 py-3 md:px-6 md:py-4">
+              <div className="flex-1 overflow-y-auto">
+                <div className="mx-auto w-full px-4 py-6 md:py-10" style={{ maxWidth: "var(--reading-width)" }}>
                 {activeChat?.messages?.length ? (
-                  <div className="space-y-3 md:space-y-4">
+                  <div className="space-y-8">
                     {activeChat.messages.map((m, idx) => {
                       if (idx === revealHideIdx) return null;
                       return (
@@ -804,143 +839,150 @@ export default function Home() {
                       );
                     })}
                     {streamingChatId === activeChat._id && (postStreamReveal || revealedStreamText.length > 0) && (
-                      <div className="flex items-end gap-2">
-                        <Avatar type="bot" />
-                        <BotBubble content={revealedStreamText || "\u00a0"} />
-                      </div>
+                      <BotBubble content={revealedStreamText || " "} />
                     )}
                     {pendingChatId === activeChat._id && pendingStatus && (
-                      <div className="flex items-end gap-2">
-                        <Avatar type="bot" />
-                        <div className="rounded-2xl rounded-bl-md px-3 py-2 text-xs md:px-4 md:py-3 md:text-sm animate-pulse"
-                          style={{ background: "var(--status-bg)", color: "var(--status-text)" }}>
-                          <div>{pendingStatus}</div>
-                          {agentStep != null && (
-                            <div className="mt-1 text-[10px] opacity-85 md:text-xs">
-                              Vòng suy luận {agentStep.cur}/{agentStep.max}
-                            </div>
-                          )}
-                        </div>
+                      <div className="flex items-center gap-2.5 text-sm" role="status" aria-live="polite"
+                        style={{ color: "var(--text-secondary)" }}>
+                        <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60"
+                            style={{ background: "var(--accent)" }} />
+                          <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: "var(--accent)" }} />
+                        </span>
+                        <span>{pendingStatus}</span>
+                        {agentStep != null && (
+                          <span style={{ color: "var(--text-muted)" }}>bước {agentStep.cur}/{agentStep.max}</span>
+                        )}
                       </div>
                     )}
                     <div ref={bottomRef} />
                   </div>
                 ) : (
-                  <div className="mt-16 text-center text-sm md:mt-24" style={{ color: "var(--text-muted)" }}>
-                    Bắt đầu một đoạn chat mới...
-                  </div>
+                  <section className="pt-6 md:pt-16" aria-labelledby="empty-title">
+                    <h2 id="empty-title" className="text-[26px] font-semibold leading-tight tracking-tight md:text-[32px]"
+                      style={{ color: "var(--text-primary)" }}>
+                      Bạn đang gặp vấn đề pháp lý gì?
+                    </h2>
+                    <p className="mt-3 max-w-[34rem] text-[15px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                      Hỏi bằng lời của bạn. Mỗi câu trả lời dẫn điều luật cụ thể để bạn tự kiểm tra lại.
+                    </p>
+                    <ul className="mt-8 overflow-hidden rounded-xl" style={{ border: "1px solid var(--border)", background: "var(--bg-surface)" }}>
+                      {SUGGESTIONS.map((s, i) => (
+                        <li key={s.q} style={i ? { borderTop: "1px solid var(--border)" } : undefined}>
+                          <button
+                            type="button" disabled={sending}
+                            onClick={() => onSend(undefined, s.q)}
+                            className="flex w-full flex-col gap-0.5 px-4 py-3.5 text-left transition-colors hover:bg-[var(--bg-hover)] disabled:opacity-60 sm:flex-row sm:items-baseline sm:gap-4"
+                          >
+                            <span className="w-40 shrink-0 text-[13px]" style={{ color: "var(--text-muted)" }}>{s.topic}</span>
+                            <span className="text-[15px]" style={{ color: "var(--text-primary)" }}>{s.q}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
                 )}
+                </div>
               </div>
 
               {/* Input form */}
-              <form onSubmit={onSend} className="p-2 md:p-4" style={{ borderTop: "0.5px solid var(--border)" }}>
-                <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setQueryMode((m) => m === "normal" ? "situation" : "normal")}
-                    style={{
-                      display: "inline-flex", alignItems: "center", gap: 6,
-                      padding: "4px 10px", borderRadius: 20, fontSize: 12, fontWeight: 500,
-                      border: queryMode === "situation" ? "1.5px solid #534AB7" : "0.5px solid var(--border)",
-                      background: queryMode === "situation" ? "#EEEDFE" : "transparent",
-                      color: queryMode === "situation" ? "#3C3489" : "var(--text-muted)",
-                      cursor: "pointer", transition: "all 0.15s",
-                    }}
-                  >
-                    <span style={{
-                      width: 7, height: 7, borderRadius: "50%", flexShrink: 0, transition: "background 0.15s",
-                      background: queryMode === "situation" ? "#534AB7" : "var(--border-strong)"
-                    }} />
-                    {queryMode === "situation" ? "Phân tích tình huống" : "Hỏi đáp thường"}
-                  </button>
+              <form onSubmit={onSend} className="shrink-0 px-3 pb-3 pt-2 md:px-5 md:pb-4">
+                <div className="mx-auto w-full" style={{ maxWidth: "var(--reading-width)" }}>
+                <div className="mb-2 flex flex-wrap items-center gap-3">
+                  <div role="radiogroup" aria-label="Kiểu câu hỏi" className="inline-flex rounded-lg p-0.5"
+                    style={{ background: "var(--bg-hover)" }}>
+                    {([["normal", "Hỏi đáp"], ["situation", "Phân tích tình huống"]] as const).map(([mode, label]) => (
+                      <button key={mode} type="button" role="radio" aria-checked={queryMode === mode}
+                        onClick={() => setQueryMode(mode)}
+                        className="rounded-md px-3 py-1 text-[13px] transition-colors"
+                        style={queryMode === mode
+                          ? { background: "var(--bg-surface)", color: "var(--text-primary)", boxShadow: "var(--shadow-sm)", fontWeight: 500 }
+                          : { color: "var(--text-secondary)" }}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
                   {queryMode === "situation" && (
-                    <span className="hidden text-xs sm:inline" style={{ color: "var(--text-muted)" }}>
-                      Mô tả đầy đủ: ai · làm gì · hoàn cảnh · hậu quả
+                    <span className="hidden text-[13px] sm:inline" style={{ color: "var(--text-muted)" }}>
+                      Kể rõ ai, đã làm gì, trong hoàn cảnh nào và hậu quả ra sao.
                     </span>
                   )}
                 </div>
 
-                <div className="flex items-center gap-1.5 md:gap-2">
+                <div className="flex items-end gap-2 rounded-2xl p-2 transition-shadow focus-within:shadow-[var(--focus-ring)]"
+                  style={{ background: "var(--bg-input)", border: "1px solid var(--border-strong)", boxShadow: "var(--shadow-input)" }}>
                   {!recording && !audioBlob && (
-                    <input
+                    <textarea
+                      ref={inputRef}
+                      rows={1}
                       value={input}
-                      onChange={(e) => setInput(e.target.value)}
+                      onChange={(e) => {
+                        setInput(e.target.value);
+                        e.target.style.height = "auto";
+                        e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
+                      }}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
+                        if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
                           e.preventDefault();
                           // Chặn double-fire khi đang xử lý request trước
                           if (sending || sendingRef.current) return;
-                          onSend(e as any);
+                          onSend();
                         }
                       }}
                       disabled={sending}
-                      placeholder={queryMode === "situation" ? "Mô tả tình huống..." : "Nhập câu hỏi..."}
-                      className="flex-1 rounded-xl px-3 py-2.5 text-sm outline-none transition md:px-4 md:py-3 disabled:opacity-70"
-                      style={{
-                        background: "var(--bg-input)",
-                        border: queryMode === "situation" ? "0.5px solid #534AB7" : "0.5px solid var(--border)",
-                        color: "var(--text-primary)", minWidth: 0,
-                      }}
+                      aria-label="Câu hỏi của bạn"
+                      placeholder={queryMode === "situation" ? "Mô tả tình huống của bạn…" : "Nhập câu hỏi pháp luật…"}
+                      className="max-h-[200px] min-h-[40px] flex-1 resize-none bg-transparent px-2 py-2 text-[15px] leading-relaxed outline-none placeholder:text-[var(--text-muted)] disabled:opacity-70"
+                      style={{ color: "var(--text-primary)", minWidth: 0, boxShadow: "none" }}
                     />
                   )}
                   {recording && (
                     <>
-                      <div className="flex flex-1 items-center gap-2 rounded-xl px-2 py-2 md:gap-3 md:px-3"
-                        style={{ background: "var(--bg-input)", border: "1px solid #ef4444", minHeight: 44 }}>
-                        <span className="shrink-0 relative flex h-3 w-3">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500" />
+                      <div className="flex min-h-[40px] flex-1 items-center gap-2 px-2 md:gap-3">
+                        <span className="relative flex h-3 w-3 shrink-0" aria-hidden>
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" style={{ background: "var(--accent)" }} />
+                          <span className="relative inline-flex h-3 w-3 rounded-full" style={{ background: "var(--accent)" }} />
                         </span>
                         <LiveWaveform recording={recording} />
-                        <span className="shrink-0 text-xs font-mono tabular-nums" style={{ color: "#ef4444" }}>
+                        <span className="shrink-0 text-xs tabular-nums" style={{ color: "var(--accent-text)" }}>
                           {String(Math.floor(duration / 60)).padStart(2, "0")}:{String(duration % 60).padStart(2, "0")}
                         </span>
                       </div>
-                      <button type="button" onClick={stopRecording} title="Dừng ghi âm"
-                        className="shrink-0 flex items-center justify-center rounded-full w-10 h-10 transition"
-                        style={{ background: "#ef4444", color: "#fff" }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                          <rect x="5" y="5" width="14" height="14" rx="2" />
-                        </svg>
+                      <button type="button" onClick={stopRecording} title="Dừng ghi âm" aria-label="Dừng ghi âm"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                        style={{ background: "var(--accent)", color: "var(--text-on-accent)" }}>
+                        <Square size={14} fill="currentColor" />
                       </button>
                     </>
                   )}
                   {!recording && audioBlob && (
-                    <div className="flex flex-1 items-center gap-2 rounded-xl px-2 py-2 md:px-3"
-                      style={{ background: "var(--bg-input)", border: "0.5px solid #534AB7", minHeight: 44 }}>
+                    <div className="flex min-h-[40px] flex-1 items-center gap-2 px-2">
                       <VoiceMessage audioBlob={audioBlob} onCancel={cancelRecording} />
                     </div>
                   )}
                   {sttSupported && !recording && !audioBlob && (
-                    <button type="button" onClick={startRecording} title="Ghi âm"
-                      className="shrink-0 flex items-center justify-center rounded-xl transition"
-                      style={{ width: 42, height: 42, background: "var(--bg-surface)", border: "0.5px solid var(--border)", color: "var(--text-muted)" }}>
-                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                        <line x1="12" y1="19" x2="12" y2="23"/>
-                        <line x1="8" y1="23" x2="16" y2="23"/>
-                      </svg>
+                    <button type="button" onClick={startRecording} title="Hỏi bằng giọng nói" aria-label="Hỏi bằng giọng nói"
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[var(--bg-hover)]"
+                      style={{ color: "var(--text-secondary)" }}>
+                      <Mic size={18} />
                     </button>
                   )}
                   <button
                     type={audioBlob ? "button" : "submit"}
                     onClick={audioBlob ? sendVoice : undefined}
-                    disabled={loading || sending}
-                    className="shrink-0 rounded-xl text-sm font-medium transition disabled:opacity-60"
-                    style={{ height: 42, width: 42, background: "#534AB7", color: "var(--text-on-accent)", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    disabled={loading || sending || (!audioBlob && !input.trim())}
+                    title="Gửi câu hỏi" aria-label="Gửi câu hỏi"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors enabled:hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed"
+                    style={(loading || sending || (!audioBlob && !input.trim()))
+                      ? { background: "var(--bg-hover)", color: "var(--text-muted)" }
+                      : { background: "var(--accent)", color: "var(--text-on-accent)" }}
                   >
-                    {sending ? (
-                      <span className="text-xs">{loadingDots}</span>
-                    ) : (
-                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="22" y1="2" x2="11" y2="13"/>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                      </svg>
-                    )}
+                    {sending ? <span className="text-xs" aria-hidden>{loadingDots}</span> : <ArrowUp size={18} strokeWidth={2.25} />}
                   </button>
+                </div>
+                <p className="mt-2 text-center text-xs" style={{ color: "var(--text-muted)" }}>
+                  Thông tin chỉ để tham khảo, không thay thế tư vấn của luật sư.
+                </p>
                 </div>
               </form>
             </div>
@@ -954,7 +996,7 @@ export default function Home() {
                 <div className="fixed inset-0 z-50 flex flex-col md:hidden" style={{ background: "var(--bg-sidebar)" }}>
                   <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "0.5px solid var(--border)" }}>
                     <div className="flex items-center gap-2 text-base font-bold" style={{ color: "var(--text-primary)" }}>
-                      <BookOpen className="h-5 w-5" style={{ color: "#534AB7" }} />Căn cứ pháp lý
+                      <BookOpen className="h-5 w-5" style={{ color: "var(--accent-text)" }} aria-hidden />Căn cứ pháp lý
                     </div>
                     <button onClick={() => { setSelectedPassages(null); setSelectedMsgIdx(null); }}
                       className="rounded-lg px-2 py-1 text-sm"

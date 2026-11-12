@@ -1,0 +1,42 @@
+@startuml SEQ_CapNhatBoNho
+!include _style.iuml
+title Biểu đồ tuần tự — Cập nhật bộ nhớ dài hạn sau mỗi lượt hỏi (chạy nền)
+autonumber
+
+participant "rag_api" as API
+participant "MemoryManager" as Mem
+participant "OpenAI API" as LLM
+database "Milvus\n(user_memory)" as Milvus
+database "MongoDB\n(memories)" as Mongo
+
+API ->> Mem : process_turn_async(user_id, user_msg, bot_msg, chat_id)
+activate Mem
+Mem -> LLM : extract_memories(user_msg, bot_msg)
+LLM --> Mem : danh sách fact ứng viên
+Mem -> Mem : lọc thông tin nhạy cảm (_is_sensitive)
+loop mỗi fact ứng viên
+  Mem -> LLM : embed(fact)
+  LLM --> Mem : vector
+  Mem -> Milvus : search memory tương đồng (user_id)
+  Milvus --> Mem : memory cũ
+  alt chưa có memory tương đồng
+    Mem -> Mem : action = ADD
+  else có memory tương đồng
+    Mem -> LLM : _decide_action(fact, memory cũ)
+    LLM --> Mem : ADD | UPDATE | DELETE | NOOP
+  end
+  alt ADD
+    Mem -> Milvus : insert(vector, fact)
+    Mem -> Mongo : insert(fact, history)
+  else UPDATE
+    Mem -> Milvus : delete(target_id) + insert(merged_fact)
+    Mem -> Mongo : cập nhật fact + ghi lịch sử
+  else DELETE
+    Mem -> Milvus : delete(target_id)
+    Mem -> Mongo : đánh dấu đã xoá
+  else NOOP
+    Mem -> Mem : bỏ qua
+  end
+end
+deactivate Mem
+@enduml

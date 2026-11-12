@@ -11,9 +11,7 @@ export function AuthButton() {
 
   if (loading) {
     return (
-      <span className="inline-flex h-7 w-20 animate-pulse items-center justify-center rounded-md bg-gray-100 text-xs text-gray-400">
-        …
-      </span>
+      <span className="inline-flex h-9 w-24 animate-pulse rounded-md bg-[var(--bg-hover)]" aria-label="Đang tải trạng thái đăng nhập" />
     );
   }
 
@@ -21,9 +19,9 @@ export function AuthButton() {
     return (
       <span
         title="Firebase chưa cấu hình — xem frontend/src/lib/firebase.ts"
-        className="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] text-amber-700"
+        className="inline-flex h-9 items-center rounded-md px-2.5 text-xs text-[var(--danger-text)]"
       >
-        Auth off
+        Chưa bật đăng nhập
       </span>
     );
   }
@@ -33,17 +31,18 @@ export function AuthButton() {
     return (
       <div className="flex items-center gap-2">
         <span
-          className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-gray-800"
+          className="hidden h-9 items-center gap-1.5 px-1 text-sm text-[var(--text-secondary)] md:inline-flex"
           title={user.email ?? ""}
         >
-          <UserIcon size={13} /> {name.length > 18 ? name.slice(0, 18) + "…" : name}
+          <UserIcon size={15} aria-hidden /> {name.length > 18 ? name.slice(0, 18) + "…" : name}
         </span>
         <button
           onClick={() => signOut()}
-          className="inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-gray-600 hover:bg-gray-50"
+          className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
           title="Đăng xuất"
+          aria-label="Đăng xuất"
         >
-          <LogOut size={13} />
+          <LogOut size={16} aria-hidden />
         </button>
       </div>
     );
@@ -53,9 +52,10 @@ export function AuthButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-md border border-indigo-300 bg-indigo-50 px-2.5 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100"
+        aria-label="Đăng nhập"
+        className="inline-flex h-9 items-center gap-1.5 rounded-md border border-[var(--border-strong)] px-2.5 sm:px-3 text-sm font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-hover)]"
       >
-        <LogIn size={14} /> Đăng nhập
+        <LogIn size={16} aria-hidden /><span className="hidden sm:inline">Đăng nhập</span>
       </button>
       {open && <AuthModal onClose={() => setOpen(false)} />}
     </>
@@ -100,24 +100,24 @@ function AuthModal({ onClose }: { onClose: () => void }) {
 
   if (typeof document === "undefined") return null;
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
+      <div className="w-full max-w-sm rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-6 shadow-2xl">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-indigo-700">
+          <h2 className="text-lg font-semibold text-[var(--accent-text)]">
             {mode === "signin" ? "Đăng nhập" : "Tạo tài khoản"}
           </h2>
-          <button onClick={onClose} className="rounded p-1 text-gray-500 hover:bg-gray-100">
+          <button onClick={onClose} className="rounded p-1 text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]">
             <X size={18} />
           </button>
         </div>
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-[var(--text-secondary)]">
           Đăng nhập để bộ nhớ cá nhân được đồng bộ giữa các thiết bị.
         </p>
 
         <button
           onClick={google}
           disabled={busy}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-[var(--border-strong)] bg-[var(--bg-surface)] px-3 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-hover)] disabled:opacity-60"
         >
           <svg width="16" height="16" viewBox="0 0 48 48">
             <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8a12 12 0 1 1 0-24 12 12 0 0 1 8.5 3.5l5.7-5.7A20 20 0 1 0 44 24c0-1.2-.1-2.4-.4-3.5z"/>
@@ -128,8 +128,8 @@ function AuthModal({ onClose }: { onClose: () => void }) {
           Tiếp tục với Google
         </button>
 
-        <div className="my-4 flex items-center gap-2 text-xs text-gray-400">
-          <span className="h-px flex-1 bg-gray-200" /> hoặc <span className="h-px flex-1 bg-gray-200" />
+        <div className="my-4 flex items-center gap-2 text-xs text-[var(--text-muted)]">
+          <span className="h-px flex-1 bg-[var(--bg-hover)]" /> hoặc <span className="h-px flex-1 bg-[var(--bg-hover)]" />
         </div>
 
         <form onSubmit={submit} className="space-y-3">
@@ -139,7 +139,7 @@ function AuthModal({ onClose }: { onClose: () => void }) {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none placeholder:text-gray-400"
+            className="w-full rounded-md border border-[var(--border-strong)] bg-[var(--bg-input)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] focus:outline-none placeholder:text-[var(--text-muted)]"
           />
           <input
             type="password"
@@ -148,24 +148,24 @@ function AuthModal({ onClose }: { onClose: () => void }) {
             placeholder="Mật khẩu (≥ 6 ký tự)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none placeholder:text-gray-400"
+            className="w-full rounded-md border border-[var(--border-strong)] bg-[var(--bg-input)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] focus:outline-none placeholder:text-[var(--text-muted)]"
           />
-          {err && <p className="text-xs text-red-600">{err}</p>}
+          {err && <p className="text-xs text-[var(--danger-text)]">{err}</p>}
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="w-full rounded-md bg-[var(--accent)] px-3 py-2 text-sm font-medium text-[var(--text-on-accent)] hover:bg-[var(--accent-hover)] disabled:opacity-60"
           >
             {busy ? "Đang xử lý…" : (mode === "signin" ? "Đăng nhập" : "Tạo tài khoản")}
           </button>
         </form>
 
-        <p className="mt-3 text-center text-xs text-gray-500">
+        <p className="mt-3 text-center text-xs text-[var(--text-secondary)]">
           {mode === "signin" ? "Chưa có tài khoản? " : "Đã có tài khoản? "}
           <button
             type="button"
             onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-            className="font-medium text-indigo-600 hover:underline"
+            className="font-medium text-[var(--accent-text)] hover:underline"
           >
             {mode === "signin" ? "Đăng ký" : "Đăng nhập"}
           </button>

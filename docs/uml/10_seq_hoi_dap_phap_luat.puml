@@ -1,0 +1,79 @@
+@startuml SEQ_HoiDap
+!include _style.iuml
+title Biểu đồ tuần tự — UC01 Hỏi đáp pháp luật (luồng stream SSE)
+autonumber
+
+actor "Người dùng" as U
+participant "Giao diện\nNext.js" as UI
+participant "/api/stream\n(proxy)" as Proxy
+participant "rag_api\n/rag/stream" as API
+participant "Pre-retrieve\n(AgentsManager)" as Pre
+participant "MemoryManager" as Mem
+participant "SemanticCache" as Cache
+participant "Agent tools\n(agentic_rag)" as Tools
+participant "OpenAI API" as LLM
+database "MongoDB" as Mongo
+
+U -> UI : Nhập câu hỏi, chọn chế độ\n(thường / tình huống)
+UI -> Proxy : POST /api/stream\n{prompt, history, query_mode, user_id, chat_id}
+Proxy -> API : POST /rag/stream (Bearer token)
+activate API
+API -> API : resolve_user_id()
+API --> UI : SSE status "reception"
+API -> Pre : run_pre_retrieve(prompt, history)
+Pre --> API : Decision(action)
+
+alt action = quick / spam / escalate
+  API --> UI : SSE meta + token (câu trả lời soạn sẵn) + done
+  opt action = quick
+    API ->> Mem : process_turn_async() (nền)
+  end
+else action = proceed
+  API --> UI : SSE status "secretary"
+  API -> LLM : rewrite_query_v2(prompt, history)
+  LLM --> API : normalized_query
+  API -> LLM : detect_intent(normalized_query)
+  LLM --> API : intent
+  alt ngoài phạm vi pháp luật
+    API --> UI : SSE token "ngoài phạm vi" + done
+  else trong phạm vi
+    API -> Mem : retrieve_memories(user_id, prompt)
+    Mem --> API : memories, memory_block
+    API --> UI : SSE status "memory"
+    opt không phải câu hỏi cá nhân và không có memory
+      API -> LLM : embed(normalized_query)
+      API -> Cache : get(embedding)
+      Cache --> API : cached | null
+    end
+    alt cache hit
+      API --> UI : SSE meta (passages, cache_hit=true) + token + done
+    else cache miss
+      loop tối đa 6 vòng
+        API -> LLM : chat.completions(messages, tools)
+        LLM --> API : message
+        alt có tool_calls
+          API --> UI : SSE status "tool" (tên tool)
+          API -> Tools : execute_agent_tool(name, args)
+          Tools --> API : tool_content, full_hits
+          API -> API : thêm hits vào bucket
+          API --> UI : SSE status "tool_done"
+        else không còn tool_calls
+          API -> API : dedup + build passages\n+ tính confidence
+          API --> UI : SSE meta (passages, sources, confidence)
+          API -> LLM : sinh câu trả lời (stream)
+          LLM --> API : token...
+          API --> UI : SSE token...
+        end
+      end
+      API -> Cache : set(embedding, answer, meta)
+      API --> UI : SSE done
+    end
+    API ->> Mem : process_turn_async() (nền)
+  end
+end
+deactivate API
+
+UI -> Proxy : PATCH /api/chats/{id} (messages)
+Proxy -> Mongo : updateChat()
+UI --> U : Hiển thị câu trả lời (typewriter)\n+ panel điều luật trích dẫn
+@enduml

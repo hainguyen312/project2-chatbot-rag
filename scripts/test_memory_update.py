@@ -37,7 +37,7 @@ def main():
 
     print("\nMongo state sau turn 1:")
     for m in mm.list_user_memories(uid):
-        print(f"  id={m['milvus_id']} [{m['mem_type']}] {m['fact']}")
+        print(f"  id={m.get('mem_id')} [{m['mem_type']}] {m['fact']}")
 
     print("\n=== Turn 2: chuyển sang ĐH Kinh tế Quốc dân ===")
     facts2 = mm.extract_memories(
@@ -52,7 +52,7 @@ def main():
 
     print("\nMongo state sau turn 2 (kỳ vọng: 1 core đã update, KHÔNG duplicate):")
     for m in mm.list_user_memories(uid):
-        print(f"  id={m['milvus_id']} [{m['mem_type']}] v{m.get('version',1)} {m['fact']}")
+        print(f"  id={m.get('mem_id')} [{m['mem_type']}] v{m.get('version',1)} {m['fact']}")
 
     print("\n>> Cleanup")
     n = mm.delete_all_for_user(uid)

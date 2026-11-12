@@ -339,8 +339,8 @@ function DeskDocs({ onOpen }: { onOpen: () => void }) {
       ))}
       {n > 0 && hover && (
         <Html position={[0, 0.25 + n * 0.035, 0]} center style={{ pointerEvents: "none" }}>
-          <div className="whitespace-nowrap rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900 shadow">
-            📁 {passages.length || n} tài liệu{passages.length ? " · bấm để xem" : ""}
+          <div className="whitespace-nowrap rounded-md border border-[var(--border)] bg-[var(--bg-surface)] px-2 py-0.5 text-[11px] font-medium text-[var(--text-primary)] shadow">
+            {passages.length || n} tài liệu{passages.length ? ", bấm để xem" : ""}
           </div>
         </Html>
       )}
@@ -348,12 +348,16 @@ function DeskDocs({ onOpen }: { onOpen: () => void }) {
   );
 }
 
+/** Bỏ emoji đầu nhãn (giao diện mới không dùng emoji làm icon) */
+const stripEmoji = (t: string) => t.replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s]+/u, "");
+
 function Sign({ p, text, sub }: { p: V3; text: string; sub?: string }) {
+  text = stripEmoji(text);
   return (
     <Html position={p} center distanceFactor={20} style={{ pointerEvents: "none" }} zIndexRange={[10, 0]}>
-      <div className="hidden whitespace-nowrap rounded-lg border border-white/20 bg-slate-900/70 px-2 py-1 text-center text-white shadow backdrop-blur-sm sm:block">
+      <div className="hidden whitespace-nowrap rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-2.5 py-1 text-center text-[var(--text-primary)] shadow-sm sm:block">
         <div className="text-[13px] font-semibold">{text}</div>
-        {sub && <div className="text-[10px] opacity-70">{sub}</div>}
+        {sub && <div className="text-[10px] text-[var(--text-muted)]">{sub}</div>}
       </div>
     </Html>
   );
@@ -450,8 +454,8 @@ export function Room({ onOpenDocs, showSigns }: { onOpenDocs: () => void; showSi
       <Frame p={[ROOM.maxX - 0.04, 1.95, -4.2]} rot={-Math.PI / 2} w={1.2} h={0.8} art="#f1e3c8" />
       <Frame p={[ROOM.maxX - 0.04, 1.95, 4.2]} rot={-Math.PI / 2} w={0.9} h={0.7} art="#c8d8f1" />
       <Html position={[-8.9, 2.65, ROOM.minZ + 0.09]} transform distanceFactor={6} style={{ pointerEvents: "none" }}>
-        <div className="rounded-md bg-[#1f2937] px-6 py-2 text-center font-bold tracking-widest text-amber-300 shadow-xl">
-          ⚖️ VĂN PHÒNG LUẬT VNLAW
+        <div className="rounded-md bg-[#1C2433] px-6 py-2 text-center font-semibold tracking-wide text-[#F6E8E9] shadow-xl">
+          Văn phòng luật VNLaw
         </div>
       </Html>
 

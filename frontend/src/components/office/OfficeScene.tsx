@@ -77,12 +77,15 @@ export default function OfficeScene({
   showSigns,
   resetToken,
   quality,
+  dark = false,
 }: {
   onOpenDocs: () => void;
   follow: boolean;
   showSigns: boolean;
   resetToken: number;
   quality: "high" | "low";
+  /** Nền tối (khớp chế độ tối của giao diện) */
+  dark?: boolean;
 }) {
   const mode = useViewMode();
   const povId = usePovId();
@@ -96,7 +99,8 @@ export default function OfficeScene({
       camera={{ position: [0, 15, 15], fov: 42, near: 0.1, far: 200 }}
       onPointerMissed={() => mode === "orbit" && director.select(null)}
     >
-      <color attach="background" args={["#232a38"]} />
+      {/* Nền cảnh khớp nền trang (theme.css: --bg-sidebar sáng / --bg-base tối) */}
+      <color attach="background" args={[dark ? "#121821" : "#E9ECF1"]} />
       {high && <SoftShadows size={18} samples={10} focus={0.6} />}
       <hemisphereLight args={["#fff3e0", "#3b3346", 0.55]} />
       <ambientLight intensity={0.15} />

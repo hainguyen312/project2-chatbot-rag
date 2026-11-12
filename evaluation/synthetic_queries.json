@@ -1,0 +1,702 @@
+[
+  {
+    "query": "Tôi muốn biết khi nào thì có thông tin về kỳ thi tuyển Chấp hành viên sơ cấp để tôi có thể chuẩn bị tham gia?",
+    "gold": [
+      "30002000000000002000017000000000000000000040255210062000560000802613500020005100"
+    ],
+    "source_title": "Điều 30.2.TT.11.51. Kế hoạch thi tuyển Chấp hành viên sơ cấp"
+  },
+  {
+    "query": "Ai sẽ là người quyết định thành phần và số lượng thành viên của Ban Chủ nhiệm Chương trình công nghệ cao?",
+    "gold": [
+      "190030000000000030000230000000000000000000802860700250001700"
+    ],
+    "source_title": "Điều 19.3.TT.10.17. Ban Chủ nhiệm Chương trình công nghệ cao"
+  },
+  {
+    "query": "Ai là người chịu trách nhiệm đảm bảo chất lượng hàng dự trữ quốc gia mà tôi đang quan tâm?",
+    "gold": [
+      "280010000000000040000008000000000000000001680252090130000160"
+    ],
+    "source_title": "Điều 28.1.TT.22.16. Trách nhiệm của bộ, ngành quản lý hàng dự trữ quốc gia"
+  },
+  {
+    "query": "Nếu tôi muốn vận chuyển một mẫu sản phẩm sinh học từ nước ngoài về Việt Nam, tôi cần làm gì để đảm bảo rằng mẫu đó được kiểm tra và cấp giấy chứng nhận an toàn?",
+    "gold": [
+      "450070000000000030000370000000000000000000402659400890003900"
+    ],
+    "source_title": "Điều 45.7.NĐ.5.39. Kiểm tra thực tế đối với mẫu vi sinh y học, sản phẩm sinh học, mô, bộ phận cơ thể người"
+  },
+  {
+    "query": "Tôi muốn biết khi nào thì các tài liệu cho phiên họp của Ủy ban thường vụ Quốc hội sẽ được gửi đến các thành viên?",
+    "gold": [
+      "3500800000000000300006300000000000000000"
+    ],
+    "source_title": "Điều 35.8.LQ.63. Tài liệu phục vụ phiên họp Ủy ban thường vụ Quốc hội"
+  },
+  {
+    "query": "Tôi muốn biết thông tin về một loại chứng khoán mà tôi đang quan tâm, làm thế nào để tôi có thể yêu cầu thông tin này một cách hợp pháp?",
+    "gold": [
+      "340040000000000050000620000000000000000000402751401550017100"
+    ],
+    "source_title": "Điều 34.4.NĐ.1.171. Cung cấp thông tin về đăng ký biện pháp bảo đảm"
+  },
+  {
+    "query": "Tôi đang chuẩn bị cho một chuyến đi biển và muốn biết liệu tôi có cần xin phép Cảng vụ hàng hải trước khi thực hiện các hoạt động lặn dưới nước hay không?",
+    "gold": [
+      "14004000000000004000003000000000000000000940000000000000000000402618300580006200"
+    ],
+    "source_title": "Điều 14.4.NĐ.14.62. Yêu cầu đối với tàu thuyền hoạt động trong vùng nước cảng biển và khu vực quản lý của Cảng vụ hàng hải"
+  },
+  {
+    "query": "Nếu tôi đã có giấy phép kinh doanh xăng dầu từ trước, thì tôi có được tiếp tục kinh doanh cho đến khi giấy phép đó hết hạn không?",
+    "gold": [
+      "3400900000000001700000240252030083000470"
+    ],
+    "source_title": "Điều 34.10.NĐ.4.47. Điều khoản chuyển tiếp"
+  },
+  {
+    "query": "Nếu có bão lớn sắp đổ bộ vào huyện, ai sẽ là người tổ chức và chỉ huy công tác ứng phó và cứu nạn tại địa phương?",
+    "gold": [
+      "240100000000000050000440000000000000000000402770100660002800"
+    ],
+    "source_title": "Điều 24.10.NĐ.4.28. Tổ chức, nhiệm vụ của Ban chỉ huy phòng, chống thiên tai và tìm kiếm cứu nạn cấp huyện"
+  },
+  {
+    "query": "Tôi muốn mở một công ty để tổ chức đặt cược bóng đá quốc tế, vậy tôi cần đáp ứng những điều kiện gì để được cấp phép?",
+    "gold": [
+      "34009000000000009000004000000000000000000011000000000000000000402607700060003800"
+    ],
+    "source_title": "Điều 34.9.NĐ.7.38. Tổ chức thí điểm kinh doanh đặt cược bóng đá quốc tế"
+  },
+  {
+    "query": "Tôi muốn biết khi nào thì tôi được cấp giấy chứng nhận tham gia bồi dưỡng, và giấy tờ nào sẽ được chấp nhận để xác nhận việc này?",
+    "gold": [
+      "04004000000000002000021000000000000000000040248790123000040000802685700020000700"
+    ],
+    "source_title": "Điều 4.4.TT.5.7. Giấy tờ xác nhận việc thực hiện nghĩa vụ tham gia bồi dưỡng"
+  },
+  {
+    "query": "Tôi muốn biết ai sẽ phụ trách việc phân hạng đất để tính thuế sử dụng cho đất nông nghiệp của gia đình tôi?",
+    "gold": [
+      "3300700000000000800003780176010092000050"
+    ],
+    "source_title": "Điều 33.7.TL.1.5. Tổ chức thực hiện"
+  },
+  {
+    "query": "Tôi muốn biết nếu tôi cần xin lý lịch tư pháp để đi du học thì tôi phải đến cơ quan nào để làm thủ tục và họ có trách nhiệm cung cấp thông tin cho tôi không?",
+    "gold": [
+      "1500400000000000100000600000000000000000"
+    ],
+    "source_title": "Điều 15.4.LQ.6. Trách nhiệm cung cấp thông tin lý lịch tư pháp"
+  },
+  {
+    "query": "Nếu tôi muốn xây dựng một công trình hạ tầng đo đạc cho dự án của mình, tôi cần thực hiện những thủ tục gì để được cấp đất và đảm bảo tuân thủ quy định pháp luật?",
+    "gold": [
+      "270010000000000050000360000000000000000000402685500270001200"
+    ],
+    "source_title": "Điều 27.1.NĐ.2.12. Xây dựng công trình hạ tầng đo đạc"
+  },
+  {
+    "query": "Nếu một dự án xây dựng của tôi không tuân thủ đúng quy hoạch đã được phê duyệt thì tôi có bị phạt tiền hay phải sửa đổi gì không?",
+    "gold": [
+      "39013000000000002000000400000000000000000016000000000000000000402790700160000900"
+    ],
+    "source_title": "Điều 39.13.NĐ.105.9. Vi phạm quy định về lập quy hoạch xây dựng, quy hoạch đô thị"
+  },
+  {
+    "query": "Nếu tôi không đồng ý với số thuế mà cơ quan thuế quyết định thu của tôi, tôi nên làm gì để khiếu nại và quy trình giải quyết sẽ ra sao?",
+    "gold": [
+      "33007000000000007000030000000000000000000040175850074000220000801760000890001600"
+    ],
+    "source_title": "Điều 33.7.TT.1.16. Khi nhận được đơn khiếu nại, thủ tục giải quyết như sau:"
+  },
+  {
+    "query": "Nếu tôi đang nợ lệ phí trước bạ khi sở hữu một mảnh đất, thì tôi có thể chuyển nhượng mảnh đất đó cho người khác hay không?",
+    "gold": [
+      "33003000000000005750000200000000000000000001000000000000000000402597101400000800"
+    ],
+    "source_title": "Điều 33.3.NĐ.4.8. Ghi nợ lệ phí trước bạ"
+  },
+  {
+    "query": "Mình muốn thành lập một doanh nghiệp xã hội, nhưng không biết cần phải chuẩn bị những giấy tờ gì và làm theo quy trình như thế nào?",
+    "gold": [
+      "120010000000000020000260000000000000000000402751800010002800"
+    ],
+    "source_title": "Điều 12.1.NĐ.10.28. Hồ sơ, trình tự, thủ tục đăng ký doanh nghiệp đối với doanh nghiệp xã hội"
+  },
+  {
+    "query": "Tôi vừa mua một chiếc tàu biển và muốn đăng ký nó, nhưng không biết thủ tục đăng ký như thế nào và tôi cần những giấy tờ gì để hoàn tất?",
+    "gold": [
+      "09002000000000002000003000000000000000000020000000000000000004300000000000000000"
+    ],
+    "source_title": "Điều 9.2.NĐ.43. Thủ tục giải quyết hồ sơ đăng ký, đăng ký thay đổi, xóa đăng ký đốivới tàu biển"
+  },
+  {
+    "query": "Thông tư mới có hiệu lực từ khi nào và nó có ảnh hưởng gì đến các quy định trước đây về trợ giúp cho người khuyết tật không?",
+    "gold": [
+      "0600300000000001000005380245430026300090"
+    ],
+    "source_title": "Điều 6.3.TT.2.9. Hiệu lực thi hành"
+  },
+  {
+    "query": "Ai sẽ là người chịu trách nhiệm thực hiện quy định trong thông tư này nếu có vấn đề xảy ra tại địa phương tôi?",
+    "gold": [
+      "0300300000000000600007980267450001000220"
+    ],
+    "source_title": "Điều 3.3.TT.34.22. Trách nhiệm thi hành"
+  },
+  {
+    "query": "Tôi muốn đổi tên của con tôi trong giấy khai sinh, vậy tôi cần làm gì và có những điều kiện gì để thực hiện việc này?",
+    "gold": [
+      "150030000000000020000005000000000000000002600000000000000000"
+    ],
+    "source_title": "Điều 15.3.LQ.26. Phạm vi thay đổi hộ tịch"
+  },
+  {
+    "query": "Nếu tôi là một doanh nghiệp nhỏ và muốn chuyển nhượng quyền sở hữu trí tuệ của sản phẩm sáng chế của mình cho một công ty khác, thì tôi cần thực hiện những thủ tục gì để việc chuyển nhượng này hợp pháp?",
+    "gold": [
+      "30002000000000004000000500000000000000000840000000000000000000402552100620002900"
+    ],
+    "source_title": "Điều 30.2.NĐ.1.29. Chuyển giao quyền sở hữu trí tuệ"
+  },
+  {
+    "query": "Nếu tôi có một chiếc thuyền nhỏ và không biết cách lắp đặt đèn hiệu theo quy định, thì tôi có bị phạt tiền không?",
+    "gold": [
+      "39013000000000002000000400000000000000000042000000000000000000402787901390002600"
+    ],
+    "source_title": "Điều 39.13.NĐ.99.26. Vi phạm quy định về âm hiệu, đèn hiệu, dấu hiệu và cờ hiệu (sau đây gọi chung là tín hiệu) của phương tiện"
+  },
+  {
+    "query": "Tôi muốn biết ai sẽ chịu trách nhiệm tổ chức và quản lý việc công bố các tuyến hàng hải và phân luồng giao thông trong lãnh hải Việt Nam để đảm bảo an toàn cho tàu thuyền khi di chuyển?",
+    "gold": [
+      "010050000000000030000250000000000000000000402645100160000400"
+    ],
+    "source_title": "Điều 1.5.NĐ.2.4. Nội dung quản lý nhà nước về công bố tuyến hàng hải và phân luồng giao thông trong lãnh hải Việt Nam"
+  },
+  {
+    "query": "Tôi muốn biết nếu cửa hàng thực phẩm của tôi bị kiểm tra an toàn thực phẩm, tôi có quyền gì để đảm bảo rằng quy trình kiểm tra được thực hiện đúng và công bằng không?",
+    "gold": [
+      "450010000000000100000610000000000000000000802505600130000700"
+    ],
+    "source_title": "Điều 45.1.TL.4.7. Phối hợp giữa các cơ quan Trung ương và địa phương trong thanh tra, kiểm tra an toàn thực phẩm"
+  },
+  {
+    "query": "Nếu tôi nộp hồ sơ xin chứng nhận chuẩn đo lường nhưng bị yêu cầu bổ sung tài liệu, thì tôi có bao lâu để hoàn thiện hồ sơ?",
+    "gold": [
+      "190040000000000030000190000000000000000000802486500240002300"
+    ],
+    "source_title": "Điều 19.4.TT.4.23. Xử lý hồ sơ đề nghị chứng nhận chuẩn đo lường"
+  },
+  {
+    "query": "Tôi đang thắc mắc về việc liệu công trình viễn thông nào cần được bảo vệ an toàn tuyệt đối để tránh bị phá hoại hoặc xâm nhập thông tin, có thể cho tôi biết không?",
+    "gold": [
+      "01003000000000002000011000000000000000000040231110126000070000502452300450000100"
+    ],
+    "source_title": "Điều 1.3.QĐ.1.1. Ban hành tiêu chí xác định danh mục các công trình viễn thông quan trọng liên quan đến an ninh quốc gia như sau:"
+  },
+  {
+    "query": "Nếu công ty mà tôi đang đầu tư muốn mua lại cổ phiếu của chính mình, họ cần phải làm những gì và mất bao lâu để có thể thực hiện giao dịch này?",
+    "gold": [
+      "340040000000000030000010000000000000000000000000000000000006"
+    ],
+    "source_title": "Điều 34.4.LQ.37. Báo cáo mua lại cổ phiếu, công bố thông tin và thực hiện việc mua lại cổ phiếu"
+  },
+  {
+    "query": "Nếu trong phiên tòa phúc thẩm mà một Thẩm phán bị ốm không thể tham gia, liệu phiên tòa có được tiếp tục diễn ra không?",
+    "gold": [
+      "370060000000000130000010000000000000000022300000000000000000"
+    ],
+    "source_title": "Điều 37.6.LQ.223. Sự có mặt của thành viên Hội đồng xét xử phúc thẩm và Thư ký phiên tòa"
+  },
+  {
+    "query": "Tôi đã nộp hồ sơ xin cấp giấy phép xây dựng, nhưng không biết sau bao lâu thì tôi sẽ nhận được phản hồi từ Ủy ban nhân dân cấp xã?",
+    "gold": [
+      "1500500000000000200002000000000000000000"
+    ],
+    "source_title": "Điều 15.5.LQ.20. Kiểm tra hồ sơ, lấy ý kiến của những người liên quan"
+  },
+  {
+    "query": "Tôi đang làm việc tại một tổ chức luật và chúng tôi muốn thuê một luật sư nước ngoài đã có giấy phép hành nghề tại Việt Nam. Tôi cần biết quy trình thông báo cho cơ quan chức năng sau khi ký hợp đồng với luật sư đó là gì?",
+    "gold": [
+      "04004000000000003000000200000000000000000390000000000000000000402487901230001600"
+    ],
+    "source_title": "Điều 4.4.NĐ.1.16. Thuê luật sư nước ngoài làm việc cho tổ chức hành nghề luật sư"
+  },
+  {
+    "query": "Nếu tôi bị một người nào đó lừa đảo và chiếm đoạt số tiền 3 triệu đồng của tôi, thì người đó sẽ bị xử lý như thế nào?",
+    "gold": [
+      "160010000000000020000160000000000000000017400000000000000000"
+    ],
+    "source_title": "Điều 16.1.LQ.174. Tội lừa đảo chiếm đoạt tài sản"
+  },
+  {
+    "query": "Nếu tôi gặp khó khăn trong việc áp dụng quy định của Thông tư này, tôi có thể liên hệ ai để được giúp đỡ?",
+    "gold": [
+      "0500200000000000600006280263230006000030"
+    ],
+    "source_title": "Điều 5.2.TT.19.3. Trách nhiệm thi hành"
+  },
+  {
+    "query": "Nếu tôi bị phạt vì vi phạm trong lĩnh vực đo đạc và bản đồ, tôi sẽ phải chịu hình thức xử phạt nào và có thể bị buộc thực hiện những biện pháp khắc phục hậu quả gì?",
+    "gold": [
+      "39013000000000002000000400000000000000000082000000000000000000402719000180000300"
+    ],
+    "source_title": "Điều 39.13.NĐ.77.3. Hình thức xử phạt, biện pháp khắc phục hậu quả"
+  },
+  {
+    "query": "Ngân hàng của tôi có cần phải xây dựng kho tiền không, và nếu có thì phải tuân theo những tiêu chuẩn nào?",
+    "gold": [
+      "22004000000000003000000200000000000000000180000000000000000000402434900400001500"
+    ],
+    "source_title": "Điều 22.4.NĐ.3.15. Xây dựng và quản lý kho tiền"
+  },
+  {
+    "query": "Nếu một tổ chức phi chính phủ nước ngoài muốn thực hiện một hoạt động từ thiện tại Việt Nam, nhưng hoạt động này có liên quan đến tôn giáo, liệu họ có bị cấm không?",
+    "gold": [
+      "2300300000000000100000500000000000000000"
+    ],
+    "source_title": "Điều 23.3.NĐ.5. Các hành vi bị cấm đối với các tổ chức phi chính phủ nước ngoài"
+  },
+  {
+    "query": "Nếu tôi muốn bảo vệ con tôi khỏi một người có hành vi bạo lực gia đình, liệu tôi có thể yêu cầu tòa án cấm người đó tiếp xúc với con tôi không?",
+    "gold": [
+      "370050000000000010000080000000000000000011400000000000000000"
+    ],
+    "source_title": "Điều 37.5.LQ.114. Các biện pháp khẩn cấp tạm thời"
+  },
+  {
+    "query": "Nếu tôi vô tình làm hư hại một công trình điện lực quan trọng, tôi có thể bị phạt như thế nào?",
+    "gold": [
+      "16001000000000002000021000000000000000000030000000000000000030300000000000000000"
+    ],
+    "source_title": "Điều 16.1.LQ.303. Tội phá hủy công trình, cơ sở, phương tiện quan trọng về an ninh quốc gia"
+  },
+  {
+    "query": "Nếu tôi là một tổ chức thu phí, thì tôi có thể giữ lại bao nhiêu phần trăm số tiền phí đã thu để chi cho hoạt động của mình?",
+    "gold": [
+      "33003000000000005500001000000000000000000005000000000000000000802600702985500600"
+    ],
+    "source_title": "Điều 33.3.TT.113.6. Quản lý và sử dụng phí"
+  },
+  {
+    "query": "Nghị định mới có hiệu lực từ khi nào và những văn bản nào sẽ không còn hiệu lực nữa?",
+    "gold": [
+      "2501300000000000700004040275920022000420"
+    ],
+    "source_title": "Điều 25.13.NĐ.5.42. Hiệu lực thi hành"
+  },
+  {
+    "query": "Tôi muốn biết quy trình để nhận các khoản hỗ trợ cho người có công với cách mạng được thực hiện như thế nào?",
+    "gold": [
+      "060050000000000050000500000000000000000000802808100440001100"
+    ],
+    "source_title": "Điều 6.5.TT.2.11. Kiểm soát chi"
+  },
+  {
+    "query": "Tôi có một người bạn nước ngoài muốn làm việc tại công ty của tôi, nhưng không biết có cần phải xin giấy phép lao động hay không, và nếu không cần thì tôi phải làm gì để xác nhận điều đó?",
+    "gold": [
+      "20002000000000011000003000000000000000001540000000000000000000402751301520000800"
+    ],
+    "source_title": "Điều 20.2.NĐ.4.8. Xác nhận người lao động nước ngoài không thuộc diện cấp giấy phép lao động"
+  },
+  {
+    "query": "Tôi sống gần bờ biển và đang có ý định xây dựng một công trình nghỉ dưỡng, vậy tôi cần biết thông tin nào về chế độ sóng ven bờ để đảm bảo an toàn cho công trình của mình?",
+    "gold": [
+      "2700400000000000400000100000000000000000023000000000000000000040258230040000420000802597300290000600"
+    ],
+    "source_title": "Điều 27.4.TT.19.6. Đánh giá đặc điểm, chế độ sóng và xây dựng tập bản đồ trường sóng"
+  },
+  {
+    "query": "Nếu tàu biển của tôi bị bắt giữ liên quan đến một khiếu nại hàng hải, tôi có thể giữ tàu đó trong bao lâu trước khi phải tiến hành thủ tục pháp lý?",
+    "gold": [
+      "140040000000000060000020000000000000000014100000000000000000"
+    ],
+    "source_title": "Điều 14.4.LQ.141. Thời hạn bắt giữ tàu biển để bảo đảm giải quyết khiếu nại hàng hải"
+  },
+  {
+    "query": "Nếu tôi có nhiều thửa đất ở tại các quận khác nhau trong cùng một tỉnh, tôi cần phải tính thuế cho từng thửa đất hay có cách nào khác để khai thuế cho tổng diện tích đất của mình không?",
+    "gold": [
+      "330080000000000020000050000000000000000000802417601530000800"
+    ],
+    "source_title": "Điều 33.8.TT.1.8. Phương pháp tính thuế"
+  },
+  {
+    "query": "Nếu tôi làm chỉ huy trưởng Ban chỉ huy quân sự cấp xã được 7 năm, thì tôi sẽ được hưởng phụ cấp thâm niên như thế nào?",
+    "gold": [
+      "250050000000000050000330000000000000000000402733000720001000"
+    ],
+    "source_title": "Điều 25.5.NĐ.1.10. Chế độ phụ cấp thâm niên của các chức vụ chỉ huy ban chỉ huy quân sự cấp xã"
+  },
+  {
+    "query": "Tôi đang cần tìm một người giám định có kinh nghiệm trong lĩnh vực xây dựng để hỗ trợ trong vụ tranh chấp về chất lượng công trình, làm sao để biết ai là người đủ tiêu chuẩn giám định?",
+    "gold": [
+      "37005000000000001000006000000000000000000020000000000000000007900000000000000000"
+    ],
+    "source_title": "Điều 37.5.LQ.79. Người giám định"
+  },
+  {
+    "query": "Nếu tôi làm việc vào ban đêm, tôi có được trả lương cao hơn so với làm việc ban ngày không, và cách tính lương này như thế nào?",
+    "gold": [
+      "200020000000000060000980000000000000000000402749701450005600"
+    ],
+    "source_title": "Điều 20.2.NĐ.3.56. Tiền lương làm việc vào ban đêm"
+  },
+  {
+    "query": "Nếu tôi phát hiện ra sự cố an toàn thông tin trên website của công ty mình, tôi cần phải làm gì để thông báo và xử lý sự cố đó?",
+    "gold": [
+      "03001000000000002000001000000000000000000130000000000000000000502612800050001200"
+    ],
+    "source_title": "Điều 3.1.QĐ.1.12. Tiếp nhận, phát hiện, phân loại và xử lý ban đầu sự cố an toàn thông tin mạng"
+  },
+  {
+    "query": "Tôi đang gặp khó khăn trong việc bán tài sản của mình qua một công ty quản lý, tôi nên làm gì để được hỗ trợ?",
+    "gold": [
+      "0400100000000000800008180252080018000180"
+    ],
+    "source_title": "Điều 4.1.TT.1.18. Tổ chức thực hiện"
+  },
+  {
+    "query": "Nếu tôi muốn gửi một bức thư quan trọng nhưng không biết dịch vụ bưu chính công ích nào là tốt nhất để sử dụng, tôi nên tìm thông tin ở đâu để được hướng dẫn?",
+    "gold": [
+      "0300200000000001000004650255890045000060"
+    ],
+    "source_title": "Điều 3.2.QĐ.2.6. Tổ chức thực hiện"
+  },
+  {
+    "query": "Tôi đang muốn nhập khẩu bộ xét nghiệm nhanh thực phẩm, vậy tôi cần ghi những thông tin gì trên nhãn sản phẩm để đảm bảo đúng quy định?",
+    "gold": [
+      "45001000000000008000000200000000000000000510000000000000000000802503400110001500"
+    ],
+    "source_title": "Điều 45.1.TT.53.15. Ghi nhãn bộ xét nghiệm nhanh thực phẩm"
+  },
+  {
+    "query": "Nếu tôi nghi ngờ có hành vi tham nhũng trong một dự án xây dựng công cộng, tôi có thể báo cáo cho ai và họ sẽ tiến hành kiểm tra như thế nào?",
+    "gold": [
+      "180020000000000030000020000000000000000006000000000000000000"
+    ],
+    "source_title": "Điều 18.2.LQ.60. Phát hiện tham nhũng thông qua hoạt động thanh tra, kiểm toán"
+  },
+  {
+    "query": "Nếu tôi thuê một người giúp việc cho gia đình, tôi có trách nhiệm gì để đảm bảo an toàn và sức khỏe cho người đó trong quá trình làm việc không?",
+    "gold": [
+      "2000500000000000400006800000000000000000"
+    ],
+    "source_title": "Điều 20.5.LQ.68. An toàn, vệ sinh lao động đối với lao động là người giúp việc gia đình"
+  },
+  {
+    "query": "Nếu tôi muốn biết về cách thức nộp lệ phí cấp giấy phép trong lĩnh vực điện lực thì tôi phải xem thông tư nào và liệu có thay đổi gì so với trước đây không?",
+    "gold": [
+      "33003000000000005500000200000000000000000003000000000000000000802598701670000700"
+    ],
+    "source_title": "Điều 33.3.TT.19.7. Tổ chức thực hiện"
+  },
+  {
+    "query": "Tôi muốn mở một cửa hàng bán thực phẩm và không biết làm thế nào để ghi nhãn cho sản phẩm của mình cho đúng quy định, ai sẽ giúp tôi làm điều này?",
+    "gold": [
+      "34011000000000002000001000000000000000000320000000000000000000402615700430002100"
+    ],
+    "source_title": "Điều 34.11.NĐ.8.21. Các bộ, cơ quan ngang bộ, cơ quan thuộc Chính phủ"
+  },
+  {
+    "query": "Tôi có một chiếc tàu và muốn rời cảng biển để đi đánh cá, nhưng không biết có cần phải làm thủ tục gì không và điều kiện nào để tàu có thể được phép rời cảng?",
+    "gold": [
+      "14004000000000004000003000000000000000000980000000000000000000402618300580007100"
+    ],
+    "source_title": "Điều 14.4.NĐ.14.71. Điều kiện tàu thuyền rời cảng biển"
+  },
+  {
+    "query": "Tôi muốn biết cơ quan nào sẽ giúp Bộ trưởng Bộ Công Thương quản lý các hoạt động khuyến công và thực hiện chương trình khuyến công hàng năm?",
+    "gold": [
+      "0700500000000000300000700000000000000000"
+    ],
+    "source_title": "Điều 7.5.NĐ.7. Tổ chức khuyến công Trung ương"
+  },
+  {
+    "query": "Nếu tôi có một thiết bị chụp cắt lớp vi tính đã được kiểm định trước ngày 01 tháng 7 năm 2016, thì kết quả kiểm định đó có còn hiệu lực không?",
+    "gold": [
+      "4501200000000001300007780257720002000020"
+    ],
+    "source_title": "Điều 45.12.TT.2.2. "
+  },
+  {
+    "query": "Tôi muốn mở một chi nhánh ngân hàng, vậy tôi cần tuân thủ những quy định nào về báo cáo và giám sát để đảm bảo hoạt động của chi nhánh diễn ra an toàn và đúng pháp luật?",
+    "gold": [
+      "22004000000000005000051000000000000000000040250540026000040000802806000080001000"
+    ],
+    "source_title": "Điều 22.4.TT.70.10. Nội dung giám sát an toàn vi mô đối với chi nhánh của tổ chức tín dụng"
+  },
+  {
+    "query": "Nếu tôi gửi một bưu phẩm qua đường hàng không và bưu phẩm đó bị thất lạc, liệu có quy định nào yêu cầu niêm phong an ninh không?",
+    "gold": [
+      "140050000000000080001930000000000000000000802687100130004000"
+    ],
+    "source_title": "Điều 14.5.TT.27.40. Niêm phong an ninh"
+  },
+  {
+    "query": "Thông tư mới về thuốc bảo vệ thực vật có hiệu lực từ khi nào và có thay thế những thông tư nào trước đó không?",
+    "gold": [
+      "2400400000000000700008480246990021000030"
+    ],
+    "source_title": "Điều 24.4.TT.28.3. Hiệu lực thi hành"
+  },
+  {
+    "query": "Tôi đang có ý định quảng cáo một loại thuốc bảo vệ thực vật nhưng không biết phải ghi những thông tin gì trên quảng cáo để đảm bảo đúng quy định. Vậy tôi cần bao gồm những nội dung gì trong quảng cáo của mình?",
+    "gold": [
+      "24001000000000004000000300000000000000000700000000000000000000802548100210006000"
+    ],
+    "source_title": "Điều 24.1.TT.14.60. Nội dung quảng cáo thuốc bảo vệ thực vật"
+  },
+  {
+    "query": "Nếu con tôi được hưởng án treo, tôi cần biết những thông tin gì trong quyết định thi hành án để có thể giám sát và hỗ trợ cháu trong thời gian thử thách?",
+    "gold": [
+      "3000300000000000500000100000000000000000"
+    ],
+    "source_title": "Mục 1"
+  },
+  {
+    "query": "Nếu tôi là bên nhượng quyền và có sự thay đổi thông tin về địa chỉ hoặc thông tin liên lạc, tôi cần làm gì và có thời hạn bao lâu để thông báo cho cơ quan nhà nước?",
+    "gold": [
+      "34011000000000006000008000000000000000002910000000000000000000402212500350002100"
+    ],
+    "source_title": "Điều 34.11.NĐ.2.21. Thông báo thay đổi thông tin đăng ký trong hoạt động nhượng quyền thương mại"
+  },
+  {
+    "query": "Tôi muốn biết máy bay của Cảnh sát biển Việt Nam có những màu sắc và dấu hiệu nhận biết nào để dễ dàng phân biệt khi nhìn từ xa?",
+    "gold": [
+      "25008000000000005000029000000000000000000040269740061000290000802733500870000400"
+    ],
+    "source_title": "Điều 25.8.TT.4.4. Màu sắc, dấu hiệu nhận biết loại máy bay cánh bằng Cảnh sát biển Việt Nam"
+  },
+  {
+    "query": "Tôi muốn đổi tiền Việt sang đô la Mỹ để đi du lịch, ngân hàng hợp tác xã có thể giúp tôi thực hiện giao dịch này không?",
+    "gold": [
+      "22005000000000007000036000000000000000000040258700089000040000802518300210003000"
+    ],
+    "source_title": "Điều 22.5.TT.25.30. Hoạt động ngoại hối của ngân hàng hợp tác xã"
+  },
+  {
+    "query": "Tôi muốn biết ai sẽ là người phụ trách việc tổ chức và kiểm tra việc cấp học bổng cho học sinh trong trường của tôi?",
+    "gold": [
+      "13001000000000005000002000000000000000000850000000000000000000802408400350000900"
+    ],
+    "source_title": "Điều 13.1.TT.27.9. Trách nhiệm của sở giáo dục và đào tạo"
+  },
+  {
+    "query": "Tôi đang có ý định đầu tư vào một dự án khai thác tài nguyên biển, nhưng không biết liệu có những chính sách nào của Nhà nước hỗ trợ cho các cá nhân, tổ chức như tôi trong việc khai thác và bảo vệ tài nguyên biển và hải đảo không?",
+    "gold": [
+      "2700400000000000100000400000000000000000"
+    ],
+    "source_title": "Điều 27.4.LQ.4. Chính sách của Nhà nước về tài nguyên, môi trường biển và hải đảo"
+  },
+  {
+    "query": "Tôi muốn biết thông tin về cách thức báo cáo thống kê trong lĩnh vực pháp luật, cụ thể là trong việc xây dựng văn bản quy phạm pháp luật, thì tôi cần làm gì?",
+    "gold": [
+      "310010000000000035000010000000000000000000200000000000000000"
+    ],
+    "source_title": "Tiểu mục 3"
+  },
+  {
+    "query": "Tôi muốn biết nếu tôi gia công sản phẩm cho một công ty, liệu tôi có thể sử dụng sản phẩm đó làm nguyên liệu để gia công cho một hợp đồng khác hay không?",
+    "gold": [
+      "3400300000000000200000600000000000000000005000000000000000000510000000000000000000402655300690004300"
+    ],
+    "source_title": "Điều 34.3.NĐ.8.43. Gia công chuyển tiếp"
+  },
+  {
+    "query": "Khi tôi muốn thành lập một hội, tôi cần phải làm những bước gì trong đại hội đầu tiên của hội đó?",
+    "gold": [
+      "360050000000000020000020000000000000000000402360700450001100"
+    ],
+    "source_title": "Điều 36.5.NĐ.1.11. Nội dung chủ yếu trong đại hội thành lập hội"
+  },
+  {
+    "query": "Tôi sống ở vùng nông thôn và muốn biết làm thế nào để thành lập một tổ chức thủy lợi cơ sở để quản lý công trình thủy lợi nhỏ phục vụ cho việc tưới tiêu cho ruộng của mình và các hộ dân khác trong xã?",
+    "gold": [
+      "240060000000000070000500000000000000000000802655300050002500"
+    ],
+    "source_title": "Điều 24.6.TT.2.25. Tổ chức quản lý, khai thác công trình thủy lợi nhỏ, thủy lợi nội đồng"
+  },
+  {
+    "query": "Tôi muốn biết ai là người phụ trách tổ chức các hoạt động giáo dục quốc phòng và an ninh trong công an nhân dân?",
+    "gold": [
+      "250070000000000075000010000000000000000000802532900050001000"
+    ],
+    "source_title": "Điều 25.7.TT.7.10. Sĩ quan chuyên trách công tác giáo dục quốc phòng và an ninh"
+  },
+  {
+    "query": "Tôi muốn mở một doanh nghiệp khai thác hải sản nhưng không biết mình cần phải có những giấy tờ gì và ai là cơ quan cấp phép cho tôi?",
+    "gold": [
+      "0100500000000000100000340275550011000020"
+    ],
+    "source_title": "Điều 1.5.NĐ.3.2. Giải thích từ ngữ"
+  },
+  {
+    "query": "Nếu tôi muốn tố cáo một hành vi vi phạm pháp luật nhưng không biết tên và địa chỉ của người tố cáo thì có được xem xét không?",
+    "gold": [
+      "180050000000000030000020000000000000000002500000000000000000"
+    ],
+    "source_title": "Điều 18.5.LQ.25. Tiếp nhận, xử lý thông tin có nội dung tố cáo"
+  },
+  {
+    "query": "Nếu tôi cần giám định một mẫu vật liên quan đến vụ án của mình, tôi có thể đến đâu để thực hiện việc này và ai sẽ là người thực hiện giám định?",
+    "gold": [
+      "04003000000000003000000100000000000000000120000000000000000000402480200850000900"
+    ],
+    "source_title": "Điều 4.3.NĐ.1.9. Viện khoa học hình sự thuộc Bộ Công an"
+  },
+  {
+    "query": "Tôi đang trong quá trình khởi nghiệp và cần thực hiện một số thủ tục hành chính liên quan đến sản phẩm của mình, vậy Trung tâm có thể hỗ trợ tôi như thế nào trong việc này?",
+    "gold": [
+      "050020000000000010000090000000000000000000402738200940001100"
+    ],
+    "source_title": "Điều 5.2.NĐ.9.11. Về hỗ trợ của Trung tâm"
+  },
+  {
+    "query": "Thợ máy lạnh trên tàu có trách nhiệm gì trong việc bảo trì và sửa chữa các thiết bị làm lạnh?",
+    "gold": [
+      "14004000000000003000002000000000000000000590000000000000000000802626200230002900"
+    ],
+    "source_title": "Điều 14.4.TT.41.29. Nhiệm vụ của thợ máy lạnh"
+  },
+  {
+    "query": "Tôi muốn biết nếu có một trận thiên tai xảy ra, ai sẽ đứng ra tổ chức quyên góp để giúp đỡ người dân bị ảnh hưởng và nguồn kinh phí sẽ từ đâu?",
+    "gold": [
+      "350040000000000070000380000000000000000000802058400020000200"
+    ],
+    "source_title": "Điều 35.4.TL.1.2. Nguyên tắc cấp kinh phí"
+  },
+  {
+    "query": "Nếu tôi có một hợp đồng dịch vụ tài chính được ký kết trước ngày 01/01/2016, nhưng báo cáo dịch vụ tổng hợp mới được phát hành sau ngày đó, liệu tôi có cần tuân theo các quy chuẩn mới không?",
+    "gold": [
+      "1700200000000000800008600000000000000000"
+    ],
+    "source_title": "Điều 17.2.TT.10.3. Thông tư này có hiệu lực thi hành kể từ ngày 01/01/2016."
+  },
+  {
+    "query": "Nếu tôi bị phạt vi phạm hành chính nhưng không gửi văn bản giải trình kịp thời, liệu tôi vẫn có cơ hội giải trình sau đó không?",
+    "gold": [
+      "3901300000000000200000030000000000000000000100000000000000000610000000000000000000402787101180001700"
+    ],
+    "source_title": "Điều 39.13.NĐ.93.17. Giải trình"
+  },
+  {
+    "query": "Mình đang muốn mở một trung tâm thể thao và không biết có cần giấy tờ gì không để bắt đầu kinh doanh?",
+    "gold": [
+      "410110000000000040000550000000000000000000402690200360001800"
+    ],
+    "source_title": "Điều 41.11.NĐ.4.18. Giấy chứng nhận đủ điều kiện kinh doanh hoạt động thể thao của doanh nghiệp"
+  },
+  {
+    "query": "Tôi muốn xin một bản đồ vệ tinh để phục vụ cho việc nghiên cứu của mình, vậy tôi phải làm thủ tục gì và gửi yêu cầu như thế nào?",
+    "gold": [
+      "2700600000000000400002300000000000000000"
+    ],
+    "source_title": "Điều 27.6.NĐ.23. Phiếu yêu cầu cung cấp thông tin, dữ liệu ảnh viễn thám"
+  },
+  {
+    "query": "Tôi muốn mang theo một ít thuốc gây nghiện khi đi du lịch nước ngoài để điều trị bệnh, vậy tôi cần chuẩn bị những giấy tờ gì và có giới hạn số lượng nào không?",
+    "gold": [
+      "45004000000000005000002000000000000000000600000000000000000000402618100540006000"
+    ],
+    "source_title": "Điều 45.4.NĐ.1.60. Quy định về cấp phép xuất khẩu thuốc phải kiểm soát đặc biệt không vì mục đích thương mại"
+  },
+  {
+    "query": "Thông tư mới về tư vấn pháp luật có hiệu lực từ khi nào và có thay thế thông tư cũ không?",
+    "gold": [
+      "0400600000000000500002980235360001000230"
+    ],
+    "source_title": "Điều 4.6.TT.1.23. Hiệu lực thi hành"
+  },
+  {
+    "query": "Tôi muốn trồng một loại cây rừng mới nhưng không biết phải làm hồ sơ như thế nào để được công nhận nguồn giống cây trồng lâm nghiệp?",
+    "gold": [
+      "24002000000000005000044000000000000000000040275980027000160000802787700220001100"
+    ],
+    "source_title": "Điều 24.2.TT.15.11. Trình tự, thủ tục công nhận nguồn giống cây trồng lâm nghiệp"
+  },
+  {
+    "query": "Nếu tôi muốn biết kết quả của cuộc trưng cầu ý dân diễn ra gần đây thì cần phải có bao nhiêu phần trăm cử tri đi bỏ phiếu để cuộc trưng cầu đó được coi là hợp lệ?",
+    "gold": [
+      "440150000000000070000020000000000000000004400000000000000000"
+    ],
+    "source_title": "Điều 44.15.LQ.44. Kết quả trưng cầu ý dân"
+  },
+  {
+    "query": "Thông tư mới này có bắt buộc tôi phải thay đổi cách thực hiện án tử hình hay không, và từ khi nào thì áp dụng?",
+    "gold": [
+      "3000300000000001600020780274360002000210"
+    ],
+    "source_title": "Điều 30.3.TL.7.21. Hiệu lực thi hành"
+  },
+  {
+    "query": "Nếu tôi thấy một hãng hàng không không tuân thủ các quy định về vận tải hàng không, tôi có thể báo cáo cho ai và họ sẽ xử lý như thế nào?",
+    "gold": [
+      "14005000000000001000009000000000000000000040255460066000030000802568700850000300"
+    ],
+    "source_title": "Điều 14.5.TT.14.3. Cục Hàng không Việt Nam"
+  },
+  {
+    "query": "Cửa hàng hải sản mà tôi định mở có cần phải đáp ứng những yêu cầu gì về an toàn thực phẩm không?",
+    "gold": [
+      "450010000000000040000020000000000000000002400000000000000000"
+    ],
+    "source_title": "Điều 45.1.LQ.24. Điều kiện bảo đảm an toàn thực phẩm đối với cơ sở kinh doanh thực phẩm tươi sống"
+  },
+  {
+    "query": "Tại sao phí bảo hiểm xe của tôi lại tăng lên trong năm nay, trong khi tôi chưa từng gây tai nạn nào?",
+    "gold": [
+      "020030000000000010000080000000000000000000402849300670000800"
+    ],
+    "source_title": "Điều 2.3.NĐ.6.8. Mức phí bảo hiểm"
+  },
+  {
+    "query": "Tôi muốn biết quy trình và thời gian để doanh nghiệp của tôi được công nhận là doanh nghiệp quá cảnh được ưu tiên là như thế nào?",
+    "gold": [
+      "260020000000000030000100000000000000000000402724800460003400"
+    ],
+    "source_title": "Điều 26.2.NĐ.8.34. Thủ tục công nhận doanh nghiệp quá cảnh được ưu tiên"
+  },
+  {
+    "query": "Thông tư này có hiệu lực từ khi nào và có ảnh hưởng gì đến các quy định trước đó về quản lý thuốc bảo vệ thực vật không?",
+    "gold": [
+      "2400100000000000500007780267800043000110"
+    ],
+    "source_title": "Điều 24.1.TT.21.11. Hiệu lực thi hành"
+  },
+  {
+    "query": "Tôi đang tham gia một vụ kiện dân sự, nhưng tôi không biết liệu các tài liệu và chứng cứ mà Viện kiểm sát đã thu thập có được thông báo cho tôi và chuyển đến Tòa án không?",
+    "gold": [
+      "37005000000000001000002000000000000000000210000000000000000000802593100020000900"
+    ],
+    "source_title": "Điều 37.5.TL.3.9. Thông báo, chuyển tài liệu, chứng cứ do Viện kiểm sát thu thập"
+  },
+  {
+    "query": "Nếu công ty tôi muốn chào bán chứng chỉ quỹ cho công chúng, thì cần phải làm gì và mất bao lâu để nhận được giấy chứng nhận đăng ký chào bán?",
+    "gold": [
+      "340040000000000070001120000000000000000000402751401550023900"
+    ],
+    "source_title": "Điều 34.4.NĐ.1.239. Trình tự, thủ tục cấp, cấp lại, điều chỉnh Giấy chứng nhận đăng ký lập quỹ đóng"
+  },
+  {
+    "query": "Nếu tôi muốn xây dựng một công trình ngầm ở vùng biển, tôi cần làm gì để đảm bảo an toàn hàng hải và có được sự cho phép?",
+    "gold": [
+      "140040000000000050001080000000000000000000402618300580003900"
+    ],
+    "source_title": "Điều 14.4.NĐ.14.39. Đầu tư xây dựng báo hiệu hàng hải"
+  },
+  {
+    "query": "Nếu nhà tôi bị trưng dụng để phục vụ trong thời chiến, thì sau bao lâu tôi có thể lấy lại tài sản của mình?",
+    "gold": [
+      "2800600000000000300002800000000000000000"
+    ],
+    "source_title": "Điều 28.6.LQ.28. Thời hạn trưng dụng tài sản"
+  },
+  {
+    "query": "Tôi muốn biết ai là những người hoặc tổ chức được phép quản lý và khai thác các công trình thủy lợi mà nhà nước đã đầu tư?",
+    "gold": [
+      "2400600000000000100000180266450073000020"
+    ],
+    "source_title": "Điều 24.6.TT.3.2. Đối tượng áp dụng"
+  }
+]

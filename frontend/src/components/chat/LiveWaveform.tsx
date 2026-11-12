@@ -53,6 +53,8 @@ export function LiveWaveform({ recording }: { recording: boolean }) {
 
         analyser.getByteFrequencyData(data);
         const step = Math.max(1, Math.floor(data.length / bars));
+        // Màu nhấn lấy từ theme (đổi theo sáng/tối); canvas không đọc được var() trực tiếp
+        const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#A4262C";
 
         for (let i = 0; i < bars; i++) {
           // Lấy trung bình của một dải tần
@@ -64,10 +66,12 @@ export function LiveWaveform({ recording }: { recording: boolean }) {
           const x    = i * (barW + gap);
           const y    = (H - barH) / 2;
 
-          gc.fillStyle = `rgba(83,74,183,${0.35 + amp * 0.65})`;
+          gc.fillStyle = accent;
+          gc.globalAlpha = 0.35 + amp * 0.65;
           gc.beginPath();
           gc.roundRect(x, y, barW, barH, barW / 2);
           gc.fill();
+          gc.globalAlpha = 1;
         }
       };
 

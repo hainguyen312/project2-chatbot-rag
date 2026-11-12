@@ -9,3 +9,4 @@ __pycache__/
 test_raptor/volumes/
 
 firebase-credentials.json
+.cache/

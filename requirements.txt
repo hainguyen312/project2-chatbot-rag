@@ -19,10 +19,11 @@ scikit-learn==1.5.*
 # optional
 hdbscan
 rank_bm25
+bm25s>=0.2   # BM25 lexical cho hybrid retrieval (retrieve/lexical_bm25.py)
 
 markdown
 pymongo
 
 neo4j
 tavily-python
-nest_asyncio
+nest_asynciopytest
