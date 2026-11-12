@@ -20,6 +20,9 @@ import {
 } from "./officeData";
 import { characterPositions } from "./runtime";
 
+/** activity của bước "away" — UI ẩn nhãn tên khi nhân vật khuất */
+export const AWAY_ACTIVITY = "Đi vệ sinh";
+
 export type Anim = "idle" | "think" | "search" | "type" | "read" | "talk" | "drink" | "wave";
 
 /** Đích đi tới: toạ độ cố định, hoặc "đến gần nhân vật X" (bám theo nếu X di chuyển) */
@@ -30,8 +33,12 @@ export type Step = Common &
   (
     | { kind: "walk"; to: Target; carry?: boolean; run?: boolean }
     | { kind: "face"; to: Target | number }
-    | { kind: "work"; anim: Anim; minMs: number; until?: string; activity: string; seated?: boolean; facing?: number }
-    | { kind: "say"; text: string | (() => string); ms: number }
+    | {
+        kind: "work"; anim: Anim; minMs: number; until?: string; activity: string; seated?: boolean; facing?: number;
+        /** tạm khuất khỏi văn phòng (vd. vào nhà vệ sinh) */
+        away?: boolean;
+      }
+    | { kind: "say"; text: string | (() => string); ms: number; seated?: boolean }
     | { kind: "drop"; callId?: string }
     | { kind: "signal"; token: string }
   );
@@ -319,16 +326,42 @@ class Director {
     return !c || c.queue.every((s) => s.idle);
   }
 
-  openDialog(id: CharacterId) {
+  /**
+   * @param stay true: khách ngồi yên tại chỗ vẫn nói chuyện được (chọn từ thanh
+   *             "Nói chuyện với" ở trên) — không đi tới nhân viên.
+   */
+  openDialog(id: CharacterId, start: "menu" | "cases" = "menu", stay = false) {
     if (id === "client") return;
+    // đang nói với người khác → kết thúc cuộc đó trước để họ không bị kẹt
+    if (this.dialog && this.dialogToken) this.resolved.add(this.dialogToken);
     this.dialog = id;
+    this.dialogSession++;
+    this.dialogStart = start;
     const def = CHARACTER_BY_ID[id];
     const token = `dialog:${id}:${Date.now()}`;
     this.dialogToken = token;
+    // Toàn cảnh / mắt nhân vật: nhân vật khách tự đi tới chỗ nhân viên.
+    // Nhập vai: người chơi đã tự đi tới nên không cần.
+    const clientWalks = this.view !== "fp" && !stay;
+    const arrive = `arrive:${token}`;
+    if (clientWalks) {
+      this.chars.get("client")!.queue = [];
+      this.push(
+        "client",
+        { kind: "walk", to: { near: id, dist: 1.2 }, idle: true },
+        { kind: "signal", token: arrive, idle: true },
+        { kind: "face", to: { near: id }, idle: true },
+        { kind: "work", anim: "talk", minMs: 600, until: token, activity: `Đang nói chuyện với ${def.name}`, idle: true },
+        { kind: "walk", to: STATIONS.clientChair, idle: true },
+      );
+    } else {
+      this.resolved.add(arrive);
+    }
     if (this.isIdle(id)) {
       this.chars.get(id)!.queue = [];
       this.push(
         id,
+        { kind: "work", anim: "idle", minMs: 200, until: arrive, activity: "Chờ khách tới", idle: true },
         { kind: "face", to: { near: "client" }, idle: true },
         { kind: "say", text: def.greet, ms: 4000, idle: true },
         { kind: "work", anim: "talk", minMs: 800, until: token, activity: "Đang nói chuyện với bạn", idle: true, facing: undefined },
@@ -339,9 +372,69 @@ class Director {
     this.emit();
   }
   private dialogToken = "";
-  closeDialog() {
+  /** Tăng mỗi lần mở hộp thoại — UI dùng làm key để reset hộp thoại */
+  dialogSession = 0;
+  /** Màn mở đầu của hộp thoại lần này */
+  dialogStart: "menu" | "cases" = "menu";
+  /** Mở thẳng danh sách hồ sơ (bấm tủ hồ sơ khách hàng) */
+  openCases() {
+    this.openDialog("memory", "cases");
+  }
+  /**
+   * Khách xin xem lại hồ sơ cũ: quản lý hồ sơ ra tủ, rút tập hồ sơ, mang tới
+   * đưa tận tay khách. Gọi sau closeDialog().
+   */
+  fetchCase(title: string) {
+    const def = CHARACTER_BY_ID.memory;
+    const token = `case:${Date.now()}`;
+    const toClient: Target = { near: "client", dist: 1.15 };
+    this.chars.get("memory")!.queue = [];
+    this.push(
+      "memory",
+      { kind: "say", text: "Anh/chị chờ chút, tôi lấy hồ sơ ngay!", ms: 2200 },
+      { kind: "walk", to: STATIONS.memory },
+      { kind: "face", to: -Math.PI / 2 },
+      { kind: "work", anim: "search", minMs: 1800, activity: "Tìm tập hồ sơ trong tủ", facing: -Math.PI / 2 },
+      { kind: "work", anim: "read", minMs: 900, activity: `Rút hồ sơ “${short(title, 30)}”`, facing: -Math.PI / 2 },
+      { kind: "walk", to: toClient, carry: true },
+      { kind: "face", to: { near: "client" } },
+      { kind: "say", text: `Hồ sơ “${short(title, 40)}” đây ạ. Mời anh/chị trình bày tiếp!`, ms: 3500 },
+      { kind: "work", anim: "talk", minMs: 1200, activity: "Bàn giao hồ sơ cho khách" },
+      { kind: "signal", token },
+      { kind: "walk", to: def.work.pos },
+    );
+    this.log("memory", `Lấy hồ sơ “${short(title, 40)}” cho khách`);
+    if (this.view !== "fp") {
+      // khách đứng chờ nhận hồ sơ rồi mới về ghế
+      this.chars.get("client")!.queue = [];
+      this.push(
+        "client",
+        { kind: "face", to: { near: "memory" }, idle: true },
+        { kind: "work", anim: "idle", minMs: 600, until: token, activity: "Chờ nhận hồ sơ", idle: true },
+        { kind: "work", anim: "read", minMs: 1200, activity: "Xem lại hồ sơ", idle: true },
+        { kind: "walk", to: STATIONS.clientChair, idle: true },
+      );
+    }
+    this.emit();
+  }
+  /** Vụ việc mới: nhân viên đưa khách một tập hồ sơ trống. Gọi sau closeDialog(). */
+  newCase(who: CharacterId) {
+    const def = CHARACTER_BY_ID[who];
+    this.chars.get(who)!.queue = [];
+    this.push(
+      who,
+      { kind: "face", to: { near: "client" } },
+      { kind: "work", anim: "search", minMs: 900, activity: "Lấy tập hồ sơ mới" },
+      { kind: "say", text: "Đã mở hồ sơ mới. Anh/chị cứ trình bày vấn đề nhé!", ms: 3500 },
+      { kind: "work", anim: "talk", minMs: 1000, activity: "Mở hồ sơ mới cho khách" },
+      { kind: "walk", to: def.work.pos },
+    );
+    this.log(who, "Mở hồ sơ vụ việc mới cho khách");
+    this.emit();
+  }
+  closeDialog(silent = false) {
     if (this.dialogToken) this.resolved.add(this.dialogToken);
-    if (this.dialog) this.say(this.dialog, "Hẹn gặp lại ạ!", 1800, false);
+    if (this.dialog && !silent) this.say(this.dialog, "Hẹn gặp lại ạ!", 1800, false);
     this.dialog = null;
     this.emit();
   }
@@ -356,10 +449,14 @@ class Director {
     if (id === "client") {
       if (this.view === "fp") return;
       const def = CHARACTER_BY_ID.client;
-      this.push(id, {
-        kind: "work", anim: "think", minMs: rand(6000, 12000), activity: "Chờ tư vấn",
-        seated: true, facing: def.work.facing, idle: true,
-      });
+      this.push(
+        id,
+        { kind: "walk", to: STATIONS.clientChair, idle: true },
+        {
+          kind: "work", anim: "think", minMs: rand(6000, 12000), activity: "Chờ tư vấn",
+          seated: true, facing: def.work.facing, idle: true,
+        },
+      );
       return;
     }
     if (this.dialog === id) return;
@@ -371,50 +468,77 @@ class Director {
         seated: def.work.seated, facing: def.work.facing, idle: true,
       },
     ];
+    // Nhân viên chủ yếu ngồi làm việc tại chỗ; thỉnh thoảng mới đi lấy nước /
+    // đi vệ sinh, và đôi khi nói vài câu với đồng nghiệp ngồi gần — không rời chỗ.
     const r = Math.random();
-    // luật sư & lễ tân chủ yếu ngồi tại chỗ
     const homebody = id === "lead" || id === "receptionist";
-    if (r < (homebody ? 0.8 : 0.5)) {
-      this.push(id, ...sitAtWork(rand(7000, 15000)));
-    } else if (r < (homebody ? 0.9 : 0.72)) {
+    const pDrink = homebody ? 0.03 : 0.05;
+    const pRestroom = homebody ? 0.02 : 0.03;
+    const pChat = 0.06;
+    if (r < pDrink) {
       this.push(
         id,
         { kind: "walk", to: STATIONS.cooler, idle: true },
         { kind: "work", anim: "drink", minMs: rand(2500, 4000), activity: "Lấy nước", facing: Math.PI, idle: true },
-        ...sitAtWork(rand(6000, 10000)),
+        ...sitAtWork(rand(15000, 25000)),
       );
-    } else {
-      // sang tán gẫu với một đồng nghiệp đang rảnh
-      const mates = STAFF.filter((m) => m.id !== id && this.isIdle(m.id) && this.dialog !== m.id);
-      if (!mates.length) {
-        this.push(id, ...sitAtWork(rand(6000, 10000)));
-        return;
-      }
-      const mate = pick(mates).id;
-      const [a, b] = pick(SMALL_TALK);
-      const talkMs = 5200;
-      this.chars.get(mate)!.queue = [];
-      this.push(
-        mate,
-        { kind: "face", to: { near: id }, idle: true },
-        { kind: "work", anim: "idle", minMs: 1600, activity: "Tán gẫu", idle: true },
-        { kind: "say", text: b, ms: 2800, idle: true },
-        { kind: "work", anim: "talk", minMs: 1600, activity: "Tán gẫu", idle: true },
-      );
+    } else if (r < pDrink + pRestroom) {
       this.push(
         id,
-        { kind: "walk", to: { near: mate, dist: 1.1 }, idle: true },
-        { kind: "face", to: { near: mate }, idle: true },
-        { kind: "say", text: a, ms: 2800, idle: true },
-        { kind: "work", anim: "talk", minMs: talkMs - 1700, activity: "Tán gẫu", idle: true },
-        ...sitAtWork(rand(6000, 10000)),
+        { kind: "walk", to: STATIONS.restroom, idle: true },
+        { kind: "face", to: Math.PI / 2, idle: true },
+        { kind: "work", anim: "idle", minMs: rand(6000, 10000), activity: AWAY_ACTIVITY, away: true, idle: true },
+        ...sitAtWork(rand(15000, 25000)),
       );
+    } else if (r < pDrink + pRestroom + pChat && this.chatFromSeat(id)) {
+      // đã xếp lịch tán gẫu tại chỗ
+    } else {
+      this.push(id, ...sitAtWork(rand(12000, 25000)));
     }
+  }
+
+  /** Tán gẫu ngắn với đồng nghiệp ngồi gần — cả hai vẫn ngồi tại bàn mình. */
+  private chatFromSeat(id: CharacterId): boolean {
+    const def = CHARACTER_BY_ID[id];
+    if (!def.work.seated) return false;
+    const [x, z] = def.work.pos;
+    const mates = STAFF.filter((m) => {
+      if (m.id === id || this.dialog === m.id || !m.work.seated) return false;
+      const step = this.chars.get(m.id)?.queue[0];
+      // đồng nghiệp phải đang ngồi làm việc lúc rảnh
+      if (!step || !step.idle || step.kind !== "work" || !step.seated) return false;
+      return Math.hypot(m.work.pos[0] - x, m.work.pos[1] - z) < 8;
+    });
+    if (!mates.length) return false;
+    const mate = CHARACTER_BY_ID[pick(mates).id];
+    const [a, b] = pick(SMALL_TALK);
+    const token = `chat:${id}:${Date.now()}`;
+    const seat = (d: typeof def, anim: Anim, minMs: number, until?: string): Step => ({
+      kind: "work", anim, minMs, until, activity: "Tán gẫu", seated: true, facing: d.work.facing, idle: true,
+    });
+    this.chars.get(mate.id)!.queue = [];
+    this.push(
+      mate.id,
+      seat(mate, mate.work.anim, 0, token),
+      { kind: "say", text: b, ms: 2800, seated: true, idle: true },
+      seat(mate, "talk", 1200),
+      seat(mate, mate.work.anim, rand(12000, 20000)),
+    );
+    this.push(
+      id,
+      { kind: "walk", to: def.work.pos, idle: true },
+      { kind: "say", text: a, ms: 2800, seated: true, idle: true },
+      seat(def, "talk", 1400),
+      { kind: "signal", token, idle: true },
+      seat(def, def.work.anim, rand(15000, 25000)),
+    );
+    return true;
   }
 
   // ── Kịch bản cho một câu hỏi ──────────────────────────────────────────────
   beginQuestion(prompt: string) {
-    this.resolved.clear();
+    // giữ token của hội thoại / lấy hồ sơ để nhân vật không kẹt ở bước "until"
+    for (const t of [...this.resolved]) if (!/^(dialog|arrive|case):/.test(t)) this.resolved.delete(t);
     this.pending.clear();
     this.results.clear();
     this.deskDocs = 0;

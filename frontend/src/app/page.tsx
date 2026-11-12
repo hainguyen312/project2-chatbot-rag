@@ -752,8 +752,8 @@ export default function Home() {
                 </div>
                 <div className="flex shrink-0 items-center gap-1 md:gap-2">
                   <a
-                    href="/office"
-                    title="Xem văn phòng luật 3D"
+                    href={activeChat ? `/office?chat=${encodeURIComponent(activeChat._id)}` : "/office?live=1"}
+                    title="Xem văn phòng luật 3D (tiếp tục hội thoại đang mở)"
                     className="rounded-lg px-2 py-1 text-xs font-medium hover:opacity-80"
                     style={{ color: "var(--text-muted)", border: "1px solid var(--border, rgba(127,127,127,.3))" }}
                   >

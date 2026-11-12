@@ -239,6 +239,9 @@ class MemoryManager:
         except Exception as e:
             logger.warning("Không kết nối được Milvus: %s", e)
 
+        # Khai báo sẵn để mọi nhánh lỗi đều không gây AttributeError
+        self._mongo_client = None
+        self.mongo_col = None
         self.collection: Collection | None = None
         try:
             if not utility.has_collection(MEMORY_COLLECTION_NAME):
@@ -248,6 +251,27 @@ class MemoryManager:
             logger.info("Loaded Milvus collection '%s'", MEMORY_COLLECTION_NAME)
         except Exception as e:
             logger.warning("Lỗi load Milvus collection: %s", e)
+
+        # Mongo (luôn chạy, không phụ thuộc collection Milvus mới tạo hay đã có)
+        if MongoClient and mongo_uri:
+            try:
+                self._mongo_client = MongoClient(
+                    mongo_uri,
+                    serverSelectionTimeoutMS=8000,
+                    connectTimeoutMS=8000,
+                    socketTimeoutMS=8000,
+                )
+                self._mongo_client.admin.command("ping")
+                self.mongo_col = self._mongo_client[self.mongo_db_name][MEMORY_MONGO_COLLECTION]
+                # Index để query nhanh theo user_id
+                try:
+                    self.mongo_col.create_index([("user_id", 1)])
+                    self.mongo_col.create_index([("user_id", 1), ("milvus_id", 1)])
+                except Exception:
+                    pass
+                logger.info("Kết nối MongoDB '%s.%s'", self.mongo_db_name, MEMORY_MONGO_COLLECTION)
+            except Exception as e:
+                logger.warning("Không kết nối được MongoDB: %s", e)
 
     def _create_memory_collection(self) -> None:
         """Tạo collection user_memory nếu chưa có (không liên quan collection pháp điển)."""

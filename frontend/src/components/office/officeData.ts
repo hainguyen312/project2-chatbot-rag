@@ -58,7 +58,8 @@ export const STATIONS = {
   web: [8.9, 0.6] as Vec2, // máy tính tra cứu web (Tavily)
   memory: [-8.6, 5.2] as Vec2, // tủ hồ sơ khách hàng (long-term memory)
   board: [0, -6.6] as Vec2, // bảng ghi nhớ (semantic cache)
-  cooler: [2.7, -6.55] as Vec2, // bình nước — chỗ tán gẫu
+  cooler: [2.7, -6.55] as Vec2, // bình nước
+  restroom: [10.2, -2.4] as Vec2, // cửa nhà vệ sinh (tường phải)
   sofa: [2.1, 5.9] as Vec2,
   clientChair: [0, 1.15] as Vec2,
 } as const;

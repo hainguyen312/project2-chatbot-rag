@@ -4,7 +4,7 @@ import { Html, Line, RoundedBox } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { useDeskDocs, usePassages, useViewMode } from "./director";
+import { director, useDeskDocs, usePassages, useViewMode } from "./director";
 import { makeParquetTexture, makeRugTexture, std } from "./materials";
 import { CHAIRS, ROOM, STATIONS } from "./officeData";
 
@@ -441,6 +441,12 @@ export function Room({ onOpenDocs, showSigns }: { onOpenDocs: () => void; showSi
       <Window z={-4.5} />
       <Window z={3.5} />
       <WallClock x={-1.9} z={ROOM.minZ + 0.06} />
+      {/* cửa nhà vệ sinh (tường phải) */}
+      <RBox p={[ROOM.maxX - 0.03, 1.05, STATIONS.restroom[1]]} s={[0.08, 2.1, 1.0]} c="#8b5a3c" radius={0.02} />
+      <RBox p={[ROOM.maxX - 0.07, 2.3, STATIONS.restroom[1]]} s={[0.03, 0.22, 0.42]} c="#2563eb" radius={0.01} />
+      <Html position={[ROOM.maxX - 0.1, 2.3, STATIONS.restroom[1]]} center zIndexRange={[10, 0]} style={{ pointerEvents: "none" }}>
+        <div className="select-none rounded bg-blue-600 px-1.5 text-[10px] font-bold text-white">WC</div>
+      </Html>
       <Frame p={[ROOM.maxX - 0.04, 1.95, -4.2]} rot={-Math.PI / 2} w={1.2} h={0.8} art="#f1e3c8" />
       <Frame p={[ROOM.maxX - 0.04, 1.95, 4.2]} rot={-Math.PI / 2} w={0.9} h={0.7} art="#c8d8f1" />
       <Html position={[-8.9, 2.65, ROOM.minZ + 0.09]} transform distanceFactor={6} style={{ pointerEvents: "none" }}>
@@ -507,7 +513,20 @@ export function Room({ onOpenDocs, showSigns }: { onOpenDocs: () => void; showSi
       {/* hồ sơ khách hàng (memory) */}
       <Desk x={-7.4} z={2.4} w={1.8} d={0.9} />
       <Monitor x={-7.6} z={2.35} glow="#5eead4" />
-      <group position={[-10.2, 0, 5.2]}>
+      <group
+        position={[-10.2, 0, 5.2]}
+        onClick={(e) => {
+          e.stopPropagation();
+          director.openCases();
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          document.body.style.cursor = "pointer";
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = "";
+        }}
+      >
         <RBox p={[0, 1.0, 0]} s={[0.9, 2.0, 2.2]} c="#0f766e" radius={0.03} rough={0.5} />
         {Array.from({ length: 12 }, (_, i) => (
           <Box key={i} p={[0.46, 0.35 + Math.floor(i / 4) * 0.55, -0.75 + (i % 4) * 0.5]} s={[0.03, 0.4, 0.35]} c={["#fbbf24", "#f87171", "#60a5fa", "#a3e635"][i % 4]} />

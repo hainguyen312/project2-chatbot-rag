@@ -4,7 +4,7 @@ import { Html } from "@react-three/drei";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { memo, useRef, useState } from "react";
 import * as THREE from "three";
-import { director, resolveTarget, useCharView, useSelected, useViewMode, usePovId, type Anim, type Step, type Target } from "./director";
+import { AWAY_ACTIVITY, director, resolveTarget, useCharView, useSelected, useViewMode, usePovId, type Anim, type Step, type Target } from "./director";
 import { toon } from "./materials";
 import { SEAT_HEIGHT, type CharacterDef, type Vec2 } from "./officeData";
 import { findPath } from "./pathfinding";
@@ -173,6 +173,7 @@ function CharacterImpl({ def }: { def: CharacterDef }) {
     let running = false;
     let anim: Anim = "idle";
     let seated = false;
+    let away = false;
 
     if (isPlayer) {
       // người chơi điều khiển trực tiếp
@@ -246,12 +247,14 @@ function CharacterImpl({ def }: { def: CharacterDef }) {
           case "work": {
             anim = step.anim;
             seated = !!step.seated;
+            away = !!step.away;
             if (step.facing != null) targetHeading.current = step.facing;
             if ((elapsed >= step.minMs && director.isResolved(step.until)) || elapsed > 120_000) director.advance(def.id);
             break;
           }
           case "say": {
             anim = "talk";
+            seated = !!step.seated;
             if (elapsed >= Math.min(step.ms, 1700)) director.advance(def.id);
             break;
           }
@@ -274,6 +277,7 @@ function CharacterImpl({ def }: { def: CharacterDef }) {
     if (!g) return;
     g.position.set(pos.current.x, 0, pos.current.y);
     g.rotation.y = heading.current;
+    g.visible = !away;
     let p = characterPositions.get(def.id);
     if (!p) characterPositions.set(def.id, (p = new THREE.Vector3()));
     p.set(pos.current.x, 0, pos.current.y);
@@ -569,7 +573,7 @@ function CharacterImpl({ def }: { def: CharacterDef }) {
       </group>
 
       {/* nhãn tên + bong bóng thoại */}
-      {!hidden && (
+      {!hidden && view.activity !== AWAY_ACTIVITY && (
         <Html position={[0, 2.0 * scale, 0]} center zIndexRange={[20, 0]} style={{ pointerEvents: "none" }}>
           <div className="flex flex-col items-center gap-1 select-none" style={{ transform: "translateY(-50%)" }}>
             {view.bubble && (

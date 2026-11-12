@@ -150,19 +150,52 @@ function CharacterCard() {
 }
 
 /** Hộp hội thoại khi nói chuyện với một nhân viên */
-function DialogBox({ onAsk, onShowDocs, hasDocs }: { onAsk: (q: string) => void; onShowDocs: () => void; hasDocs: boolean }) {
+type CaseItem = { id: string; title: string; count: number; updated?: string; pinned: boolean };
+
+/** Nhân viên có thể mở hồ sơ cũ / vụ việc mới */
+const CASE_KEEPERS = ["memory", "receptionist"];
+
+function DialogBox({
+  onAsk,
+  onShowDocs,
+  hasDocs,
+  initialStage,
+  cases,
+  activeCaseId,
+  live,
+  busy,
+  onOpenCase,
+  onNewCase,
+}: {
+  onAsk: (q: string) => void;
+  onShowDocs: () => void;
+  hasDocs: boolean;
+  initialStage: "menu" | "cases";
+  cases: CaseItem[];
+  activeCaseId: string | null;
+  live: boolean;
+  busy: boolean;
+  onOpenCase: (id: string) => void;
+  onNewCase: () => void;
+}) {
   const who = useDialog();
   const { chars } = useOffice();
-  const [stage, setStage] = useState<"menu" | "about" | "ask">("menu");
+  const [stage, setStage] = useState<"menu" | "about" | "ask" | "cases">(initialStage);
   const [q, setQ] = useState("");
-  const [prevWho, setPrevWho] = useState(who);
-  if (who !== prevWho) {
-    // reset khi đổi người nói chuyện
-    setPrevWho(who);
-    setStage("menu");
-    setQ("");
-  }
   if (!who) return null;
+  const isKeeper = CASE_KEEPERS.includes(who);
+  const pickCase = (c: CaseItem) => {
+    director.closeDialog(true);
+    onOpenCase(c.id);
+    // quản lý hồ sơ đi lấy tập hồ sơ mang tới cho khách
+    if (who !== "memory") director.npcSay(who, "Để chị Hạnh lấy hồ sơ cho anh/chị nhé!", 3000);
+    director.fetchCase(c.title);
+  };
+  const newCase = () => {
+    director.closeDialog(true);
+    onNewCase();
+    director.newCase(who);
+  };
   const def = CHARACTER_BY_ID[who];
   const view = chars[who];
   const ask = () => {
@@ -194,6 +227,37 @@ function DialogBox({ onAsk, onShowDocs, hasDocs }: { onAsk: (q: string) => void;
           </>
         ) : stage === "ask" ? (
           "Anh/chị cứ trình bày vấn đề, tôi sẽ chuyển cho cả văn phòng cùng xử lý."
+        ) : stage === "cases" ? (
+          !live ? (
+            "Tủ hồ sơ chỉ lưu vụ việc thật — anh/chị bật chế độ 🟢 Live để tôi tra nhé."
+          ) : cases.length === 0 ? (
+            "Anh/chị chưa có hồ sơ nào ở văn phòng. Mình mở vụ việc mới nhé?"
+          ) : (
+            <>
+              Đây là các hồ sơ của anh/chị, muốn xem tiếp vụ nào ạ?
+              <div className="mt-2 max-h-48 space-y-1 overflow-y-auto pr-1">
+                {cases.map((c) => (
+                  <button
+                    key={c.id}
+                    disabled={busy}
+                    className={`office-option flex w-full items-center gap-2 text-left disabled:opacity-50 ${c.id === activeCaseId ? "ring-1 ring-sky-400/60" : ""}`}
+                    onClick={() => pickCase(c)}
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate">
+                        {c.pinned ? "📌 " : "📁 "}
+                        {c.title}
+                      </span>
+                      <span className="block text-[11px] opacity-50">
+                        {c.count} tin nhắn{c.updated ? ` · ${new Date(c.updated).toLocaleString("vi-VN")}` : ""}
+                        {c.id === activeCaseId ? " · đang mở" : ""}
+                      </span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )
         ) : (
           def.greet
         )}
@@ -217,11 +281,32 @@ function DialogBox({ onAsk, onShowDocs, hasDocs }: { onAsk: (q: string) => void;
             Hỏi
           </button>
         </form>
+      ) : stage === "cases" ? (
+        <div className="mt-3 grid gap-1.5 sm:grid-cols-2">
+          {live && (
+            <button className="office-option" disabled={busy} onClick={newCase}>
+              🆕 Mở vụ việc mới
+            </button>
+          )}
+          <button className="office-option" onClick={() => setStage("menu")}>
+            ↩️ Quay lại
+          </button>
+        </div>
       ) : (
         <div className="mt-3 grid gap-1.5 sm:grid-cols-2">
           <button className="office-option" onClick={() => setStage("ask")}>
             ⚖️ Tôi muốn hỏi một vấn đề pháp lý
           </button>
+          {isKeeper && (
+            <button className="office-option" onClick={() => setStage("cases")}>
+              📂 Cho tôi xem lại hồ sơ cũ
+            </button>
+          )}
+          {isKeeper && live && activeCaseId && (
+            <button className="office-option" disabled={busy} onClick={newCase}>
+              🆕 Tôi có vụ việc mới
+            </button>
+          )}
           <button className="office-option" onClick={() => setStage("about")}>
             🤔 Anh/chị phụ trách việc gì?
           </button>
@@ -269,6 +354,33 @@ function FirstPersonHud({ touch, busy }: { touch: boolean; busy: boolean }) {
   );
 }
 
+/** Nói chuyện với bất kỳ nhân viên nào mà không cần đi tới (khách ngồi yên tại chỗ) */
+function TalkToBar() {
+  const dialog = useDialog();
+  const { chars } = useOffice();
+  return (
+    <div className="office-panel pointer-events-auto flex max-w-[calc(100vw-24px)] items-center gap-1 overflow-x-auto rounded-2xl p-1 text-xs lg:max-w-[calc(100vw-424px)]">
+      <span className="shrink-0 px-2 opacity-70">💬 Nói chuyện với:</span>
+      {STAFF.map((c) => (
+        <button
+          key={c.id}
+          className={`office-chip flex shrink-0 items-center gap-1.5 ${dialog === c.id ? "is-on" : ""}`}
+          title={`${c.role} — ${chars[c.id].activity}`}
+          onClick={() => {
+            director.select(null);
+            if (dialog === c.id) director.closeDialog();
+            else director.openDialog(c.id, "menu", true);
+          }}
+        >
+          <span className={`h-2.5 w-2.5 rounded-full ${chars[c.id].busy ? "animate-pulse" : ""}`} style={{ background: c.top }} />
+          {c.name}
+          <span className="hidden opacity-60 xl:inline">· {c.role}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /** Chọn nhân vật để nhìn bằng mắt họ */
 function PovBar() {
   const povId = usePovId();
@@ -297,21 +409,26 @@ export default function OfficePageRoute() {
 }
 
 function OfficePage() {
-  const { messages, busy, status, send, stop, reset } = useOfficeChat();
+  // Mặc định MOCK (không cần backend). Live khi ?live=1, ?chat=<id> (mở hội thoại
+  // thật từ trang chat) hoặc NEXT_PUBLIC_OFFICE_DATA=live
+  const searchParams = useSearchParams();
+  const initialChatId = searchParams.get("chat");
+  const [mock, setMock] = useState(
+    searchParams.get("live") !== "1" && !initialChatId && process.env.NEXT_PUBLIC_OFFICE_DATA !== "live",
+  );
+  const { messages, busy, status, error, send, stop, reset, chats, activeChat, chatsLoading, openChat } = useOfficeChat(
+    mock,
+    initialChatId,
+  );
   const { passages, timeline, iteration } = useOffice();
   const [input, setInput] = useState("");
   const [mode, setMode] = useState<"normal" | "situation">("normal");
-  const [tab, setTab] = useState<"chat" | "activity">("chat");
+  const [tab, setTab] = useState<"chat" | "history" | "activity">("chat");
   const [docsOpen, setDocsOpen] = useState<Passage[] | null>(null);
   const [follow, setFollow] = useState(false);
   const [signs, setSigns] = useState(true);
   const [resetToken, setResetToken] = useState(0);
   const [sheetOpen, setSheetOpen] = useState(true);
-  // Mặc định MOCK (không cần backend). Live khi ?live=1 hoặc NEXT_PUBLIC_OFFICE_DATA=live
-  const searchParams = useSearchParams();
-  const [mock, setMock] = useState(
-    searchParams.get("live") !== "1" && process.env.NEXT_PUBLIC_OFFICE_DATA !== "live",
-  );
   const listRef = useRef<HTMLDivElement>(null);
   const viewMode = useViewMode();
   const povId = usePovId();
@@ -336,7 +453,7 @@ function OfficePage() {
     // mobile: thu khung chat để xem văn phòng làm việc, mở lại khi có câu trả lời
     const isMobile = window.matchMedia("(max-width: 1023px)").matches;
     if (isMobile) setSheetOpen(false);
-    send(text, mode, mock).then(() => {
+    send(text, mode).then(() => {
       if (isMobile) setSheetOpen(true);
     });
   };
@@ -366,9 +483,30 @@ function OfficePage() {
         {dialog && (
           <div className="absolute inset-x-0 bottom-3 z-40 flex justify-center px-3">
             <DialogBox
+              key={director.dialogSession}
+              initialStage={director.dialogStart}
               hasDocs={passages.length > 0}
               onShowDocs={() => setDocsOpen(passages)}
               onAsk={(q) => submit(q)}
+              live={!mock}
+              busy={busy}
+              activeCaseId={activeChat?._id ?? null}
+              cases={chats.map((c) => ({
+                id: c._id,
+                title: c.title || "Cuộc trò chuyện mới",
+                count: c.messages?.length ?? 0,
+                updated: c.updated_at ?? c.updatedAt ?? c.created_at ?? c.createdAt,
+                pinned: !!c.pinned,
+              }))}
+              onOpenCase={(id) => {
+                openChat(id);
+                setTab("chat");
+                setSheetOpen(true);
+              }}
+              onNewCase={() => {
+                reset();
+                setTab("chat");
+              }}
             />
           </div>
         )}
@@ -423,7 +561,10 @@ function OfficePage() {
           <button
             className={`office-chip ${mock ? "is-mock" : "is-on"}`}
             disabled={busy}
-            onClick={() => setMock((v) => !v)}
+            onClick={() => {
+              setMock((v) => !v);
+              setTab("chat");
+            }}
             title={mock ? "Đang dùng dữ liệu mẫu — bấm để chuyển sang backend thật" : "Đang gọi backend thật (rag_api) — bấm để về Mock"}
           >
             {mock ? "🧪 Mock" : "🟢 Live"}
@@ -433,6 +574,7 @@ function OfficePage() {
 
       {/* Thẻ nhân vật + trạng thái */}
       <div className="pointer-events-none absolute left-3 top-[124px] z-30 flex flex-col gap-2 sm:left-4 sm:top-24">
+        <TalkToBar />
         {viewMode === "orbit" && !dialog && <CharacterCard />}
         {viewMode === "pov" && <PovBar />}
       </div>
@@ -458,7 +600,7 @@ function OfficePage() {
       >
         <button className="mx-auto mt-2 h-1.5 w-12 shrink-0 rounded-full bg-white/30 lg:hidden" onClick={() => setSheetOpen((v) => !v)} aria-label="Thu/mở khung chat" />
         <div className="flex shrink-0 items-center gap-1 px-3 pb-2 pt-2 lg:pt-4">
-          {(["chat", "activity"] as const).map((t) => (
+          {(mock ? (["chat", "activity"] as const) : (["chat", "history", "activity"] as const)).map((t) => (
             <button
               key={t}
               className={`office-chip ${tab === t ? "is-on" : ""}`}
@@ -467,19 +609,68 @@ function OfficePage() {
                 setSheetOpen(true);
               }}
             >
-              {t === "chat" ? "💬 Hội thoại" : `📋 Hoạt động (${timeline.length})`}
+              {t === "chat" ? "💬 Hội thoại" : t === "history" ? `📂 Hồ sơ cũ (${chats.length})` : `📋 Hoạt động (${timeline.length})`}
             </button>
           ))}
           <div className="flex-1" />
-          {messages.length > 0 && !busy && (
-            <button className="office-chip" onClick={reset}>
+          {(mock ? messages.length > 0 : !!activeChat) && !busy && (
+            <button
+              className="office-chip"
+              onClick={() => {
+                reset();
+                setTab("chat");
+              }}
+            >
               Vụ việc mới
             </button>
           )}
         </div>
+        {!mock && tab === "chat" && (
+          <div className="shrink-0 truncate px-4 pb-1 text-[11px] opacity-60" title={activeChat?.title}>
+            {activeChat ? `📁 ${activeChat.title}` : "📁 Vụ việc mới — câu hỏi đầu tiên sẽ tạo hội thoại mới"}
+          </div>
+        )}
+        {error && <div className="mx-3 mb-1 shrink-0 rounded-lg bg-rose-500/15 px-3 py-1.5 text-xs text-rose-200">{error}</div>}
 
         <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto px-3 pb-2">
-          {tab === "chat" ? (
+          {tab === "history" ? (
+            chatsLoading && chats.length === 0 ? (
+              <p className="pt-2 text-sm opacity-60">Đang tải hồ sơ…</p>
+            ) : chats.length === 0 ? (
+              <p className="pt-2 text-sm opacity-60">Chưa có hội thoại nào.</p>
+            ) : (
+              <div className="space-y-1 pt-1">
+                {chats.map((c) => {
+                  const isActive = c._id === activeChat?._id;
+                  const updated = c.updated_at ?? c.updatedAt ?? c.created_at ?? c.createdAt;
+                  return (
+                    <button
+                      key={c._id}
+                      disabled={busy}
+                      className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm ring-1 disabled:opacity-50 ${
+                        isActive ? "bg-sky-600/25 ring-sky-400/50" : "bg-white/5 ring-white/10 hover:bg-white/10"
+                      }`}
+                      onClick={() => {
+                        openChat(c._id);
+                        setTab("chat");
+                      }}
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate">
+                          {c.pinned ? "📌 " : ""}
+                          {c.title || "Cuộc trò chuyện mới"}
+                        </span>
+                        <span className="block text-[11px] opacity-50">
+                          {c.messages?.length ?? 0} tin nhắn
+                          {updated ? ` · ${new Date(updated).toLocaleString("vi-VN")}` : ""}
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )
+          ) : tab === "chat" ? (
             messages.length === 0 ? (
               <div className="space-y-3 pt-2 text-sm">
                 <p className="opacity-80">
