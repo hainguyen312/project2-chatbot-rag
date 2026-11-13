@@ -9,6 +9,8 @@ export type ChatDoc = {
   _id: string;
   user_id: string;
   title: string;
+  /** Nguồn tên: auto = cắt từ câu hỏi (tạm), llm = LLM đặt, user = người dùng đổi tên */
+  title_source?: "auto" | "llm" | "user";
   pinned: boolean;
   messages: ChatMessage[];
   createdAt?: string;
@@ -105,13 +107,13 @@ export async function getChatById(
 export async function updateChat(
   id: string,
   userId: string,
-  patch: Partial<Pick<ChatDoc, "title" | "pinned" | "messages">>
+  patch: Partial<Pick<ChatDoc, "title" | "title_source" | "pinned" | "messages">>
 ): Promise<ChatDoc | null> {
   const col = await getCollection();
   const updatedAt = nowIso();
   const safePatch = Object.fromEntries(
     Object.entries(patch).filter(([, value]) => value !== undefined)
-  ) as Partial<Pick<ChatDoc, "title" | "pinned" | "messages">>;
+  ) as Partial<Pick<ChatDoc, "title" | "title_source" | "pinned" | "messages">>;
 
   if (!col) {
     const current = memoryStore.get(id);

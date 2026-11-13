@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { chatActions, useChatStore, type Message } from "@/store/chat-store";
+import { chatActions, provisionalTitle, useChatStore, type Message } from "@/store/chat-store";
 import { demoStream } from "./demoStream";
 import { director, type Passage, type StreamEvent } from "./director";
 
@@ -26,13 +26,6 @@ function getOrCreateAnonUserId(): string | null {
   } catch {
     return null;
   }
-}
-
-function autoTitle(messages: Message[], currentTitle: string) {
-  if (!currentTitle.startsWith("Cuộc trò chuyện")) return currentTitle;
-  const firstUser = messages.find((m) => m.role === "user")?.content?.trim();
-  if (!firstUser) return currentTitle;
-  return firstUser.length > 40 ? `${firstUser.slice(0, 40)}...` : firstUser;
 }
 
 /**
@@ -204,7 +197,7 @@ export function useOfficeChat(mock: boolean, initialChatId: string | null = null
         const chatId = chat._id;
         const nextMessages: Message[] = [...chat.messages, { role: "user", content: text }];
         try {
-          await chatActions.patchChat(chatId, { messages: nextMessages, title: autoTitle(nextMessages, chat.title) });
+          await chatActions.patchChat(chatId, { messages: nextMessages, ...provisionalTitle(nextMessages, chat) });
         } catch (err) {
           setError(`Không lưu được tin nhắn: ${String(err)}`);
           return;
@@ -215,6 +208,10 @@ export function useOfficeChat(mock: boolean, initialChatId: string | null = null
         const reply = await streamTurn(text, nextMessages, queryMode, chatId, ctrl.signal);
         try {
           await chatActions.patchChat(chatId, { messages: [...nextMessages, reply] });
+          // Lượt hỏi đầu tiên → LLM đặt lại tên hồ sơ (chạy nền)
+          if (nextMessages.filter((m) => m.role === "user").length === 1 && reply.content) {
+            void chatActions.nameChatWithLLM(chatId, text, reply.content);
+          }
         } catch (err) {
           setError(`Không lưu được câu trả lời: ${String(err)}`);
         }

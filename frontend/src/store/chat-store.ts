@@ -40,6 +40,8 @@ export interface Message {
 export type Chat = {
   _id: string;
   title: string;
+  /** auto = tên tạm cắt từ câu hỏi · llm = LLM đặt · user = người dùng tự đổi */
+  title_source?: "auto" | "llm" | "user";
   pinned: boolean;
   messages: Message[];
   updatedAt?: string;
@@ -170,6 +172,23 @@ async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Pro
   return data;
 }
 
+const DEFAULT_TITLE_PREFIX = "Cuộc trò chuyện";
+
+/**
+ * Tên TẠM khi gửi câu hỏi đầu tiên (40 ký tự đầu của câu hỏi), để danh sách có tên ngay.
+ * Trả null nếu đoạn chat đã có tên thật (không ghi đè).
+ */
+export function provisionalTitle(messages: Message[], chat: Pick<Chat, "title" | "title_source">) {
+  if (chat.title_source && chat.title_source !== "auto") return null;
+  if (!chat.title.startsWith(DEFAULT_TITLE_PREFIX)) return null;
+  const firstUser = messages.find((m) => m.role === "user")?.content?.trim();
+  if (!firstUser) return null;
+  return {
+    title: firstUser.length > 40 ? `${firstUser.slice(0, 40)}…` : firstUser,
+    title_source: "auto" as const,
+  };
+}
+
 export const chatActions = {
   setActiveChat(id: string | null) {
     dispatch({ type: "SET_ACTIVE", payload: id });
@@ -219,6 +238,31 @@ export const chatActions = {
     });
     dispatch({ type: "UPSERT_CHAT", payload: data.chat });
     return data.chat;
+  },
+
+  /**
+   * Sau câu trả lời ĐẦU TIÊN: nhờ LLM đặt tên ngắn nêu đúng vấn đề pháp lý.
+   * Chỉ thay tên tạm (title_source = "auto"); không bao giờ ghi đè tên người dùng tự đặt.
+   * Lỗi mạng / LLM → giữ tên tạm, không báo lỗi lên giao diện.
+   */
+  async nameChatWithLLM(id: string, question: string, answer: string) {
+    const chat = getState().chats.find((c) => c._id === id);
+    if (!chat || chat.title_source !== "auto") return;
+    try {
+      const res = await fetch("/api/chats/title", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question, answer }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { title?: string };
+      const title = data.title?.trim();
+      // người dùng có thể đã đổi tên trong lúc chờ LLM
+      const latest = getState().chats.find((c) => c._id === id);
+      if (!res.ok || !title || !latest || latest.title_source !== "auto") return;
+      await chatActions.patchChat(id, { title, title_source: "llm" });
+    } catch (e) {
+      console.warn("[nameChatWithLLM]", e);
+    }
   },
 
   async removeChat(id: string) {

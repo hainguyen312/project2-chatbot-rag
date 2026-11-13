@@ -33,17 +33,22 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
   const { id } = await context.params;
   const body = (await req.json().catch(() => ({}))) as {
     title?: string;
+    title_source?: string;
     pinned?: boolean;
     messages?: { role: "user" | "assistant"; content: string }[];
   };
 
   const patch: {
     title?: string;
+    title_source?: "auto" | "llm" | "user";
     pinned?: boolean;
     messages?: { role: "user" | "assistant"; content: string }[];
   } = {};
 
   if ("title" in body) patch.title = body.title;
+  if (body.title_source === "auto" || body.title_source === "llm" || body.title_source === "user") {
+    patch.title_source = body.title_source;
+  }
   if ("pinned" in body) patch.pinned = body.pinned;
   if ("messages" in body) patch.messages = body.messages;
 

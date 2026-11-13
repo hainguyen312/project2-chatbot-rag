@@ -157,3 +157,15 @@ class ScriptedChatClient:
 @pytest.fixture
 def scripted_client():
     return ScriptedChatClient
+
+
+@pytest.fixture(autouse=True)
+def _no_real_mysql_for_status(monkeypatch):
+    """Chú thích hiệu lực (services.lawdata.status) đọc MySQL thật → tắt trong test."""
+    import services.lawdata.status as status
+
+    monkeypatch.setattr(status, "status_notes", lambda hits: {})
+    monkeypatch.setattr(status, "resolve_aliases", lambda mapcs: mapcs)
+    import services.agentic_rag as ar
+
+    monkeypatch.setattr(ar, "resolve_aliases", lambda mapcs: mapcs)

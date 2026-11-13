@@ -3,11 +3,11 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
-import { chatActions, Chat, Message, useChatStore, Passage, MemoryUsed } from "@/store/chat-store";
+import { chatActions, Chat, Message, useChatStore, Passage, MemoryUsed, provisionalTitle } from "@/store/chat-store";
 import {
   Search, MoreHorizontal, Pin, Trash2, Pencil,
   BookOpen, Menu, X, PanelLeftClose, PanelLeftOpen, SquarePen,
-  ArrowUp, Building2, Mic, Moon, Square, Sun,
+  ArrowUp, Building2, FileSearch, Mic, Moon, Square, Sun,
 } from "lucide-react";
 import { useTTS } from "@/hooks/useTTS";
 import { useSTT } from "@/hooks/useSTT";
@@ -68,13 +68,6 @@ function getOrCreateUserId(): string {
     window.localStorage.setItem(key, id);
   }
   return id;
-}
-
-function autoTitle(messages: Message[], currentTitle: string) {
-  if (!currentTitle.startsWith("Cuộc trò chuyện")) return currentTitle;
-  const firstUser = messages.find((m) => m.role === "user")?.content?.trim();
-  if (!firstUser) return currentTitle;
-  return firstUser.length > 40 ? `${firstUser.slice(0, 40)}...` : firstUser;
 }
 
 function sleep(ms: number) {
@@ -178,6 +171,8 @@ export default function Home() {
   const userId = authUser?.uid || anonId;
   const [selectedPassages, setSelectedPassages] = useState<Passage[] | null>(null);
   const [selectedMsgIdx, setSelectedMsgIdx]     = useState<number | null>(null);
+  // Điều luật cần cuộn tới trong panel; nonce đổi mỗi lần bấm để bấm lại vẫn cuộn
+  const [passageFocus, setPassageFocus]         = useState<{ index: number; nonce: number } | null>(null);
   const [fullViewPassage, setFullViewPassage]   = useState<Passage | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   // ref for the portal menu div — used to detect outside clicks
@@ -283,7 +278,7 @@ export default function Home() {
 
   const handleRename = async () => {
     if (!renameChatId || !renameValue.trim()) return;
-    await patchChat(renameChatId, { title: renameValue.trim() });
+    await patchChat(renameChatId, { title: renameValue.trim(), title_source: "user" });
     setRenameChatId(null);
     setRenameValue("");
   };
@@ -319,10 +314,7 @@ export default function Home() {
     ];
 
     try {
-      await patchChat(chatId, {
-        messages: nextMessages,
-        title: autoTitle(nextMessages, chat.title),
-      });
+      await patchChat(chatId, { messages: nextMessages, ...provisionalTitle(nextMessages, chat) });
     } catch (err) {
       // Lưu thất bại (vd. MongoDB lỗi): nhả khóa để người dùng gửi lại được.
       console.error("[onSend] patchChat", err);
@@ -429,6 +421,10 @@ export default function Home() {
 
       // Lưu ngay — không phụ thuộc animation (chuyển tab / chuyển hội thoại vẫn có câu trả lời)
       await persistAssistant(answer);
+      // Lượt hỏi đầu tiên → nhờ LLM đặt lại tên đoạn chat (chạy nền, không chặn giao diện)
+      if (nextMessages.filter((m) => m.role === "user").length === 1) {
+        void chatActions.nameChatWithLLM(chatId, promptSent, answer);
+      }
 
       setStreamingChatId(chatId);
       setRevealedStreamText("");
@@ -793,6 +789,13 @@ export default function Home() {
                 </div>
                 <div className="flex shrink-0 items-center gap-0.5 md:gap-1">
                   <a
+                    href="/review"
+                    title="Tải hợp đồng / văn bản lên để tóm tắt và cảnh báo điều khoản trái luật"
+                    className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+                    style={{ color: "var(--text-secondary)" }}>
+                    <FileSearch size={16} aria-hidden /><span className="hidden lg:inline">Rà soát văn bản</span>
+                  </a>
+                  <a
                     href={activeChat ? `/office?chat=${encodeURIComponent(activeChat._id)}` : "/office?live=1"}
                     title="Xem văn phòng luật 3D (tiếp tục hội thoại đang mở)"
                     className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
@@ -825,9 +828,16 @@ export default function Home() {
                       <MessageRow
                         key={idx} m={m} idx={idx} chatId={activeChat._id}
                         isSelected={selectedMsgIdx === idx}
-                        onSelect={(passages) => {
-                          if (selectedMsgIdx === idx) { setSelectedPassages(null); setSelectedMsgIdx(null); }
-                          else { setSelectedPassages(passages); setSelectedMsgIdx(idx); }
+                        onSelect={(passages, focusIndex) => {
+                          if (focusIndex != null && focusIndex >= 0) {
+                            // Bấm chip căn cứ: luôn mở panel và nhảy tới đúng điều luật
+                            setSelectedPassages(passages); setSelectedMsgIdx(idx);
+                            setPassageFocus({ index: focusIndex, nonce: Date.now() });
+                          } else if (selectedMsgIdx === idx) {
+                            setSelectedPassages(null); setSelectedMsgIdx(null); setPassageFocus(null);
+                          } else {
+                            setSelectedPassages(passages); setSelectedMsgIdx(idx); setPassageFocus(null);
+                          }
                         }}
                         onSpeak={speak}
                         isSpeaking={speakingIdx === idx}
@@ -991,7 +1001,7 @@ export default function Home() {
             {selectedPassages && (
               <>
                 <div className="hidden md:flex">
-                  <PassagePanel passages={selectedPassages} onClose={() => { setSelectedPassages(null); setSelectedMsgIdx(null); }} />
+                  <PassagePanel key={passageFocus?.nonce ?? 0} passages={selectedPassages} focusIndex={passageFocus?.index} onClose={() => { setSelectedPassages(null); setSelectedMsgIdx(null); }} />
                 </div>
                 <div className="fixed inset-0 z-50 flex flex-col md:hidden" style={{ background: "var(--bg-sidebar)" }}>
                   <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "0.5px solid var(--border)" }}>
@@ -1005,7 +1015,7 @@ export default function Home() {
                     </button>
                   </div>
                   <div className="flex-1 overflow-y-auto">
-                    <PassagePanel passages={selectedPassages} onClose={() => { setSelectedPassages(null); setSelectedMsgIdx(null); }} mobileEmbedded />
+                    <PassagePanel key={passageFocus?.nonce ?? 0} passages={selectedPassages} focusIndex={passageFocus?.index} onClose={() => { setSelectedPassages(null); setSelectedMsgIdx(null); }} mobileEmbedded />
                   </div>
                 </div>
               </>

@@ -25,3 +25,12 @@ body {
 }
 
 
+
+/* Ô căn cứ pháp lý vừa được nhảy tới từ chip trong câu trả lời */
+.passage-focus {
+  animation: passage-flash 1.6s ease-out;
+}
+@keyframes passage-flash {
+  0%, 30% { box-shadow: 0 0 0 3px var(--accent-light); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}

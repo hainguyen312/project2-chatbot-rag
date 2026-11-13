@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Literal, Optional
 
 import firebase_admin
 from dotenv import load_dotenv
-from fastapi import BackgroundTasks, FastAPI, Header, HTTPException
+from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi import FastAPI, UploadFile, File
 from firebase_admin import auth as fb_auth, credentials, storage as fb_storage
@@ -63,7 +63,9 @@ from services.utils import (
 )
 from services.semantic_cache import semantic_cache
 from services import auth_guard
+from services.chat_title import generate_title as generate_chat_title
 from services.memory_manager import MemoryManager
+from services.roles import RoleStore
 
 app = FastAPI(title="RAG Backend API", version="1.0.0")
 
@@ -893,13 +895,60 @@ def auth_claim_anonymous(req: ClaimAnonymousRequest) -> Dict[str, Any]:
         except Exception as e:
             print(f"[Auth] Mongo memory re-tag fail: {e}")
 
+    moved_reviews = 0
+    try:
+        h = _get_review_history()
+        if h is not None:
+            moved_reviews = h.retag(anon, uid)
+    except Exception as e:
+        print(f"[Auth] Mongo review history re-tag fail: {e}")
+
     return {
         "ok": True,
         "uid": uid,
         "anonymous_id": anon,
         "moved_chats": moved_chats,
         "moved_memories": moved_memories,
+        "moved_reviews": moved_reviews,
     }
+
+
+# ── Admin (vai trò lưu ở MongoDB user_roles) ────────────────────────────────
+_role_store: Optional[RoleStore] = None
+
+
+def _get_role(email: str) -> Optional[str]:
+    global _role_store
+    if _role_store is None:
+        _role_store = RoleStore.from_env()
+        if _role_store is None:
+            raise RuntimeError("Thiếu MONGODB_URI")
+    return _role_store.get_role(email)
+
+
+def require_admin(authorization: Optional[str] = Header(default=None)) -> Dict[str, Any]:
+    """Dependency cho mọi route /admin/*: token hợp lệ + email đã xác minh + role admin."""
+    if not firebase_admin._apps:
+        raise HTTPException(status_code=503, detail="Firebase Admin chưa khởi tạo")
+    try:
+        return auth_guard.require_role("admin", authorization, fb_auth.verify_id_token, _get_role)
+    except auth_guard.AuthError as e:
+        raise HTTPException(status_code=e.status, detail=e.detail)
+
+
+@app.get("/admin/me")
+def admin_me(admin: Dict[str, Any] = Depends(require_admin)) -> Dict[str, Any]:
+    return {"email": admin["email"], "role": admin["role"]}
+
+
+# Công cụ dữ liệu pháp luật (/admin/ingest, /admin/staging, …) — xem services/lawdata
+from services.lawdata.api import build_router as _build_lawdata_router  # noqa: E402
+from services.lawdata.staging import resume_pending as _resume_lawdata  # noqa: E402
+
+app.include_router(_build_lawdata_router(require_admin))
+_resumed = _resume_lawdata()
+if _resumed:
+    print(f"[Lawdata] Tiếp tục {_resumed} mục đang dở trong hàng đợi")
 
 
 # ── Memory CRUD endpoints ────────────────────────────────────────────────────
@@ -941,6 +990,189 @@ def delete_all_memories(user_id: str,
     uid = _enforce_user_match(user_id, authorization)
     n = memory_manager.delete_all_for_user(uid)
     return {"ok": True, "user_id": uid, "deleted": n}
+
+
+class ChatTitleRequest(BaseModel):
+    question: str = Field(..., min_length=1, max_length=4000)
+    answer: str = Field(default="", max_length=8000)
+
+
+@app.post("/chat/title")
+def chat_title(req: ChatTitleRequest) -> Dict[str, str]:
+    """Tên ngắn (3–8 từ) cho đoạn chat từ câu hỏi đầu + câu trả lời — xem services/chat_title.py."""
+    return {"title": generate_chat_title(oai_client, req.question, req.answer)}
+
+
+# ── Rà soát văn bản người dùng tải lên (hợp đồng…) — xem services/doc_review.py ──
+from services import doc_review  # noqa: E402
+from services.review_history import ReviewHistory  # noqa: E402
+from fastapi import Form  # noqa: E402
+from urllib.parse import urlparse as _urlparse  # noqa: E402
+
+
+def _review_search(query: str) -> List[Dict[str, Any]]:
+    _, hits = execute_agent_tool(
+        "vector_search", {"query": query, "top_k": doc_review.ARTICLES_PER_RISK},
+        retriever=two_stage_retriever, neo4j_driver=neo4j_driver, rerank_query=query,
+    )
+    return hits
+
+
+_review_history: Optional[ReviewHistory] = None
+_review_history_tried = False
+
+
+def _get_review_history() -> Optional[ReviewHistory]:
+    global _review_history, _review_history_tried
+    if not _review_history_tried:
+        _review_history_tried = True
+        try:
+            _review_history = ReviewHistory.from_env()
+        except Exception as e:
+            print(f"[ReviewHistory] Không kết nối được MongoDB — tắt lịch sử: {e}")
+    return _review_history
+
+
+def _review_owner(user_id: Optional[str], authorization: Optional[str]) -> str:
+    """uid đã xác thực hoặc id ẩn danh demo_…; không có → 401."""
+    uid = resolve_user_id(user_id, authorization)
+    if not uid:
+        raise HTTPException(status_code=401, detail="Không xác định được người dùng")
+    return uid
+
+
+def _require_review_history() -> ReviewHistory:
+    h = _get_review_history()
+    if h is None:
+        raise HTTPException(status_code=503, detail="Lịch sử chưa được cấu hình (thiếu MONGODB_URI)")
+    return h
+
+
+def _review_web_search(query: str) -> List[Dict[str, Any]]:
+    """Cùng công cụ web_search của chat (Tavily + lọc độ tin cậy nguồn)."""
+    _, hits = execute_agent_tool(
+        "web_search", {"query": query},
+        retriever=two_stage_retriever, neo4j_driver=neo4j_driver, rerank_query=query,
+    )
+    return hits
+
+
+@app.post("/review/analyze")
+async def review_analyze(
+    file: Optional[UploadFile] = File(default=None),
+    url: str = Form(default=""),
+    text: str = Form(default=""),
+    user_id: str = Form(default=""),
+    save: bool = Form(default=True),
+    authorization: Optional[str] = Header(default=None),
+):
+    """
+    Tóm tắt + cảnh báo rủi ro pháp lý cho văn bản (file PDF/DOCX/TXT, link, hoặc chữ dán vào).
+    SSE: status {stage: extract|analyze|search|verify} → result | error.
+    save=true và xác định được người dùng → lưu file gốc + kết quả vào lịch sử (result.history_id).
+    """
+    data: Optional[bytes] = None
+    filename = content_type = ""
+    if file is not None and file.filename:
+        data = await file.read(doc_review.MAX_UPLOAD_BYTES + 1)
+        filename, content_type = file.filename, file.content_type or ""
+    url, text = url.strip(), text.strip()
+    owner = resolve_user_id(user_id or None, authorization) if save else None
+
+    def event_stream():
+        def sse(ev: Dict[str, Any]) -> str:
+            return f"data: {_json.dumps(ev, ensure_ascii=False, default=str)}\n\n"
+
+        warnings: List[str] = []
+        keep_bytes, keep_name, keep_ct = data, filename, content_type
+        try:
+            if data is not None:
+                if len(data) > doc_review.MAX_UPLOAD_BYTES:
+                    raise doc_review.ReviewError("File lớn hơn 15MB")
+                yield sse(doc_review._status("extract", f"Đang đọc file {filename}…"))
+                raw, warnings = doc_review.text_from_bytes(data, filename, content_type)
+                source = {"type": "file", "name": filename}
+            elif url:
+                yield sse(doc_review._status("extract", "Đang tải nội dung từ link…"))
+                body, ct, final_url = doc_review.fetch_link(url)
+                path = _urlparse(final_url).path
+                raw, warnings = doc_review.text_from_bytes(body, path, ct)
+                source = {"type": "url", "url": url}
+                if "html" not in ct.lower():
+                    # Lưu bản tải về (PDF/DOCX…) phòng khi link sau này không còn
+                    keep_bytes, keep_ct = body, ct.split(";")[0].strip()
+                    keep_name = path.rsplit("/", 1)[-1] or "van_ban"
+            elif text:
+                raw, source = text, {"type": "text"}
+            else:
+                raise doc_review.ReviewError("Hãy chọn file, dán link hoặc dán nội dung văn bản")
+        except doc_review.ReviewError as e:
+            yield sse({"type": "error", "message": str(e)})
+            return
+
+        on_result = None
+        history = _get_review_history() if owner else None
+        if history is not None:
+            def on_result(result: Dict[str, Any], doc_text: str) -> Dict[str, Any]:
+                rid = history.save(owner, result, text=doc_text, file_bytes=keep_bytes,
+                                   filename=keep_name, content_type=keep_ct)
+                return {"history_id": rid}
+
+        for ev in doc_review.review_events(oai_client, _review_search, raw, source=source,
+                                           warnings=warnings, on_result=on_result,
+                                           web_search=_review_web_search):
+            yield sse(ev)
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+@app.get("/review/history")
+def review_history_list(user_id: str = "", authorization: Optional[str] = Header(default=None)) -> Dict[str, Any]:
+    owner = _review_owner(user_id, authorization)
+    return {"items": _require_review_history().list(owner)}
+
+
+@app.get("/review/history/{rid}")
+def review_history_get(rid: str, user_id: str = "",
+                       authorization: Optional[str] = Header(default=None)) -> Dict[str, Any]:
+    owner = _review_owner(user_id, authorization)
+    item = _require_review_history().get(owner, rid)
+    if not item:
+        raise HTTPException(status_code=404, detail="Không tìm thấy lượt rà soát này")
+    return item
+
+
+@app.get("/review/history/{rid}/file")
+def review_history_file(rid: str, user_id: str = "", authorization: Optional[str] = Header(default=None)):
+    from urllib.parse import quote
+    from fastapi.responses import Response
+
+    owner = _review_owner(user_id, authorization)
+    got = _require_review_history().get_file(owner, rid)
+    if not got:
+        raise HTTPException(status_code=404, detail="Lượt rà soát này không có file gốc")
+    data, name, ct = got
+    return Response(content=data, media_type=ct, headers={
+        "Content-Disposition": f"attachment; filename*=UTF-8''{quote(name)}",
+        "Cache-Control": "private, no-store",
+    })
+
+
+@app.delete("/review/history/{rid}")
+def review_history_delete(rid: str, user_id: str = "",
+                          authorization: Optional[str] = Header(default=None)) -> Dict[str, Any]:
+    owner = _review_owner(user_id, authorization)
+    if not _require_review_history().delete(owner, rid):
+        raise HTTPException(status_code=404, detail="Không tìm thấy lượt rà soát này")
+    return {"ok": True}
+
+
+@app.delete("/review/history")
+def review_history_delete_all(user_id: str = "",
+                              authorization: Optional[str] = Header(default=None)) -> Dict[str, Any]:
+    owner = _review_owner(user_id, authorization)
+    return {"ok": True, "deleted": _require_review_history().delete_all(owner)}
 
 
 class MemorySettingsRequest(BaseModel):

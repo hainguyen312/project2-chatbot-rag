@@ -181,3 +181,19 @@ if __name__ == "__main__":
         print(f"\n> {q}  tokens={tokenize(q)}")
         for m, s in idx.search(q, 5):
             print(f"  {s:6.2f}  {m}")
+
+
+def rebuild_async() -> None:
+    """Build lại toàn bộ index (bm25s không cập nhật từng phần) ở luồng nền rồi thay thế
+    index đang dùng — request trong lúc build vẫn dùng index cũ."""
+    def _run():
+        global _INDEX, _FAILED
+        try:
+            idx = BM25Index.build()
+            with _LOCK:
+                _INDEX, _FAILED = idx, False
+            print(f"[BM25] Rebuilt: {len(idx.mapcs)} điều")
+        except Exception as e:
+            print(f"[BM25] Rebuild lỗi, giữ index cũ: {e}")
+
+    threading.Thread(target=_run, name="bm25-rebuild", daemon=True).start()

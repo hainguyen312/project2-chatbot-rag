@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Passage } from "@/store/chat-store";
 import { BookOpen, ChevronDown, ChevronRight, Folder } from "lucide-react";
 
@@ -106,13 +106,22 @@ export function PassagePanel({
   passages,
   onClose,
   mobileEmbedded = false,
+  focusIndex,
 }: {
   passages: Passage[];
   onClose: () => void;
   mobileEmbedded?: boolean;
+  /** Điều luật cần cuộn tới + tô sáng (khi bấm chip căn cứ trong câu trả lời) */
+  focusIndex?: number;
 }) {
   const [open, setOpen]         = useState<Record<number, boolean>>({});
   const [fullView, setFullView] = useState<Passage | null>(null);
+  const focusRef = useRef<HTMLDivElement>(null);
+
+  // Panel được remount (key = nonce) mỗi lần bấm chip → cuộn tới điều luật đó
+  useEffect(() => {
+    focusRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
 
   return (
     <>
@@ -172,8 +181,12 @@ export function PassagePanel({
             return (
               <div
                 key={`${p.mapc ?? "doc"}-${i}`}
-                className="overflow-hidden rounded-xl"
-                style={{ background: "var(--bg-hover)", border: "0.5px solid var(--border)" }}
+                ref={i === focusIndex ? focusRef : undefined}
+                className={`scroll-mt-3 overflow-hidden rounded-xl${i === focusIndex ? " passage-focus" : ""}`}
+                style={{
+                  background: "var(--bg-hover)",
+                  border: i === focusIndex ? "1px solid var(--accent)" : "0.5px solid var(--border)",
+                }}
               >
                 {/* Accordion header */}
                 <button

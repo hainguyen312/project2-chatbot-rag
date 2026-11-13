@@ -54,3 +54,29 @@ def enforce_user_match(path_user_id: str, authorization: Optional[str],
     if path_user_id.startswith(ANON_PREFIX):
         return path_user_id
     raise AuthError(401, "Cần đăng nhập để xem bộ nhớ của tài khoản này")
+
+
+def require_role(role: str, authorization: Optional[str], verify: Callable[[str], dict],
+                 get_role: Callable[[str], Optional[str]]) -> dict:
+    """
+    Chỉ cho qua nếu token Firebase hợp lệ, email đã xác minh và email có đúng vai trò.
+    Trả về {uid, email, role}; raise AuthError 401 (chưa đăng nhập) / 403 (không đủ quyền).
+    """
+    if not (authorization and authorization.lower().startswith("bearer ")):
+        raise AuthError(401, "Cần đăng nhập")
+    try:
+        claims = verify(authorization.split(None, 1)[1].strip())
+    except Exception as e:
+        print(f"[Auth] Token verify fail: {e}")
+        raise AuthError(401, "Phiên đăng nhập không hợp lệ hoặc đã hết hạn")
+    email = (claims.get("email") or "").strip().lower()
+    if not email or not claims.get("email_verified"):
+        raise AuthError(403, "Email của tài khoản chưa được xác minh")
+    try:
+        current = get_role(email)
+    except Exception as e:
+        print(f"[Auth] Không đọc được vai trò: {e}")
+        raise AuthError(503, "Không kiểm tra được quyền, thử lại sau")
+    if current != role:
+        raise AuthError(403, "Tài khoản không có quyền truy cập")
+    return {"uid": claims.get("uid"), "email": email, "role": current}

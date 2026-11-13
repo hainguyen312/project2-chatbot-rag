@@ -85,7 +85,8 @@ export function MessageRow({
   m: Message;
   idx: number;
   isSelected: boolean;
-  onSelect: (passages: Passage[]) => void;
+  /** focusIndex: vị trí điều luật trong passages cần cuộn tới (bấm chip căn cứ) */
+  onSelect: (passages: Passage[], focusIndex?: number) => void;
   onSpeak: (text: string, idx: number, chatId: string, cachedUrl?: string, onUrlReceived?: (url: string) => void) => void;
   isSpeaking: boolean;
   isLoadingTTS: boolean;
@@ -132,7 +133,8 @@ export function MessageRow({
           <div className="flex flex-wrap gap-2">
             {cited.slice(0, 5).map((c) => (
               <button
-                key={c.label} type="button" onClick={open} title={c.title}
+                key={c.label} type="button" title={c.title}
+                onClick={() => onSelect(passages, passages.indexOf(c.passage))}
                 className="inline-flex max-w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 text-left text-[13px] font-medium transition-colors hover:brightness-95"
                 style={{ background: "var(--accent-light)", border: "1px solid var(--accent)", color: "var(--accent-text)" }}
               >

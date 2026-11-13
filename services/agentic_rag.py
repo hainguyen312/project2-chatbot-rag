@@ -16,6 +16,8 @@ LLM_MAX_WEB_CHARS = int(os.getenv("AGENT_LLM_MAX_WEB_CHARS", "1500"))
 RAG_AGENT_LLM_RERANK = os.getenv("RAG_AGENT_LLM_RERANK", "0").strip().lower() in ("1", "true", "yes")
 AGENT_VECTOR_POOL_MULT = max(1, int(os.getenv("AGENT_VECTOR_POOL_MULT", "3")))
 
+from services.lawdata.status import annotate_hits, resolve_aliases
+
 _MYSQL_CFG = {
     "host": os.getenv("MYSQL_HOST", "localhost"),
     "port": int(os.getenv("MYSQL_PORT", "3306")),
@@ -217,6 +219,9 @@ Nguyên tắc:
   hoặc mức tiền đã đổi → nêu rõ quy định hiện hành theo văn bản mới (kèm nguồn), ghi chú quy
   định cũ theo Pháp Điển, và khuyên đối chiếu văn bản chính thức. Nguồn web độ tin cậy thấp
   hoặc không nói rõ văn bản → ưu tiên Pháp Điển.
+- `tinh_trang_hieu_luc` (nếu có) là tình trạng văn bản theo sổ cái dữ liệu: văn bản ĐÃ HẾT
+  HIỆU LỰC thì không dùng làm căn cứ chính — nói rõ đã hết hiệu lực và tìm văn bản thay thế
+  được nêu; văn bản ĐÃ ĐƯỢC SỬA ĐỔI thì lưu ý người dùng nội dung có thể đã thay đổi.
 - Nếu không đủ thông tin sau khi đã thử các công cụ phù hợp, thành thật nói không biết
 - Không bịa thông tin pháp lý
 
@@ -437,6 +442,8 @@ def hit_to_llm_item(h: dict[str, Any]) -> dict[str, Any]:
     """row_to_llm_item + điểm liên quan (0–1) để LLM biết kết quả nào yếu."""
     item = row_to_llm_item(hit_dict_to_row(h))
     item["diem_lien_quan"] = round(float(h.get("score", 0.0)), 2)
+    if h.get("hieu_luc"):
+        item["tinh_trang_hieu_luc"] = h["hieu_luc"]["ghi_chu"]
     return item
 
 
@@ -472,7 +479,7 @@ def resolve_article_ids(ids: list[str]) -> list[str]:
     found = _lookup_mapc_by_code(codes)
     if codes:
         print(f"[Agent] Đổi mã Pháp Điển → mapc: {len(found)}/{len(codes)}", flush=True)
-    return [found.get(i, i) for i in ids]
+    return resolve_aliases([found.get(i, i) for i in ids])
 
 
 def _fetch_dieu_mysql(mapcs: list[str]) -> list[dict[str, Any]]:
@@ -624,7 +631,7 @@ def execute_agent_tool(
             # tách câu hỏi thành nhiều lượt search hẹp, chỉ dùng rerank_query sẽ kéo mọi
             # lượt về cùng một thứ tự.
             rq = " ".join(dict.fromkeys(filter(None, [q, (rerank_query or "").strip()])))
-            full_hits = rerank_phapdien_hits(retriever, rq, full_hits, top_k=top_k)
+            full_hits = annotate_hits(rerank_phapdien_hits(retriever, rq, full_hits, top_k=top_k))
             llm_items = [hit_to_llm_item(h) for h in full_hits]
             return json.dumps(llm_items, ensure_ascii=False), full_hits
 
@@ -653,7 +660,7 @@ def execute_agent_tool(
             graph_top = min(len(full_hits), 20) if full_hits else 0
             if graph_top:
                 rq = (rerank_query or "").strip() or " ".join(mapcs[:5])
-                full_hits = rerank_phapdien_hits(retriever, rq, full_hits, top_k=graph_top)
+                full_hits = annotate_hits(rerank_phapdien_hits(retriever, rq, full_hits, top_k=graph_top))
             llm_items = [hit_to_llm_item(h) for h in full_hits]
 
             return json.dumps(llm_items, ensure_ascii=False), full_hits
@@ -700,7 +707,7 @@ def execute_agent_tool(
             if not row:
                 return json.dumps({"error": "Không tìm thấy"}, ensure_ascii=False), empty
 
-            full_hit = row_to_full_hit(row, score=1.0)
+            full_hit = annotate_hits([row_to_full_hit(row, score=1.0)])[0]
             ma, ten_dieu = split_phapdien_title(row.get("ten") or "")
             llm_payload = {
                 "mapc": mapc,
@@ -712,6 +719,8 @@ def execute_agent_tool(
                 "vbqppl": row.get("vbqppl"),
                 "noidung": row.get("noidung") or "",
             }
+            if full_hit.get("hieu_luc"):
+                llm_payload["tinh_trang_hieu_luc"] = full_hit["hieu_luc"]["ghi_chu"]
             return json.dumps(llm_payload, ensure_ascii=False), [full_hit]
 
     except Exception as e:

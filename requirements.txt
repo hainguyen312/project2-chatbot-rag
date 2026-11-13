@@ -26,4 +26,6 @@ pymongo
 
 neo4j
 tavily-python
-nest_asynciopytest
+nest_asyncio
+pytest
+pdfplumber==0.11.10
