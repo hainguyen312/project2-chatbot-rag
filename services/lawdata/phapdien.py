@@ -113,19 +113,20 @@ def apply(iid: str) -> None:
     except Exception as e:
         staging._set(iid, status="publish_error", error=f"Ghi MySQL lỗi (đã rollback): {e}")
         return
+    aliases = [a["alias"] for a in lists["alias"]]   # điều VB:… đã bị xoá khỏi MySQL, thay bằng mapc pháp điển
     report: dict[str, Any] = {"changed": len(changed)}
-    try:
-        report.update(store.reindex_mapcs(changed, embed_title_only=True))
-        if lists["alias"]:
+    report.update(staging.reindex_all(changed, aliases, embed_title_only=True))
+    if aliases:
+        try:
             from retrieve.two_stage_search import collection
 
-            collection.delete(f'metadata["mapc"] in {json.dumps([a["alias"] for a in lists["alias"]], ensure_ascii=False)}')
-    except Exception as e:
-        report["vector_error"] = str(e)
-    store.rebuild_bm25_async()
-    if report.get("vector_error"):
+            collection.delete(f'metadata["mapc"] in {json.dumps(aliases, ensure_ascii=False)}')
+        except Exception as e:
+            report["vector_error"] = str(e)
+            report["pending_index"] = list(changed)
+    if report.get("pending_index"):
         staging._set(iid, status="publish_error", publish_report=report,
-                     error=f"Đã ghi MySQL nhưng embed Milvus lỗi: {report['vector_error']}")
+                     error=f"Đã ghi MySQL nhưng cập nhật chỉ mục lỗi: {staging.index_error_text(report)}")
     else:
         staging._set(iid, status="published", publish_report=report, error=None)
 

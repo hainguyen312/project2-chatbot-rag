@@ -96,8 +96,24 @@ class TestGraphTraverse:
     def test_expands_and_reranks(self, fake_retriever, articles):
         fake_retriever.graph_rows = [self.graph_row(articles["M_XEDAP"], 0.6),
                                      self.graph_row(articles["M_THAISAN"], 1.0)]
-        items, hits = run("graph_traverse", {"mapcs": ["M_THAISAN"]}, fake_retriever, rerank_query="mang thai")
+        items, hits = run("graph_traverse", {"mapcs": ["M_KETHON"]}, fake_retriever, rerank_query="mang thai")
         assert hits[0]["mapc"] == "M_THAISAN" and len(items) == 2
+
+    def test_seed_articles_not_returned_again(self, fake_retriever, articles):
+        # Agent đã có nội dung điều gốc → không gửi lại (tốn token)
+        fake_retriever.graph_rows = [{**articles["M_KETHON"], "base_score": 1.0, "quan_he": "goc"},
+                                     {**articles["M_THAISAN"], "base_score": 0.8, "quan_he": "dan_chieu"}]
+        items, hits = run("graph_traverse", {"mapcs": ["M_KETHON"]}, fake_retriever)
+        assert [h["mapc"] for h in hits] == ["M_THAISAN"]
+
+    def test_relation_type_exposed_to_llm(self, fake_retriever, articles):
+        fake_retriever.graph_rows = [{**articles["M_THAISAN"], "base_score": 0.65, "quan_he": "duoc_dan_chieu"},
+                                     {**articles["M_XEDAP"], "base_score": 0.5, "quan_he": "lien_quan"}]
+        items, hits = run("graph_traverse", {"mapcs": ["M_KETHON"]}, fake_retriever)
+        by = {i["ma_phap_dien"]: i for i in items}
+        assert "hướng dẫn" in by["20.2.LQ.137"]["quan_he"]
+        assert "Pháp Điển" in by["39.13.NĐ.75.8"]["quan_he"]
+        assert {h["quan_he"] for h in hits} == {"duoc_dan_chieu", "lien_quan"}
 
     @pytest.mark.parametrize("hop_in, hop_used", [(None, 1), (1, 1), (2, 2), (5, 2), (0, 1), (-3, 1)])
     def test_hop_clamped(self, fake_retriever, hop_in, hop_used):
@@ -218,3 +234,145 @@ class TestResolveArticleIds:
     def test_get_full_article_accepts_code(self, fake_retriever, fake_mysql):
         payload, hits = run("get_full_article", {"mapc": "8.4.LQ.8"}, fake_retriever)
         assert payload["ten"] == "Điều kiện kết hôn" and hits[0]["mapc"] == "M_KETHON"
+
+
+# ── Đồ thị: dẫn chiếu tự động, cộng điểm liên kết, văn bản thay thế ─────────
+CLOSURE_ROW = {
+    "mapc": "M_CAM", "ten": "Điều 8.4.LQ.5. Bảo vệ chế độ hôn nhân và gia đình",
+    "noidung": "2. Cấm các hành vi sau đây: a) Kết hôn giả tạo; b) Tảo hôn;",
+    "vbqppl": "(Điều 5 Luật số 52/2014/QH13, có hiệu lực thi hành kể từ ngày 01/01/2015)",
+    "tenchuong": None, "tendemuc": None, "tenchude": None,
+    "dan_chieu_tu": "M_KETHON", "ten_nguon": "Điều 8.4.LQ.8. Điều kiện kết hôn", "khoan": ["2"], "diem": ["a", "b"],
+}
+
+
+class TestReferenceClosure:
+    @pytest.fixture
+    def closure(self, fake_retriever):
+        seen = {}
+
+        def _ref(seeds, exclude=None, limit=4, max_chars=1500):
+            seen.update(seeds=list(seeds), exclude=set(exclude or ()), limit=limit)
+            return [dict(CLOSURE_ROW)]
+
+        fake_retriever._reference_closure = _ref
+        return seen
+
+    def test_referenced_clause_appended(self, fake_retriever, fake_mysql, closure):
+        fake_retriever.fused = [{"mapc": "M_KETHON", "score": 0.9}, {"mapc": "M_THAISAN", "score": 0.3}]
+        items, hits = run("vector_search", {"query": "điều kiện kết hôn"}, fake_retriever)
+        assert [h["mapc"] for h in hits] == ["M_KETHON", "M_THAISAN", "M_CAM"]   # sau kết quả chính
+        assert closure["seeds"] == ["M_KETHON", "M_THAISAN"] and closure["exclude"] == {"M_KETHON", "M_THAISAN"}
+        item = items[-1]
+        assert item["duoc_dan_chieu_tu"] == "mã Pháp điển 8.4.LQ.8 (dẫn chiếu điểm a, b khoản 2)"
+        assert hits[-1]["quan_he"] == "dan_chieu" and hits[-1]["score"] < hits[0]["score"]
+
+    def test_disabled_by_flag(self, fake_retriever, fake_mysql, closure, monkeypatch):
+        monkeypatch.setattr(A, "AGENT_REF_CLOSURE", False)
+        fake_retriever.fused = [{"mapc": "M_KETHON", "score": 0.9}]
+        _, hits = run("vector_search", {"query": "kết hôn"}, fake_retriever)
+        assert [h["mapc"] for h in hits] == ["M_KETHON"] and closure == {}
+
+    def test_empty_graph_no_extra(self, fake_retriever, fake_mysql):
+        # FakeNeo4jDriver rỗng → _reference_closure thật trả [] → hành vi như trước
+        fake_retriever.fused = [{"mapc": "M_KETHON", "score": 0.9}]
+        _, hits = run("vector_search", {"query": "kết hôn"}, fake_retriever)
+        assert [h["mapc"] for h in hits] == ["M_KETHON"]
+
+
+class TestQueryAwareTruncation:
+    def test_long_article_keeps_relevant_clause(self, fake_retriever, fake_mysql, articles, monkeypatch):
+        body = "\n".join([f"{i}. Quy định chung số {i} " + "x " * 400 for i in range(1, 6)]
+                         + ["6. Không đội mũ bảo hiểm khi điều khiển xe đạp máy bị phạt tiền."])
+        articles["M_XEDAP"]["noidung"] = body
+        monkeypatch.setattr(A, "_fetch_dieu_mysql", lambda m: [dict(articles[x]) for x in m if x in articles])
+        monkeypatch.setattr(A, "LLM_MAX_NOIDUNG_CHARS", 1500)
+        fake_retriever.fused = [{"mapc": "M_XEDAP", "score": 0.9}]
+        items, _ = run("vector_search", {"query": "không đội mũ bảo hiểm xe đạp máy"}, fake_retriever)
+        assert "6. Không đội mũ bảo hiểm" in items[0]["noidung"] and items[0]["noidung_truncated"] is True
+
+
+class TestGraphBoost:
+    def test_connected_candidate_promoted(self, fake_retriever, fake_mysql, monkeypatch):
+        monkeypatch.setattr(A, "GRAPH_BOOST_BETA", 0.3)
+        fake_retriever._graph_degrees = lambda mapcs: {"M_THAISAN": 3}
+        fake_retriever.fused = [{"mapc": "M_KETHON", "score": 0.6}, {"mapc": "M_THAISAN", "score": 0.5}]
+        _, hits = run("vector_search", {"query": "zzz"}, fake_retriever)
+        assert hits[0]["mapc"] == "M_THAISAN" and hits[0]["score"] <= 1.0
+
+    def test_off_by_default(self, fake_retriever, fake_mysql, monkeypatch):
+        monkeypatch.setattr(A, "GRAPH_BOOST_BETA", 0.0)
+        fake_retriever._graph_degrees = lambda mapcs: pytest.fail("không được truy vấn đồ thị khi beta = 0")
+        fake_retriever.fused = [{"mapc": "M_KETHON", "score": 0.6}]
+        run("vector_search", {"query": "kết hôn"}, fake_retriever)
+
+
+class TestNewerVersions:
+    def test_replaced_document_flagged(self, fake_retriever, fake_mysql):
+        fake_retriever._newest_versions = lambda docs: (
+            {"100/2019/NĐ-CP": {"moi_nhat": "168/2024/NĐ-CP", "so_dieu_trong_db": 54}}
+            if "100/2019/NĐ-CP" in docs else {})
+        fake_retriever.fused = [{"mapc": "M_XEDAP", "score": 0.9}, {"mapc": "M_KETHON", "score": 0.8}]
+        items, _ = run("vector_search", {"query": "xe đạp"}, fake_retriever)
+        by = {i["ma_phap_dien"]: i for i in items}
+        assert by["39.13.NĐ.75.8"]["van_ban_thay_the"] == "168/2024/NĐ-CP — có 54 điều trong CSDL"
+        assert "van_ban_thay_the" not in by["8.4.LQ.8"]
+
+    def test_get_full_article_flagged(self, fake_retriever, fake_mysql):
+        fake_retriever._newest_versions = lambda docs: {"100/2019/NĐ-CP": {"moi_nhat": "168/2024/NĐ-CP",
+                                                                            "so_dieu_trong_db": 0}}
+        payload, _ = run("get_full_article", {"mapc": "M_XEDAP"}, fake_retriever)
+        assert payload["van_ban_thay_the"] == "168/2024/NĐ-CP — chưa có trong CSDL"
+
+
+def test_neo4j_hydration_returns_vbqppl():
+    # Cypher lấy nội dung điều từ Neo4j phải trả vbqppl (trước đây thiếu → mất căn cứ trích dẫn)
+    assert "d.vbqppl AS vbqppl" in A._DIEU_CONTEXT_CYPHER and "d.vbqppl AS vbqppl" in A._DIEU_SINGLE_CYPHER
+
+
+EXCEPTION_ROW = {
+    "mapc": "M_CAMKL", "ten": "Điều 20.2.LQ.122. Nguyên tắc, trình tự, thủ tục xử lý kỷ luật lao động",
+    "noidung": "4. Không được xử lý kỷ luật lao động đối với người lao động đang nghỉ ốm đau, mang thai.",
+    "vbqppl": "(Điều 122 Bộ luật số 45/2019/QH14, có hiệu lực thi hành kể từ ngày 01/01/2021)",
+    "tenchuong": None, "tendemuc": None, "tenchude": None,
+    "ngoai_le_cua": "M_THAISAN", "ten_nguon": "Điều 20.2.LQ.137. Bảo vệ thai sản", "khoan": [],
+}
+
+
+class TestExceptionCheck:
+    @pytest.fixture
+    def exc(self, fake_retriever):
+        seen = {}
+
+        def _exc(seeds, exclude=None, limit=3, max_chars=1500):
+            seen.update(seeds=list(seeds), exclude=set(exclude or ()), limit=limit)
+            return [dict(EXCEPTION_ROW)]
+
+        fake_retriever._exception_check = _exc
+        return seen
+
+    def test_exception_clause_attached_and_labelled(self, fake_retriever, fake_mysql, exc):
+        fake_retriever.fused = [{"mapc": "M_THAISAN", "score": 0.9}, {"mapc": "M_KETHON", "score": 0.4}]
+        items, hits = run("vector_search", {"query": "sa thải"}, fake_retriever)
+        assert hits[-1]["mapc"] == "M_CAMKL" and hits[-1]["quan_he"] == "ngoai_le"
+        assert exc["seeds"] == ["M_THAISAN", "M_KETHON"] and exc["limit"] == A.AGENT_EXCEPTION_MAX
+        assert items[-1]["ngoai_le_cua"].startswith("mã Pháp điển 20.2.LQ.137 (Bảo vệ thai sản)")
+        assert "đối chiếu trước khi kết luận" in items[-1]["ngoai_le_cua"]
+
+    def test_exception_wins_over_plain_reference(self, fake_retriever, fake_mysql, exc):
+        # Cùng một điều vừa là dẫn chiếu vừa là khoản cấm → nhãn ngoại lệ, không lặp
+        fake_retriever._reference_closure = lambda seeds, exclude=None, limit=4, max_chars=1500: (
+            [] if "M_CAMKL" in (exclude or ()) else [dict(CLOSURE_ROW, mapc="M_CAMKL")])
+        fake_retriever.fused = [{"mapc": "M_THAISAN", "score": 0.9}]
+        _, hits = run("vector_search", {"query": "sa thải"}, fake_retriever)
+        assert [h["mapc"] for h in hits].count("M_CAMKL") == 1 and hits[-1]["quan_he"] == "ngoai_le"
+
+    def test_disabled_by_flag(self, fake_retriever, fake_mysql, exc, monkeypatch):
+        monkeypatch.setattr(A, "AGENT_EXCEPTION_CHECK", False)
+        fake_retriever.fused = [{"mapc": "M_THAISAN", "score": 0.9}]
+        _, hits = run("vector_search", {"query": "sa thải"}, fake_retriever)
+        assert [h["mapc"] for h in hits] == ["M_THAISAN"] and exc == {}
+
+    def test_prompt_has_exception_rule(self):
+        p = A.agent_system_prompt(situation_mode=False)
+        assert "KIỂM TRA NGOẠI LỆ" in p and "ngoai_le_cua" in p

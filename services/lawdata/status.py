@@ -81,15 +81,52 @@ def status_notes(hits: list[dict]) -> dict[str, dict]:
     return out
 
 
+def _vn_date(iso: str | None) -> str:
+    return "/".join(reversed(iso.split("-"))) if iso else ""
+
+
+def vbqppl_notes(hits: list[dict]) -> dict[str, dict]:
+    """
+    Tình trạng theo ghi chú của chính Pháp Điển trong vbqppl ("… bị bãi bỏ bởi Điều 2 Nghị định số X",
+    "… có nội dung được sửa đổi, bổ sung bởi …") — có sẵn cho cả 66k điều gốc, không cần sổ cái admin.
+    """
+    from retrieve.legal_graph import parse_vbqppl
+
+    out: dict[str, dict] = {}
+    for h in hits:
+        p = parse_vbqppl(h.get("vbqppl"))
+        if not h.get("mapc") or not p or not p["hanh_vi"] or not p["sua_doi_boi"]:
+            continue
+        refs = "; ".join(
+            f"Điều {', '.join(a['dieu'])} {a['loai']} số {a['so_hieu']}"
+            + (f" (hiệu lực từ {_vn_date(a['hieu_luc_tu'])})" if a.get("hieu_luc_tu") else "")
+            for a in p["sua_doi_boi"]
+        )
+        if "bai_bo" in p["hanh_vi"]:
+            out[h["mapc"]] = {"trang_thai": "het_hieu_luc", "ghi_chu": f"Điều này đã bị bãi bỏ bởi {refs}."}
+            continue
+        acts = [t for k, t in (("sua_doi", "sửa đổi"), ("bo_sung", "bổ sung"), ("bai_bo_mot_phan", "bãi bỏ một phần"))
+                if k in p["hanh_vi"]]
+        out[h["mapc"]] = {
+            "trang_thai": "het_hieu_luc_mot_phan" if "bai_bo_mot_phan" in p["hanh_vi"] else "con_hieu_luc",
+            "ghi_chu": f"Điều này có nội dung được {', '.join(acts)} bởi {refs}; nội dung Pháp Điển đã cập nhật "
+                       "đến lần sửa đổi này — văn bản sửa đổi mới hơn (nếu có) cần kiểm tra thêm.",
+        }
+    return out
+
+
 def annotate_hits(hits: list[dict]) -> list[dict]:
-    """Thêm hit['hieu_luc']; hạ điểm điều thuộc văn bản đã hết hiệu lực rồi sắp xếp lại."""
+    """Thêm hit['hieu_luc'] (sổ cái admin ưu tiên, sau đó ghi chú vbqppl của Pháp Điển);
+    hạ điểm điều đã hết hiệu lực / bị bãi bỏ rồi sắp xếp lại."""
     if not hits:
         return hits
+    pd_hits = [h for h in hits if h.get("source", "phapdien") != "web"]
     try:
-        notes = status_notes([h for h in hits if h.get("source", "phapdien") != "web"])
+        notes = status_notes(pd_hits)
     except Exception as e:
-        print(f"[Hiệu lực] Bỏ qua chú thích hiệu lực: {e}")
-        return hits
+        print(f"[Hiệu lực] Bỏ qua sổ cái hiệu lực: {e}")
+        notes = {}
+    notes = {**vbqppl_notes(pd_hits), **notes}
     if not notes:
         return hits
     for h in hits:

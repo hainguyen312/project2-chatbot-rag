@@ -336,6 +336,8 @@ def publish(iid: str) -> None:
     if not item or item["status"] != "publishing":
         return
     item["_id"] = iid
+    # Lần trước ghi MySQL xong nhưng chỉ mục lỗi → diff lần này rỗng (dữ liệu đã có) → phải làm nốt
+    pending = list((item.get("publish_report") or {}).get("pending_index") or [])
     try:
         # Tính lại diff ngay trước khi ghi (dữ liệu có thể đã đổi từ lúc xử lý)
         item["diff"] = _diff(item["doc"])
@@ -346,17 +348,42 @@ def publish(iid: str) -> None:
         traceback.print_exc()
         _set(iid, status="publish_error", error=f"Ghi MySQL lỗi (đã rollback): {e}")
         return
-    try:
-        report.update(store.reindex_mapcs(report["changed_mapcs"]))
-    except Exception as e:
-        report["vector_error"] = str(e)
-    store.rebuild_bm25_async()
-    report["changed"] = len(report.pop("changed_mapcs", []))
-    if report.get("vector_error"):
+    changed = list(dict.fromkeys(report.pop("changed_mapcs", []) + pending))
+    report.update(reindex_all(changed))
+    report["changed"] = len(changed)
+    if report.get("pending_index"):
         _set(iid, status="publish_error", publish_report=report, diff=item["diff"],
-             error=f"Đã ghi MySQL nhưng embed Milvus lỗi: {report['vector_error']} — bấm 'Thử lại'.")
+             error=f"Đã ghi MySQL nhưng cập nhật chỉ mục lỗi: {index_error_text(report)} — bấm 'Thử lại'.")
     else:
         _set(iid, status="published", publish_report=report, diff=item["diff"], error=None, published_at=_now())
+
+
+def reindex_all(changed: list[str], deleted: list[str] = (), *, embed_title_only: bool = False) -> dict:
+    """Cập nhật mọi chỉ mục sau khi MySQL đổi: Milvus (vector) + Neo4j (đồ thị) + BM25 (nền).
+    Lỗi ở chỉ mục nào → ghi lỗi + `pending_index` để lần 'Thử lại' làm nốt."""
+    report: dict[str, Any] = {}
+    try:
+        report.update(store.reindex_mapcs(changed, embed_title_only=embed_title_only))
+    except Exception as e:
+        report["vector_error"] = str(e)
+    try:
+        report.update(store.sync_graph(changed, deleted))
+    except Exception as e:
+        traceback.print_exc()
+        report["graph_error"] = str(e)
+    store.rebuild_bm25_async()
+    if report.get("vector_error") or report.get("graph_error"):
+        report["pending_index"] = list(changed)
+    return report
+
+
+def index_error_text(report: dict) -> str:
+    parts = []
+    if report.get("vector_error"):
+        parts.append(f"Milvus: {report['vector_error']}")
+    if report.get("graph_error"):
+        parts.append(f"Neo4j: {report['graph_error']}")
+    return "; ".join(parts)
 
 
 # ── Đọc ──────────────────────────────────────────────────────────────────────

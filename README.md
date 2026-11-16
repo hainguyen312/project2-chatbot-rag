@@ -26,7 +26,7 @@ Hệ thống hỏi–đáp pháp luật tiếng Việt dựa trên **Retrieval-A
 |-----------|---------|
 | **MySQL** | Lưu Pháp Điển đã crawl (`pddieu`, chủ đề, chương, đề mục) |
 | **Milvus** | Embedding + tìm kiếm semantic (`phapdien_simple_tendieu`) |
-| **Neo4j** | Đồ thị điều luật, quan hệ `LIEN_QUAN` / `THAM_CHIEU`, nội dung full cho agent |
+| **Neo4j** | Tầng cấu trúc + quan hệ: phân cấp, Khoản, VanBan, dẫn chiếu `THAM_CHIEU` (~24,7k), `LIEN_QUAN`, sửa đổi/bãi bỏ; nội dung full cho agent |
 | **rag_api** | API RAG, stream SSE, TTS/STT (Firebase tùy chọn) |
 | **frontend** | Chat UI (dark mode), markdown, passages, TTS/STT, lịch sử MongoDB |
 | **app.py** | Giao diện Streamlit (luồng cũ, tùy chọn) |
@@ -101,9 +101,24 @@ python seed_data_batch.py --resume     # tiếp tục nếu bị gián đoạn
 
 ```bash
 cd ..
-python retrieve/build_graph.py
-# hoặc: python -m retrieve.build_graph
+python -m retrieve.build_graph      # ~5–10 phút, chạy lại an toàn (MERGE; THAM_CHIEU dựng lại)
 ```
+
+Đồ thị suy ra hoàn toàn từ MySQL (nguồn chuẩn), logic ở `retrieve/legal_graph.py`:
+
+```
+(:ChuDe)→(:DeMuc)→(:Chuong)-[:CO_DIEU]->(:Dieu {mapc, ten, noidung, vbqppl, so_hieu, so_dieu})
+(:Dieu)-[:CO_KHOAN]->(:Khoan)                         ~196k khoản (điều có ≥ 2 khoản)
+(:Dieu)-[:THUOC]->(:VanBan {so_hieu, loai, hieu_luc_tu})          ~4,5k văn bản (từ vbqppl)
+(:Dieu)-[:THAM_CHIEU {khoan, diem, pham_vi}]->(:Dieu)  ~24,7k — parser "khoản 2 Điều 5 của Luật này",
+                                                        "Điều 11, Điều 12 Nghị định số 22/2019/NĐ-CP"…
+(:Dieu)-[:LIEN_QUAN]-(:Dieu)                           "mục liên quan" của Pháp Điển
+(:Dieu)-[:DUOC_SUA_DOI_BOI]->(:VanBan)-[:SUA_DOI_BO_SUNG|BAI_BO|THAY_THE|HOP_NHAT]->(:VanBan)
+```
+
+Khi admin duyệt văn bản / cập nhật pháp điển, Neo4j được đồng bộ từng phần cùng Milvus + BM25
+(`services/lawdata` → `store.sync_graph`); lỗi thì mục chuyển `publish_error`, bấm "Thử lại" để làm nốt.
+Backend in cảnh báo khi khởi động nếu đồ thị rỗng.
 
 Neo4j Browser: `http://localhost:7474` — `neo4j` / `password123`.
 
@@ -149,18 +164,26 @@ uvicorn rag_api:app --host 0.0.0.0 --port 8001 --reload
 
 **Bước 2 — Khi `proceed`:** `rewrite_query_v2` + `detect_intent`. Nếu intent ngoài phạm vi → trả lời từ chối.
 
-**Bước 3 — Agentic loop** (`services/agentic_rag.py`, tối đa 6 vòng):
+**Bước 3 — Agentic loop** (`services/agentic_rag.agent_events`, tối đa 6 vòng — một vòng lặp duy nhất dùng chung cho `/rag/chat` và `/rag/stream`):
+
+- Kiểm tra web chạy **trước** khi model viết: sau mỗi vòng tool, câu hỏi về mức phạt / mức tiền / quy định hiện hành hoặc kết quả Pháp Điển yếu → lượt kế tiếp buộc gọi `web_search` (không sinh rồi bỏ bản nháp).
+- `/rag/stream` stream **thật**: token của câu trả lời được đẩy ra ngay khi model sinh (câu dạo đầu đi kèm tool call bị giữ lại, không hiển thị).
+- `vector_search` tự kèm **khoản cấm / ngoại lệ** nối với top kết quả qua đồ thị (`ngoai_le_cua`) — loại "điều chính cho phép nhưng điều liên quan cấm" (đủ tuổi kết hôn ↔ cấm kết hôn trong phạm vi ba đời; được sa thải ↔ không được kỷ luật lao động nữ mang thai); prompt buộc đối chiếu trước khi kết luận "được".
 
 | Tool | Mô tả |
 |------|--------|
-| `vector_search` | Milvus → `mapc` → hydrate Neo4j (full nội dung) → **rerank** |
-| `graph_traverse` | Mở rộng Neo4j theo `LIEN_QUAN` / `THAM_CHIEU` → rerank |
+| `vector_search` | Hybrid (Milvus + BM25) → hydrate Neo4j → **rerank** → tự kèm điều/khoản được top-3 **dẫn chiếu** tới (`THAM_CHIEU`) |
+| `graph_traverse` | Mở rộng có trọng số: dẫn chiếu đi ra (0.8) > được dẫn chiếu — văn bản hướng dẫn (0.65) > `LIEN_QUAN` (0.5); hop 2 chỉ qua `THAM_CHIEU` → rerank |
 | `web_search` | Tavily (khi có `TAVILY_API_KEY`) |
 | `get_full_article` | Full một điều theo `mapc` |
 
 Passages trả về UI lấy **full text từ Neo4j** (bucket agent), không phụ thuộc snippet Milvus. MySQL là fallback khi Neo4j thiếu node.
 
-**Rerank:** mặc định overlap từ khóa + thứ tự Milvus; bật LLM rerank: `RAG_AGENT_LLM_RERANK=1`.
+**Rerank:** điểm retrieval + độ phủ từ khoá; tuỳ chọn cộng điểm theo liên kết đồ thị giữa các ứng viên (`GRAPH_BOOST_BETA`) và LLM rerank (`RAG_AGENT_LLM_RERANK=1`).
+
+**Điều dài:** gửi LLM phần mở đầu + các **khoản khớp truy vấn nhất** (không cắt 4000 ký tự đầu); BM25 index điều > 6000 ký tự theo nhóm khoản.
+
+**Hiệu lực:** sổ cái admin (`vanban`, `dieu_hieuluc`) ưu tiên, sau đó ghi chú "được sửa đổi / bị bãi bỏ bởi …" trong `vbqppl` của Pháp Điển; điều bị bãi bỏ bị hạ điểm.
 
 ### Sự kiện SSE (`POST /rag/stream`)
 
@@ -191,6 +214,17 @@ AGENT_LLM_MAX_NOIDUNG_CHARS=4000
 AGENT_LLM_MAX_PASSAGE_CHARS=4000
 AGENT_VECTOR_POOL_MULT=3
 RAG_AGENT_LLM_RERANK=0
+
+# Đồ thị (Neo4j)
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=password123
+AGENT_REF_CLOSURE=1            # tự kèm điều/khoản được dẫn chiếu
+AGENT_REF_CLOSURE_MAX=4
+GRAPH_BOOST_BETA=0             # >0: cộng điểm ứng viên liên kết với ứng viên khác
+BM25_SPLIT_LONG=1              # tách điều dài theo khoản khi index BM25
+RRF_W_VECTOR=0.5               # trọng số vector (tên điều) trong RRF; BM25 = 1.0
+AGENT_EXCEPTION_CHECK=1        # tự kèm khoản cấm/ngoại lệ liên quan (đồ thị)
 
 # Tavily (web_search)
 TAVILY_API_KEY=tvly-...

@@ -83,3 +83,31 @@ class TestBM25Index:
 
     def test_only_stopwords_return_empty(self, index):
         assert index.search("của và là", 5) == []
+
+
+class TestArticleDocs:
+    def test_short_article_single_doc(self):
+        from retrieve.lexical_bm25 import article_docs
+        docs = article_docs("Điều 1.1.LQ.1. Phạm vi", "1. A\n2. B", max_chars=100)
+        assert len(docs) == 1 and docs[0].startswith("Phạm vi Phạm vi Phạm vi")
+
+    def test_long_article_split_by_clause_keeps_tail(self):
+        from retrieve.lexical_bm25 import article_docs
+        body = "\n".join(f"{i}. " + "x" * 40 for i in range(1, 10)) + "\n10. đèn tín hiệu"
+        docs = article_docs("Điều 2.1.NĐ.6. Xử phạt xe máy", body, max_chars=100)
+        assert len(docs) > 1 and all(d.startswith("Xử phạt xe máy") for d in docs)
+        assert "đèn tín hiệu" in docs[-1]                       # trước đây bị cắt mất
+        assert all(len(d) <= 100 + 3 * len("Xử phạt xe máy") + 3 for d in docs)
+
+    def test_split_disabled(self):
+        from retrieve.lexical_bm25 import article_docs
+        body = "\n".join(f"{i}. " + "x" * 40 for i in range(1, 10))
+        assert len(article_docs("T", body, split_long=False, max_chars=100)) == 1
+
+    def test_search_dedups_subdocuments(self):
+        from types import SimpleNamespace
+        import numpy as np
+        retr = SimpleNamespace(vocab_dict={"đèn": 0},
+                               retrieve=lambda q, k, show_progress: (np.array([[0, 1, 2]]), np.array([[5.0, 4.0, 3.0]])))
+        idx = BM25Index(retr, ["A", "A", "B"])
+        assert idx.search("đèn", top_k=5) == [("A", 5.0), ("B", 3.0)]

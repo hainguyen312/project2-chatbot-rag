@@ -45,13 +45,7 @@ from retrieve.build_graph import GraphRAGRetriever, get_neo4j
 from retrieve.two_stage_search import client, collection
 from services.agentic_rag import (
     RAG_AGENT_TOOLS,
-    WEB_SEARCH_TOOL_CHOICE,
-    web_verify_instruction,
-    web_verify_reason,
-    agent_chat_model,
-    agent_system_prompt,
-    apply_agent_tool_result,
-    assistant_message_to_dict,
+    agent_events,
     execute_agent_tool,
     run_agentic_rag_sync,
 )
@@ -94,6 +88,12 @@ two_stage_retriever = GraphRAGRetriever(
     milvus_collection=collection,
     openai_client=client,
 )
+_graph_stats = two_stage_retriever.graph_stats()
+if _graph_stats.get("dieu"):
+    print("[Neo4j] Đồ thị: " + ", ".join(f"{k}={v:,}" for k, v in _graph_stats.items()))
+else:
+    print("[Neo4j] ⚠️  Đồ thị RỖNG hoặc không kết nối được — dẫn chiếu/khoản/mở rộng đồ thị bị tắt, "
+          "nội dung điều đọc từ MySQL. Build: python -m retrieve.build_graph")
 
 # BM25 lexical index (hybrid search): load/build nền để request đầu không phải chờ
 if os.getenv("RETRIEVAL_MODE", "hybrid").strip().lower() != "vector":
@@ -170,12 +170,6 @@ def _retrieve_user_memories(user_id: Optional[str], query: str) -> tuple[List[Di
     except Exception as e:
         print(f"[Memory] retrieve error: {e}")
         return [], ""
-
-
-def _inject_memory_into_system(system_prompt: str, memory_block: str) -> str:
-    if not memory_block:
-        return system_prompt
-    return system_prompt + "\n\n" + memory_block
 
 
 _PERSONAL_RE = re.compile(
@@ -638,172 +632,64 @@ def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(defaul
             except Exception as e:
                 print(f"[Stream cache lookup error] {e}")
 
-        system_prompt = _inject_memory_into_system(
-            agent_system_prompt(situation_mode=is_situation),
-            memory_block,
-        )
-        messages: List[Any] = [
-            {"role": "system", "content": system_prompt},
-            *[{"role": m["role"], "content": m["content"]} for m in latest_history[-8:]],
-            {"role": "user", "content": user_for_agent},
-        ]
-        bucket: List[Dict[str, Any]] = []
-        max_it = 6
-        model = agent_chat_model()
+        def sse(obj: Dict[str, Any]) -> str:
+            return f"data: {_json.dumps(obj, ensure_ascii=False, default=str)}\n\n"
+
         stream_full_answer = ""
-        used_tools: set = set()
-        tool_choice: Any = "auto"
-
         try:
-            for iteration in range(max_it):
-                response = oai_client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    tools=RAG_AGENT_TOOLS,
-                    tool_choice=tool_choice,
-                    temperature=0.1,
-                )
-                tool_choice = "auto"
-                msg = response.choices[0].message
-
-                if not msg.tool_calls:
-                    # Câu hỏi dễ đổi theo văn bản mới / Pháp Điển yếu → buộc web_search 1 lần
-                    reason = web_verify_reason(user_for_agent, bucket, used_tools)
-                    if reason and iteration < max_it - 1:
-                        messages.append(web_verify_instruction(reason))
-                        tool_choice = WEB_SEARCH_TOOL_CHOICE
-                        used_tools.add("web_search")
-                        yield _sse_stage("verify", "Đang kiểm tra văn bản hiện hành trên web...",
-                                         reason=reason, iteration=iteration + 1, max=max_it)
-                        continue
-                    messages.append(assistant_message_to_dict(msg))
-                    yield _sse_stage("compose", "Luật sư đang soạn câu trả lời...", iteration=iteration + 1, max=max_it)
-                    ded = _dedup_results(bucket)
-                    passages = _build_passages(ded)
+            # Vòng agent DUY NHẤT (services/agentic_rag.agent_events) — cùng logic với /rag/chat, token stream thật
+            for ev in agent_events(
+                openai_client=oai_client, retriever=two_stage_retriever, neo4j_driver=neo4j_driver,
+                user_prompt=user_for_agent, history=latest_history, situation_mode=is_situation,
+                rerank_query=normalized_query, system_prompt_extra=memory_block, stream=True,
+            ):
+                t = ev["type"]
+                if t == "tool":
+                    yield _sse_stage("tool", f"🔍 Đang gọi {ev['tool']}...", tool=ev["tool"], call_id=ev["call_id"],
+                                     args=ev["args"], iteration=ev["iteration"], max=ev["max"])
+                elif t == "tool_done":
+                    yield _sse_stage("tool_done", f"✅ {ev['tool']} xong", tool=ev["tool"], call_id=ev["call_id"],
+                                     count=ev["count"], titles=ev["titles"], iteration=ev["iteration"], max=ev["max"])
+                elif t == "verify":
+                    yield _sse_stage("verify", "Đang kiểm tra văn bản hiện hành trên web...",
+                                     reason=ev["reason"], iteration=ev["iteration"], max=ev["max"])
+                elif t == "compose":
+                    yield _sse_stage("compose", "Luật sư đang soạn câu trả lời...",
+                                     iteration=ev["iteration"], max=ev["max"])
+                    passages = _build_passages(_dedup_results(ev["passage_hits"]))
                     web_sources = _web_sources_from_passages(passages)
-                    cc, hw = _compute_confidence(passages, iteration + 1)
-                    yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':passages,'sources':web_sources,'iterations':iteration + 1,'agentic':True,'confidence_score':cc,'hallucination_warning':hw,'cache_hit':False,'memories_used':memories_used}, ensure_ascii=False)}\n\n"
-
-                    content = (msg.content or "").strip()
-                    if content:
-                        stream_full_answer = content
-                        for part in _chunk_stream_text(content):
-                            yield f"data: {_json.dumps({'type':'token','text':part}, ensure_ascii=False)}\n\n"
-                    else:
-                        stream = oai_client.chat.completions.create(
-                            model=model,
-                            messages=messages,
-                            temperature=0.2,
-                            max_tokens=1200,
-                            stream=True,
-                        )
-                        for chunk in stream:
-                            delta = chunk.choices[0].delta.content
-                            if delta:
-                                stream_full_answer += delta
-                                yield f"data: {_json.dumps({'type':'token','text':delta}, ensure_ascii=False)}\n\n"
-
-                    if web_sources:
-                        footer = "\n\n---\n**Nguồn tham khảo từ web:**\n" + "\n".join(
-                            f"{'✅' if s['level'] == 'high' else '⚠️'} {s['label']} [{s['title']}]({s['url']})"
-                            for s in web_sources
-                        )
+                    cc, hw = _compute_confidence(passages, ev["iteration"])
+                    yield sse({"type": "meta", "action": "proceed", "normalized_query": normalized_query,
+                               "passages": passages, "sources": web_sources, "iterations": ev["iteration"],
+                               "agentic": True, "confidence_score": cc, "hallucination_warning": hw,
+                               "cache_hit": False, "memories_used": memories_used})
+                elif t == "token":
+                    stream_full_answer += ev["text"]
+                    yield sse({"type": "token", "text": ev["text"]})
+                elif t == "final":
+                    passages = _build_passages(_dedup_results(ev["passage_hits"]))
+                    web_sources = _web_sources_from_passages(passages)
+                    if not stream_full_answer.strip():
+                        stream_full_answer = ("Mình chưa thể tạo câu trả lời lúc này do lỗi dịch vụ AI. "
+                                              "Bạn vui lòng thử lại sau ít phút.")
+                        yield sse({"type": "token", "text": stream_full_answer})
+                    footer = _web_sources_markdown(web_sources)
+                    if footer:
                         stream_full_answer += footer
-                        yield f"data: {_json.dumps({'type':'token','text':footer}, ensure_ascii=False)}\n\n"
-
-                    # Lưu vào cache
+                        yield sse({"type": "token", "text": footer})
                     if q_embedding and not is_meta_conversation(prompt):
                         try:
                             semantic_cache.set(q_embedding, {
-                                "meta":   {"passages": passages, "sources": web_sources, "iterations": iteration + 1},
+                                "meta": {"passages": passages, "sources": web_sources,
+                                         "iterations": ev["iterations"]},
                                 "answer": stream_full_answer,
                             })
                         except Exception:
                             pass
-
-                    yield f"data: {_json.dumps({'type':'done'}, ensure_ascii=False)}\n\n"
-                    _schedule_memory_update(req.user_id, prompt, stream_full_answer, req.chat_id)
-                    return
-
-                messages.append(assistant_message_to_dict(msg))
-                for tc in msg.tool_calls:
-                    tname = tc.function.name
-                    used_tools.add(tname)
-                    try:
-                        args = _json.loads(tc.function.arguments or "{}")
-                    except Exception:
-                        args = {}
-                    yield _sse_stage(
-                        "tool", f"🔍 Đang gọi {tname}...",
-                        tool=tname, call_id=tc.id, args=args,
-                        iteration=iteration + 1, max=max_it,
-                    )
-                    tool_content, full_hits = execute_agent_tool(
-                        tname,
-                        args,
-                        retriever=two_stage_retriever,
-                        neo4j_driver=neo4j_driver,
-                        rerank_query=normalized_query,
-                    )
-                    apply_agent_tool_result(tname, tool_content, full_hits, bucket)
-                    yield _sse_stage(
-                        "tool_done", f"✅ {tname} xong",
-                        tool=tname, call_id=tc.id, count=len(full_hits or []),
-                        titles=[str(h.get("ten") or h.get("title") or "")[:80] for h in (full_hits or [])[:5]],
-                        iteration=iteration + 1, max=max_it,
-                    )
-                    messages.append({
-                        "role": "tool",
-                        "tool_call_id": tc.id,
-                        "content": tool_content,
-                    })
-
-            yield _sse_stage("compose", "Luật sư đang soạn câu trả lời...", iteration=max_it, max=max_it)
-            ded = _dedup_results(bucket)
-            passages = _build_passages(ded)
-            web_sources = _web_sources_from_passages(passages)
-            cc, hw = _compute_confidence(passages, max_it)
-            yield f"data: {_json.dumps({'type':'meta','action':'proceed','normalized_query':normalized_query,'passages':passages,'sources':web_sources,'iterations':max_it,'agentic':True,'confidence_score':cc,'hallucination_warning':hw,'cache_hit':False,'memories_used':memories_used}, ensure_ascii=False)}\n\n"
-
-            stream = oai_client.chat.completions.create(
-                model=model,
-                messages=messages
-                + [{
-                    "role": "user",
-                    "content": "Hãy tổng hợp câu trả lời dựa trên thông tin đã thu thập (tiếng Việt).",
-                }],
-                temperature=0.2,
-                max_tokens=1200,
-                stream=True,
-            )
-            for chunk in stream:
-                delta = chunk.choices[0].delta.content
-                if delta:
-                    stream_full_answer += delta
-                    yield f"data: {_json.dumps({'type':'token','text':delta}, ensure_ascii=False)}\n\n"
-
-            if web_sources:
-                footer = "\n\n---\n**Nguồn tham khảo từ web:**\n" + "\n".join(
-                    f"{'✅' if s['level'] == 'high' else '⚠️'} {s['label']} [{s['title']}]({s['url']})"
-                    for s in web_sources
-                )
-                stream_full_answer += footer
-                yield f"data: {_json.dumps({'type':'token','text':footer}, ensure_ascii=False)}\n\n"
-
-            # Lưu vào cache
-            if q_embedding and not is_meta_conversation(prompt):
-                try:
-                    semantic_cache.set(q_embedding, {
-                        "meta":   {"passages": passages, "sources": web_sources, "iterations": max_it},
-                        "answer": stream_full_answer,
-                    })
-                except Exception:
-                    pass
-
         except Exception as e:
-            yield f"data: {_json.dumps({'type':'error','message':str(e)}, ensure_ascii=False)}\n\n"
+            yield sse({"type": "error", "message": str(e)})
 
-        yield f"data: {_json.dumps({'type':'done'}, ensure_ascii=False)}\n\n"
+        yield sse({"type": "done"})
         _schedule_memory_update(req.user_id, prompt, stream_full_answer, req.chat_id)
 
     return StreamingResponse(

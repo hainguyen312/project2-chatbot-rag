@@ -11,6 +11,11 @@ Tokenizer: lowercase + NFC → âm tiết (\\w+) bỏ stopword → thêm bigram 
 (từ ghép tiếng Việt phần lớn là 2 âm tiết: "thai_sản", "người_lao", "lao_động").
 Tên điều được lặp TITLE_BOOST lần để tăng trọng số.
 
+Điều dài hơn BODY_MAX_CHARS (≈1.000 điều, tới 50k ký tự): tách theo KHOẢN thành nhiều tài liệu con
+(mỗi tài liệu = tên điều + một nhóm khoản liền nhau ≤ BODY_MAX_CHARS), khi tìm thì gộp về mapc lấy điểm
+cao nhất — trước đây chỉ index 6.000 ký tự đầu nên các khoản cuối điều dài không bao giờ tìm thấy.
+Tắt bằng BM25_SPLIT_LONG=0.
+
 Index lưu cache ở BM25_CACHE_DIR (mặc định .cache/bm25_phapdien), build lần đầu ~1–2 phút.
 """
 from __future__ import annotations
@@ -26,7 +31,9 @@ from typing import Any
 _ROOT = Path(__file__).resolve().parents[1]
 CACHE_DIR = Path(os.getenv("BM25_CACHE_DIR", str(_ROOT / ".cache" / "bm25_phapdien")))
 TITLE_BOOST = 3
-BODY_MAX_CHARS = 6000  # điều quá dài (tới 50k ký tự) làm loãng BM25 & tốn RAM
+BODY_MAX_CHARS = 6000  # độ dài tối đa một tài liệu BM25 (điều dài hơn → tách theo khoản)
+SPLIT_LONG = os.getenv("BM25_SPLIT_LONG", "1").strip().lower() in ("1", "true", "yes")
+INDEX_VERSION = 2       # đổi cách dựng corpus → tăng để cache cũ tự build lại
 
 _MAPC_PREFIX = re.compile(r"^\s*Điều\s+[\w.\-]+\.\s*", re.UNICODE)
 _WORD = re.compile(r"\w+", re.UNICODE)
@@ -95,6 +102,35 @@ def _mysql_rows() -> list[dict[str, Any]]:
         conn.close()
 
 
+def article_docs(ten: str, noidung: str, *, split_long: bool = SPLIT_LONG,
+                 max_chars: int = BODY_MAX_CHARS) -> list[str]:
+    """Văn bản các tài liệu BM25 của một điều: 1 tài liệu, hoặc nhiều nếu điều dài và tách được khoản."""
+    title = clean_title(ten or "")
+    head = " ".join([title] * TITLE_BOOST)
+    body = noidung or ""
+    if not split_long or len(body) <= max_chars:
+        return [head + " " + body[:max_chars]]
+    from retrieve.legal_graph import split_khoan
+
+    parts = [t for _, t in split_khoan(body)]
+    if len(parts) < 2:
+        return [head + " " + body[:max_chars]]
+    chunks, cur = [], ""
+    for t in parts:
+        t = t[:max_chars]
+        if cur and len(cur) + len(t) + 1 > max_chars:
+            chunks.append(cur)
+            cur = ""
+        cur = f"{cur}\n{t}" if cur else t
+    if cur:
+        chunks.append(cur)
+    return [head + " " + c for c in chunks]
+
+
+def _meta() -> dict:
+    return {"version": INDEX_VERSION, "split_long": SPLIT_LONG, "body_max_chars": BODY_MAX_CHARS}
+
+
 class BM25Index:
     def __init__(self, retriever: Any, mapcs: list[str]):
         self.retriever = retriever
@@ -105,24 +141,28 @@ class BM25Index:
         import bm25s
 
         rows = _mysql_rows()
-        mapcs, corpus = [], []
+        mapcs, corpus = [], []  # mapcs[i] = điều của tài liệu i (điều dài có nhiều tài liệu)
         for r in rows:
-            title = clean_title(r.get("ten") or "")
-            body = (r.get("noidung") or "")[:BODY_MAX_CHARS]
-            mapcs.append(r["mapc"])
-            corpus.append(tokenize(" ".join([title] * TITLE_BOOST) + " " + body))
+            for doc in article_docs(r.get("ten") or "", r.get("noidung") or ""):
+                mapcs.append(r["mapc"])
+                corpus.append(tokenize(doc))
         retriever = bm25s.BM25(k1=1.2, b=0.75)
         retriever.index(corpus, show_progress=False)
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
         retriever.save(str(CACHE_DIR))
         (CACHE_DIR / "mapcs.json").write_text(json.dumps(mapcs), encoding="utf-8")
+        (CACHE_DIR / "meta.json").write_text(json.dumps(_meta()), encoding="utf-8")
         return cls(retriever, mapcs)
 
     @classmethod
     def load_or_build(cls) -> "BM25Index":
         import bm25s
 
-        if (CACHE_DIR / "mapcs.json").exists():
+        meta_file = CACHE_DIR / "meta.json"
+        stale = not meta_file.exists() or json.loads(meta_file.read_text(encoding="utf-8")) != _meta()
+        if (CACHE_DIR / "mapcs.json").exists() and stale:
+            print("[BM25] Cache khác phiên bản/cấu hình corpus → build lại")
+        elif (CACHE_DIR / "mapcs.json").exists():
             try:
                 retriever = bm25s.BM25.load(str(CACHE_DIR))
                 mapcs = json.loads((CACHE_DIR / "mapcs.json").read_text(encoding="utf-8"))
@@ -138,13 +178,16 @@ class BM25Index:
         toks = [t for t in toks if t in vocab]
         if not toks:
             return []
-        k = min(top_k, len(self.mapcs))
+        # Điều dài có nhiều tài liệu con → lấy dư rồi gộp về mapc (giữ điểm cao nhất)
+        k = min(top_k * 3, len(self.mapcs))
         docs, scores = self.retriever.retrieve([toks], k=k, show_progress=False)
-        out = []
+        out, seen = [], set()
         for idx, s in zip(docs[0], scores[0]):
-            if s > 0:
-                out.append((self.mapcs[int(idx)], float(s)))
-        return out
+            m = self.mapcs[int(idx)]
+            if s > 0 and m not in seen:
+                seen.add(m)
+                out.append((m, float(s)))
+        return out[:top_k]
 
 
 _INDEX: BM25Index | None = None
@@ -161,7 +204,7 @@ def get_bm25() -> BM25Index | None:
         if _INDEX is None and not _FAILED:
             try:
                 _INDEX = BM25Index.load_or_build()
-                print(f"[BM25] Ready: {len(_INDEX.mapcs)} điều")
+                print(f"[BM25] Ready: {len(set(_INDEX.mapcs))} điều, {len(_INDEX.mapcs)} tài liệu")
             except Exception as e:
                 _FAILED = True
                 print(f"[BM25] Không khởi tạo được, tắt lexical search: {e}")
@@ -192,7 +235,7 @@ def rebuild_async() -> None:
             idx = BM25Index.build()
             with _LOCK:
                 _INDEX, _FAILED = idx, False
-            print(f"[BM25] Rebuilt: {len(idx.mapcs)} điều")
+            print(f"[BM25] Rebuilt: {len(set(idx.mapcs))} điều, {len(idx.mapcs)} tài liệu")
         except Exception as e:
             print(f"[BM25] Rebuild lỗi, giữ index cũ: {e}")
 

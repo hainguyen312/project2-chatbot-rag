@@ -15,7 +15,19 @@ LLM_MAX_WEB_CHARS = int(os.getenv("AGENT_LLM_MAX_WEB_CHARS", "1500"))
 # Rerank: 1 = sau overlap gọi LLM chấm lại top-N (tốn API); 0 = chỉ overlap + Milvus order
 RAG_AGENT_LLM_RERANK = os.getenv("RAG_AGENT_LLM_RERANK", "0").strip().lower() in ("1", "true", "yes")
 AGENT_VECTOR_POOL_MULT = max(1, int(os.getenv("AGENT_VECTOR_POOL_MULT", "3")))
+# Đồ thị (Neo4j): tự kèm điều/khoản được dẫn chiếu bởi top kết quả vector_search
+AGENT_REF_CLOSURE = os.getenv("AGENT_REF_CLOSURE", "1").strip().lower() in ("1", "true", "yes")
+AGENT_REF_CLOSURE_SEEDS = int(os.getenv("AGENT_REF_CLOSURE_SEEDS", "3"))
+AGENT_REF_CLOSURE_MAX = int(os.getenv("AGENT_REF_CLOSURE_MAX", "4"))
+AGENT_REF_CLOSURE_CHARS = int(os.getenv("AGENT_REF_CLOSURE_CHARS", "1500"))
+# Đồ thị: tự kèm điều/khoản CẤM / NGOẠI LỆ nối với top kết quả ("điều chính cho phép, điều liên quan cấm")
+AGENT_EXCEPTION_CHECK = os.getenv("AGENT_EXCEPTION_CHECK", "1").strip().lower() in ("1", "true", "yes")
+AGENT_EXCEPTION_SEEDS = int(os.getenv("AGENT_EXCEPTION_SEEDS", "5"))
+AGENT_EXCEPTION_MAX = int(os.getenv("AGENT_EXCEPTION_MAX", "3"))
+# Cộng điểm cho ứng viên liên kết với ứng viên khác (THAM_CHIEU / LIEN_QUAN); 0 = tắt
+GRAPH_BOOST_BETA = float(os.getenv("GRAPH_BOOST_BETA", "0"))
 
+from retrieve.legal_graph import parse_vbqppl, select_relevant_text
 from services.lawdata.status import annotate_hits, resolve_aliases
 
 _MYSQL_CFG = {
@@ -32,7 +44,7 @@ MATCH (d:Dieu) WHERE d.mapc IN $mapcs
 OPTIONAL MATCH (ch:Chuong)-[:CO_DIEU]->(d)
 OPTIONAL MATCH (dm:DeMuc)-[:CO_CHUONG]->(ch)
 OPTIONAL MATCH (cd:ChuDe)-[:CO_DE_MUC]->(dm)
-RETURN d.mapc AS mapc, d.ten AS ten, d.noidung AS noidung,
+RETURN d.mapc AS mapc, d.ten AS ten, d.noidung AS noidung, d.vbqppl AS vbqppl,
        ch.ten AS tenchuong, dm.ten AS tendemuc, cd.ten AS tenchude
 """
 
@@ -41,7 +53,7 @@ MATCH (d:Dieu {mapc: $mapc})
 OPTIONAL MATCH (ch:Chuong)-[:CO_DIEU]->(d)
 OPTIONAL MATCH (dm:DeMuc)-[:CO_CHUONG]->(ch)
 OPTIONAL MATCH (cd:ChuDe)-[:CO_DE_MUC]->(dm)
-RETURN d.mapc AS mapc, d.ten AS ten, d.noidung AS noidung,
+RETURN d.mapc AS mapc, d.ten AS ten, d.noidung AS noidung, d.vbqppl AS vbqppl,
        ch.ten AS tenchuong, dm.ten AS tendemuc, cd.ten AS tenchude
 """
 
@@ -53,7 +65,9 @@ RAG_AGENT_TOOLS: list[dict[str, Any]] = [
             "name": "vector_search",
             "description": (
                 "Tìm điều luật trong Pháp Điển (hybrid: semantic Milvus + từ khoá BM25). "
-                "Dùng khi cần tìm điều luật liên quan đến chủ đề; nên dùng thuật ngữ pháp lý cụ thể."
+                "Dùng khi cần tìm điều luật liên quan đến chủ đề; nên dùng thuật ngữ pháp lý cụ thể. "
+                "Kết quả tự kèm các điều/khoản mà điều đứng đầu DẪN CHIẾU TỚI (trường `duoc_dan_chieu_tu`) và "
+                "các khoản CẤM / NGOẠI LỆ liên quan (trường `ngoai_le_cua`)."
             ),
             "parameters": {
                 "type": "object",
@@ -70,8 +84,10 @@ RAG_AGENT_TOOLS: list[dict[str, Any]] = [
         "function": {
             "name": "graph_traverse",
             "description": (
-                "Tìm các điều luật có quan hệ (LIEN_QUAN / THAM_CHIEU) với các điều đã tìm được. "
-                "Dùng sau vector_search để mở rộng context."
+                "Mở rộng theo đồ thị từ các điều đã tìm được. Trường `quan_he` của mỗi kết quả: "
+                "dan_chieu = điều gốc dẫn chiếu tới (căn cứ); duoc_dan_chieu = điều khác dẫn chiếu tới điều gốc "
+                "(thường là văn bản hướng dẫn chi tiết); lien_quan = mục liên quan do Pháp Điển biên soạn. "
+                "Dùng khi cần căn cứ dẫn chiếu, quy định hướng dẫn chi tiết hoặc điều liên quan."
             ),
             "parameters": {
                 "type": "object",
@@ -85,7 +101,7 @@ RAG_AGENT_TOOLS: list[dict[str, Any]] = [
                     "hop": {
                         "type": "integer",
                         "default": 1,
-                        "description": "1 = điều liên quan trực tiếp (khuyến nghị); 2 = mở rộng xa hơn, nhiễu hơn",
+                        "description": "1 = quan hệ trực tiếp (khuyến nghị); 2 = thêm dẫn chiếu bắc cầu 2 bước",
                     },
                 },
                 "required": ["mapcs"],
@@ -213,6 +229,19 @@ Nguyên tắc:
 - Chỉ đưa vào câu trả lời các khoản/điểm liên quan trực tiếp đến câu hỏi; không liệt kê
   các mức phạt cho hành vi khác.
 - `diem_lien_quan` (0–1) của mỗi điều: dưới 0,5 là khớp yếu — đọc kỹ nội dung trước khi dùng.
+- DẪN CHIẾU: kết quả có `duoc_dan_chieu_tu` là điều/khoản mà một điều khác dẫn chiếu tới (vd. "không
+  thuộc trường hợp cấm kết hôn tại khoản 2 Điều 5"). Khi câu trả lời dựa vào điều có dẫn chiếu, NÊU RÕ
+  nội dung được dẫn chiếu (liệt kê các trường hợp), đừng chỉ nhắc số điều/khoản.
+- KIỂM TRA NGOẠI LỆ TRƯỚC KHI KẾT LUẬN "ĐƯỢC": kết quả có `ngoai_le_cua` là khoản CẤM / NGOẠI LỆ gắn với
+  một điều khác (vd. điều kiện kết hôn ↔ cấm kết hôn giữa người có họ trong phạm vi ba đời; được sa thải ↔
+  không được kỷ luật người lao động đang nghỉ ốm, mang thai). Đối chiếu tình huống của người dùng:
+  · Rơi vào ngoại lệ → kết luận theo ngoại lệ (KHÔNG được / bị cấm), trích dẫn khoản đó.
+  · Chưa rõ người dùng có thuộc ngoại lệ không → kết luận có điều kiện ("được, TRỪ KHI …") và nêu ngoại lệ.
+  · Ngoại lệ không liên quan tới tình huống → bỏ qua, không cần nhắc.
+- `noidung_truncated` = true: nội dung đã được rút gọn còn các khoản liên quan nhất; cần khoản bị lược
+  thì gọi get_full_article.
+- `van_ban_thay_the` (nếu có): văn bản chứa điều này đã bị thay thế/bãi bỏ — ưu tiên tìm quy định
+  tương ứng trong văn bản mới (vector_search kèm số hiệu văn bản mới).
 - PHÁP ĐIỂN VÀ WEB: Pháp Điển là nguồn chính về nội dung quy định nhưng có thể chưa cập nhật
   văn bản mới. Nếu web_search từ nguồn tin cậy (`do_tin_cay_nguon` = "high": vbpl.vn,
   chinhphu.vn, thuvienphapluat.vn…) cho thấy văn bản trong Pháp Điển đã bị sửa đổi/thay thế
@@ -361,6 +390,8 @@ def rerank_phapdien_hits(
 
     pool = max(top_k, min(len(candidates), 40))
     ranked = retriever._rerank(candidates, q, top_k=pool)
+    if GRAPH_BOOST_BETA > 0 and hasattr(retriever, "_graph_boost"):
+        ranked = retriever._graph_boost(ranked, GRAPH_BOOST_BETA)
     if RAG_AGENT_LLM_RERANK and ranked:
         ranked = _apply_llm_rerank_head(retriever, q, ranked, head_n=12)
 
@@ -418,12 +449,17 @@ def split_phapdien_title(ten: str) -> tuple[str, str]:
     return (m.group(1), m.group(2).strip()) if m else ("", (ten or "").strip())
 
 
-def row_to_llm_item(row: dict[str, Any]) -> dict[str, Any]:
+def row_to_llm_item(row: dict[str, Any], query: str = "") -> dict[str, Any]:
     """Bản rút gọn gửi LLM. Tách mã Pháp Điển khỏi tên điều để LLM không đọc nhầm mã
     (vd. 'NĐ.75') thành số hiệu văn bản; văn bản gốc nằm ở `vbqppl`. Không gửi kèm
-    `passage` (trùng nội dung với `noidung`, tốn token gấp đôi)."""
+    `passage` (trùng nội dung với `noidung`, tốn token gấp đôi).
+    Điều dài: có `query` → giữ các khoản khớp truy vấn nhất (không cắt phần đầu)."""
     noidung = row.get("noidung") or ""
-    preview = truncate_for_llm(noidung, LLM_MAX_NOIDUNG_CHARS)
+    if query:
+        preview, truncated = select_relevant_text(noidung, query, LLM_MAX_NOIDUNG_CHARS)
+    else:
+        preview = truncate_for_llm(noidung, LLM_MAX_NOIDUNG_CHARS)
+        truncated = len(noidung) > len(preview)
     ma, ten = split_phapdien_title(row.get("ten") or "")
     return {
         "mapc": row.get("mapc", ""),
@@ -434,16 +470,43 @@ def row_to_llm_item(row: dict[str, Any]) -> dict[str, Any]:
         "tendemuc": row.get("tendemuc"),
         "tenchuong": row.get("tenchuong"),
         "noidung": preview,
-        "noidung_truncated": len(noidung) > len(preview),
+        "noidung_truncated": truncated,
     }
 
 
-def hit_to_llm_item(h: dict[str, Any]) -> dict[str, Any]:
-    """row_to_llm_item + điểm liên quan (0–1) để LLM biết kết quả nào yếu."""
-    item = row_to_llm_item(hit_dict_to_row(h))
+_QUAN_HE_TEN = {
+    "dan_chieu": "điều gốc dẫn chiếu tới điều này",
+    "duoc_dan_chieu": "điều này dẫn chiếu tới điều gốc (thường là quy định hướng dẫn chi tiết)",
+    "lien_quan": "mục liên quan do Pháp Điển biên soạn",
+    "dan_chieu_2": "dẫn chiếu bắc cầu 2 bước",
+}
+
+
+def hit_to_llm_item(h: dict[str, Any], query: str = "") -> dict[str, Any]:
+    """row_to_llm_item + điểm liên quan (0–1) để LLM biết kết quả nào yếu, kèm thông tin đồ thị
+    (quan hệ với điều gốc, dẫn chiếu, văn bản thay thế) nếu có."""
+    item = row_to_llm_item(hit_dict_to_row(h), query=query)
     item["diem_lien_quan"] = round(float(h.get("score", 0.0)), 2)
     if h.get("hieu_luc"):
         item["tinh_trang_hieu_luc"] = h["hieu_luc"]["ghi_chu"]
+    if h.get("quan_he") in _QUAN_HE_TEN:
+        item["quan_he"] = _QUAN_HE_TEN[h["quan_he"]]
+    if h.get("dan_chieu_tu"):
+        ma, _ = split_phapdien_title(h.get("ten_nguon") or "")
+        where = " ".join(filter(None, [
+            ("điểm " + ", ".join(h["diem"])) if h.get("diem") else "",
+            ("khoản " + ", ".join(h["khoan"])) if h.get("khoan") else "",
+        ]))
+        item["duoc_dan_chieu_tu"] = (f"mã Pháp điển {ma}" if ma else h["dan_chieu_tu"]) + (
+            f" (dẫn chiếu {where})" if where else "")
+    if h.get("ngoai_le_cua"):
+        ma, ten_nguon = split_phapdien_title(h.get("ten_nguon") or "")
+        item["ngoai_le_cua"] = (f"mã Pháp điển {ma} ({ten_nguon})" if ma else h["ngoai_le_cua"]) + \
+            " — khoản cấm/ngoại lệ, đối chiếu trước khi kết luận"
+    if h.get("van_ban_thay_the"):
+        v = h["van_ban_thay_the"]
+        item["van_ban_thay_the"] = (f"{v['moi_nhat']} — có {v['so_dieu_trong_db']} điều trong CSDL"
+                                    if v.get("so_dieu_trong_db") else f"{v['moi_nhat']} — chưa có trong CSDL")
     return item
 
 
@@ -590,6 +653,57 @@ def assistant_message_to_dict(msg: Any) -> dict[str, Any]:
     return out
 
 
+def attach_newer_versions(retriever: Any, hits: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Gắn `van_ban_thay_the` cho điều thuộc văn bản đã bị thay thế/bãi bỏ (chuỗi THAY_THE trong đồ thị)."""
+    if not hits or not hasattr(retriever, "_newest_versions"):
+        return hits
+    doc_of = {}
+    for h in hits:
+        p = parse_vbqppl(h.get("vbqppl"))
+        if p:
+            doc_of[id(h)] = p["so_hieu"]
+    newer = retriever._newest_versions(list(doc_of.values())) if doc_of else {}
+    for h in hits:
+        v = newer.get(doc_of.get(id(h)))
+        if v:
+            h["van_ban_thay_the"] = v
+    return hits
+
+
+def reference_closure_hits(retriever: Any, hits: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Điều/khoản mà top AGENT_REF_CLOSURE_SEEDS kết quả dẫn chiếu tới (đồ thị THAM_CHIEU), chưa có trong hits."""
+    if not AGENT_REF_CLOSURE or not hits or not hasattr(retriever, "_reference_closure"):
+        return []
+    seeds = [h["mapc"] for h in hits[:AGENT_REF_CLOSURE_SEEDS] if h.get("mapc")]
+    score_of = {h.get("mapc"): float(h.get("score", 0.0)) for h in hits}
+    rows = retriever._reference_closure(seeds, exclude={h.get("mapc") for h in hits},
+                                        limit=AGENT_REF_CLOSURE_MAX, max_chars=AGENT_REF_CLOSURE_CHARS)
+    out = []
+    for r in rows:
+        h = row_to_full_hit(r, score=round(0.8 * score_of.get(r.get("dan_chieu_tu"), 0.5), 4))
+        h.update({k: r.get(k) for k in ("dan_chieu_tu", "ten_nguon", "khoan", "diem")})
+        h["quan_he"] = "dan_chieu"
+        out.append(h)
+    return annotate_hits(out) if out else out
+
+
+def exception_hits(retriever: Any, hits: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Khoản CẤM / NGOẠI LỆ nối (đồ thị) với top AGENT_EXCEPTION_SEEDS kết quả, chưa có trong hits."""
+    if not AGENT_EXCEPTION_CHECK or not hits or not hasattr(retriever, "_exception_check"):
+        return []
+    seeds = [h["mapc"] for h in hits[:AGENT_EXCEPTION_SEEDS] if h.get("mapc") and h.get("source", "phapdien") != "web"]
+    score_of = {h.get("mapc"): float(h.get("score", 0.0)) for h in hits}
+    rows = retriever._exception_check(seeds, exclude={h.get("mapc") for h in hits},
+                                      limit=AGENT_EXCEPTION_MAX, max_chars=AGENT_REF_CLOSURE_CHARS)
+    out = []
+    for r in rows:
+        h = row_to_full_hit(r, score=round(0.8 * score_of.get(r.get("ngoai_le_cua"), 0.5), 4))
+        h.update({k: r.get(k) for k in ("ngoai_le_cua", "ten_nguon", "khoan")})
+        h["quan_he"] = "ngoai_le"
+        out.append(h)
+    return annotate_hits(out) if out else out
+
+
 def execute_agent_tool(
     name: str,
     args: dict[str, Any],
@@ -632,7 +746,11 @@ def execute_agent_tool(
             # lượt về cùng một thứ tự.
             rq = " ".join(dict.fromkeys(filter(None, [q, (rerank_query or "").strip()])))
             full_hits = annotate_hits(rerank_phapdien_hits(retriever, rq, full_hits, top_k=top_k))
-            llm_items = [hit_to_llm_item(h) for h in full_hits]
+            # Ngoại lệ trước: điều vừa được dẫn chiếu vừa là khoản cấm thì gắn nhãn ngoại lệ (quan trọng hơn)
+            full_hits = full_hits + exception_hits(retriever, full_hits)
+            full_hits = full_hits + reference_closure_hits(retriever, full_hits)
+            attach_newer_versions(retriever, full_hits)
+            llm_items = [hit_to_llm_item(h, query=rq) for h in full_hits]
             return json.dumps(llm_items, ensure_ascii=False), full_hits
 
         if name == "graph_traverse":
@@ -641,7 +759,10 @@ def execute_agent_tool(
                 mapcs = []
             mapcs = resolve_article_ids([str(x) for x in mapcs if x])
             hop = min(2, max(1, int(args.get("hop", 1))))
-            results = retriever._graph_expand(mapcs, hop=hop)[:40]
+            # Bỏ chính các điều gốc: agent đã có nội dung của chúng, gửi lại chỉ tốn token
+            seeds = set(mapcs)
+            results = [r for r in retriever._graph_expand(mapcs, hop=hop)[:40] if r.get("mapc") not in seeds]
+            quan_he = {r.get("mapc"): r.get("quan_he") for r in results}
 
             full_hits = []
             for r in results:
@@ -658,10 +779,15 @@ def execute_agent_tool(
                 full_hits.append(row_to_full_hit(row, score=score))
 
             graph_top = min(len(full_hits), 20) if full_hits else 0
+            rq = (rerank_query or "").strip()
             if graph_top:
-                rq = (rerank_query or "").strip() or " ".join(mapcs[:5])
-                full_hits = annotate_hits(rerank_phapdien_hits(retriever, rq, full_hits, top_k=graph_top))
-            llm_items = [hit_to_llm_item(h) for h in full_hits]
+                full_hits = annotate_hits(rerank_phapdien_hits(retriever, rq or " ".join(mapcs[:5]),
+                                                               full_hits, top_k=graph_top))
+            for h in full_hits:
+                if quan_he.get(h.get("mapc")):
+                    h["quan_he"] = quan_he[h["mapc"]]
+            attach_newer_versions(retriever, full_hits)
+            llm_items = [hit_to_llm_item(h, query=rq) for h in full_hits]
 
             return json.dumps(llm_items, ensure_ascii=False), full_hits
 
@@ -707,7 +833,7 @@ def execute_agent_tool(
             if not row:
                 return json.dumps({"error": "Không tìm thấy"}, ensure_ascii=False), empty
 
-            full_hit = annotate_hits([row_to_full_hit(row, score=1.0)])[0]
+            full_hit = attach_newer_versions(retriever, annotate_hits([row_to_full_hit(row, score=1.0)]))[0]
             ma, ten_dieu = split_phapdien_title(row.get("ten") or "")
             llm_payload = {
                 "mapc": mapc,
@@ -721,6 +847,8 @@ def execute_agent_tool(
             }
             if full_hit.get("hieu_luc"):
                 llm_payload["tinh_trang_hieu_luc"] = full_hit["hieu_luc"]["ghi_chu"]
+            if full_hit.get("van_ban_thay_the"):
+                llm_payload["van_ban_thay_the"] = hit_to_llm_item(full_hit)["van_ban_thay_the"]
             return json.dumps(llm_payload, ensure_ascii=False), [full_hit]
 
     except Exception as e:
@@ -826,7 +954,73 @@ def merge_tool_result_into_passages(
     merge_passage_hits(hits, bucket, max_extend=max_extend)
 
 
-def run_agentic_rag_sync(
+SYNTHESIS_PROMPT = "Hãy tổng hợp câu trả lời dựa trên thông tin đã thu thập (tiếng Việt)."
+# Stream: giữ lại phần chữ đầu tiên tới khi chắc lượt này là câu trả lời (không kèm tool call) rồi mới đẩy ra —
+# model đôi khi viết một câu dạo đầu rồi mới gọi tool, câu đó không được hiện như câu trả lời.
+STREAM_HOLD_CHARS = int(os.getenv("AGENT_STREAM_HOLD_CHARS", "80"))
+
+
+def _tool_call_ns(tid: str, name: str, arguments: str) -> Any:
+    from types import SimpleNamespace
+
+    return SimpleNamespace(id=tid, type="function", function=SimpleNamespace(name=name, arguments=arguments or "{}"))
+
+
+def _stream_turn(openai_client: Any, kw: dict[str, Any]):
+    """
+    Một lượt gọi model ở chế độ stream. Yield:
+      ("token", text)            — chỉ khi chắc chắn lượt này là câu trả lời
+      ("end", tool_calls, text)  — cuối lượt: tool_calls (list|None), toàn bộ text
+    """
+    acc: dict[int, dict[str, str]] = {}
+    parts: list[str] = []
+    held: list[str] = []
+    flushed = False
+    for chunk in openai_client.chat.completions.create(stream=True, **kw):
+        if not getattr(chunk, "choices", None):
+            continue
+        delta = chunk.choices[0].delta
+        for tc in getattr(delta, "tool_calls", None) or []:
+            a = acc.setdefault(tc.index, {"id": "", "name": "", "args": ""})
+            a["id"] = tc.id or a["id"]
+            fn = getattr(tc, "function", None)
+            if fn is not None:
+                a["name"] += fn.name or ""
+                a["args"] += fn.arguments or ""
+        text = getattr(delta, "content", None)
+        if not text:
+            continue
+        parts.append(text)
+        if acc:
+            continue
+        if flushed:
+            yield ("token", text)
+        else:
+            held.append(text)
+            if sum(map(len, held)) >= STREAM_HOLD_CHARS:
+                flushed = True
+                yield ("token", "".join(held))
+    if flushed and acc:
+        print("[Agent] Model viết chữ rồi mới gọi tool — phần chữ đã lỡ hiển thị", flush=True)
+    if not acc and not flushed and held:
+        yield ("token", "".join(held))
+    calls = [_tool_call_ns(a["id"], a["name"], a["args"]) for _, a in sorted(acc.items())] or None
+    yield ("end", calls, "".join(parts))
+
+
+def _answer_turn(openai_client: Any, kw: dict[str, Any], stream: bool):
+    """Gọi model một lượt; yield ("token", …) rồi ("end", tool_calls, text). Không stream → một token duy nhất."""
+    if stream:
+        yield from _stream_turn(openai_client, kw)
+        return
+    msg = openai_client.chat.completions.create(**kw).choices[0].message
+    text = msg.content or ""
+    if not msg.tool_calls and text.strip():
+        yield ("token", text.strip())
+    yield ("end", msg.tool_calls or None, text)
+
+
+def agent_events(
     *,
     openai_client: Any,
     retriever: Any,
@@ -837,12 +1031,21 @@ def run_agentic_rag_sync(
     max_iterations: int = 6,
     rerank_query: str | None = None,
     system_prompt_extra: str = "",
-) -> dict[str, Any]:
+    stream: bool = False,
+):
     """
-    Vòng lặp tool-calling (không stream). Trả về answer, raw passage hits, iterations.
+    Vòng lặp tool-calling DUY NHẤT của agent (dùng cho cả /rag/chat và /rag/stream). Yield các sự kiện:
+      {"type": "tool", "tool", "call_id", "args", "iteration", "max"}
+      {"type": "tool_done", "tool", "call_id", "count", "titles", "iteration", "max"}
+      {"type": "verify", "reason", "iteration", "max"}              buộc kiểm tra web ở lượt này
+      {"type": "compose", "iteration", "max", "passage_hits"}       ngay trước token đầu tiên của câu trả lời
+      {"type": "token", "text"}
+      {"type": "final", "answer", "passage_hits", "iterations"}
 
-    system_prompt_extra: đoạn text bổ sung append vào cuối system prompt
-        (dùng để inject long-term memory về người dùng).
+    Kiểm tra web (web_verify_reason) chạy TRƯỚC khi model viết câu trả lời: sau mỗi vòng tool, nếu câu hỏi dễ đổi
+    theo văn bản mới hoặc Pháp Điển yếu thì lượt kế tiếp buộc gọi web_search — không sinh rồi bỏ bản nháp.
+    stream=True → token đẩy ra ngay khi model sinh (stream thật).
+    system_prompt_extra: đoạn bổ sung cuối system prompt (long-term memory của người dùng).
     """
     rerank_ctx = (rerank_query if rerank_query is not None else user_prompt) or ""
     model = agent_chat_model()
@@ -856,72 +1059,91 @@ def run_agentic_rag_sync(
     ]
     bucket: list[dict[str, Any]] = []
     used_tools: set[str] = set()
-    tool_choice: Any = "auto"
+    tool_rounds = 0
+
+    def answer(turn, iteration: int):
+        """Đẩy compose + token; trả text cuối (hoặc None nếu lượt này là tool call)."""
+        started = False
+        for ev in turn:
+            if ev[0] == "token":
+                if not started:
+                    started = True
+                    yield {"type": "compose", "iteration": iteration, "max": max_iterations, "passage_hits": bucket}
+                yield {"type": "token", "text": ev[1]}
+            else:
+                return ev[1], ev[2]
+        return None, ""
 
     for iteration in range(max_iterations):
-        response = openai_client.chat.completions.create(
-            model=model,
-            messages=messages,
-            tools=RAG_AGENT_TOOLS,
-            tool_choice=tool_choice,
-            temperature=0.1,
-        )
-        tool_choice = "auto"
-        msg = response.choices[0].message
+        tool_choice: Any = "auto"
+        reason = web_verify_reason(user_prompt, bucket, used_tools) if tool_rounds else None
+        if reason and iteration < max_iterations - 1:
+            messages.append(web_verify_instruction(reason))
+            tool_choice = WEB_SEARCH_TOOL_CHOICE
+            used_tools.add("web_search")  # chỉ buộc 1 lần
+            yield {"type": "verify", "reason": reason, "iteration": iteration + 1, "max": max_iterations}
 
-        if not msg.tool_calls:
-            # Trước khi chốt: câu hỏi dễ đổi theo văn bản mới / Pháp Điển yếu → buộc web_search 1 lần
-            reason = web_verify_reason(user_prompt, bucket, used_tools)
-            if reason and iteration < max_iterations - 1:
-                messages.append(web_verify_instruction(reason))
-                tool_choice = WEB_SEARCH_TOOL_CHOICE
-                used_tools.add("web_search")  # chỉ buộc 1 lần
-                continue
-            messages.append(assistant_message_to_dict(msg))
-            text = (msg.content or "").strip()
-            if text:
-                return {
-                    "answer": text,
-                    "passage_hits": bucket,
-                    "iterations": iteration + 1,
-                }
-            break
+        kw = {"model": model, "messages": messages, "tools": RAG_AGENT_TOOLS,
+              "tool_choice": tool_choice, "temperature": 0.1}
+        tool_calls, text = yield from answer(_answer_turn(openai_client, kw, stream), iteration + 1)
 
-        messages.append(assistant_message_to_dict(msg))
-        for tc in msg.tool_calls:
-            used_tools.add(tc.function.name)
+        if not tool_calls:
+            messages.append({"role": "assistant", "content": text})
+            if text.strip():
+                yield {"type": "final", "answer": text.strip(), "passage_hits": bucket, "iterations": iteration + 1}
+                return
+            break  # model trả rỗng → lượt tổng hợp
+
+        messages.append(assistant_message_to_dict(_tool_call_msg(text, tool_calls)))
+        tool_rounds += 1
+        for tc in tool_calls:
+            name = tc.function.name
+            used_tools.add(name)
             try:
                 args = json.loads(tc.function.arguments or "{}")
             except json.JSONDecodeError:
                 args = {}
+            yield {"type": "tool", "tool": name, "call_id": tc.id, "args": args,
+                   "iteration": iteration + 1, "max": max_iterations}
             tool_content, full_hits = execute_agent_tool(
-                tc.function.name,
-                args,
-                retriever=retriever,
-                neo4j_driver=neo4j_driver,
-                rerank_query=rerank_ctx,
+                name, args, retriever=retriever, neo4j_driver=neo4j_driver, rerank_query=rerank_ctx,
             )
-            apply_agent_tool_result(
-                tc.function.name, tool_content, full_hits, bucket
-            )
-            messages.append({
-                "role": "tool",
-                "tool_call_id": tc.id,
-                "content": tool_content,
-            })
+            apply_agent_tool_result(name, tool_content, full_hits, bucket)
+            yield {"type": "tool_done", "tool": name, "call_id": tc.id, "count": len(full_hits or []),
+                   "titles": [str(h.get("ten") or h.get("title") or "")[:80] for h in (full_hits or [])[:5]],
+                   "iteration": iteration + 1, "max": max_iterations}
+            messages.append({"role": "tool", "tool_call_id": tc.id, "content": tool_content})
 
-    final = openai_client.chat.completions.create(
-        model=model,
-        messages=messages
-        + [{
-            "role": "user",
-            "content": "Hãy tổng hợp câu trả lời dựa trên thông tin đã thu thập (tiếng Việt).",
-        }],
-        temperature=0.2,
-        max_tokens=1200,
-    )
-    return {
-        "answer": (final.choices[0].message.content or "").strip(),
-        "passage_hits": bucket,
-        "iterations": max_iterations,
-    }
+    kw = {"model": model, "temperature": 0.2, "max_tokens": 1200,
+          "messages": messages + [{"role": "user", "content": SYNTHESIS_PROMPT}]}
+    _, text = yield from answer(_answer_turn(openai_client, kw, stream), max_iterations)
+    yield {"type": "final", "answer": (text or "").strip(), "passage_hits": bucket, "iterations": max_iterations}
+
+
+def _tool_call_msg(content: str, tool_calls: list) -> Any:
+    from types import SimpleNamespace
+
+    return SimpleNamespace(content=content or None, tool_calls=tool_calls)
+
+
+def run_agentic_rag_sync(
+    *,
+    openai_client: Any,
+    retriever: Any,
+    neo4j_driver: Any,
+    user_prompt: str,
+    history: list[dict[str, str]],
+    situation_mode: bool = False,
+    max_iterations: int = 6,
+    rerank_query: str | None = None,
+    system_prompt_extra: str = "",
+) -> dict[str, Any]:
+    """Bản không stream của agent_events: trả {answer, passage_hits, iterations}."""
+    final: dict[str, Any] = {"answer": "", "passage_hits": [], "iterations": max_iterations}
+    for ev in agent_events(openai_client=openai_client, retriever=retriever, neo4j_driver=neo4j_driver,
+                           user_prompt=user_prompt, history=history, situation_mode=situation_mode,
+                           max_iterations=max_iterations, rerank_query=rerank_query,
+                           system_prompt_extra=system_prompt_extra, stream=False):
+        if ev["type"] == "final":
+            final = {k: ev[k] for k in ("answer", "passage_hits", "iterations")}
+    return final

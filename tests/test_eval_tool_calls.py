@@ -121,8 +121,7 @@ def test_run_case_end_to_end(fake_retriever, fake_mysql, scripted_client):
     fake_retriever.fused = [{"mapc": "M_XEDAP", "score": 0.9}]
     client = scripted_client([
         assistant(tool_calls=[tool_call("vector_search", {"query": "mũ bảo hiểm xe đạp"})]),
-        assistant("nháp"),
-        assistant(tool_calls=[tool_call("web_search", {"query": "mức phạt 2025"}, "c2")]),
+        assistant(tool_calls=[tool_call("web_search", {"query": "mức phạt 2025"}, "c2")]),  # bị buộc ngay
         assistant("Xe đạp máy bị phạt; xe đạp thường thì không."),
     ])
     case = {"id": "scope_helmet", "category": "pham_vi_ap_dung",

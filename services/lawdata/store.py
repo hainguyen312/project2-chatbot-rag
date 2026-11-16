@@ -414,6 +414,24 @@ def reindex_mapcs(mapcs: Iterable[str], *, embed_title_only: bool = False) -> di
     return {"embedded": done}
 
 
+def sync_graph(mapcs: Iterable[str], deleted: Iterable[str] = ()) -> dict:
+    """Đồng bộ Neo4j cho các điều vừa đổi trong MySQL (Dieu, Khoan, VanBan, THAM_CHIEU đi ra) + xoá điều
+    đã bị xoá. Bắt buộc: agent đọc nội dung điều từ Neo4j trước, lệch thì sẽ trả nội dung CŨ."""
+    mapcs, deleted = list(mapcs), list(deleted)
+    if not mapcs and not deleted:
+        return {"graph_dieu": 0}
+    from retrieve.build_graph import get_neo4j
+    from retrieve.legal_graph import sync_mapcs
+
+    driver = get_neo4j()
+    conn = connect()
+    try:
+        return sync_mapcs(driver, conn, mapcs, deleted)
+    finally:
+        conn.close()
+        driver.close()
+
+
 def rebuild_bm25_async() -> None:
     from retrieve.lexical_bm25 import rebuild_async
 

@@ -1,0 +1,272 @@
+[
+ {
+  "a": "3200300000000000400004200000000000000000",
+  "b": "3200300000000000100001000000000000000000",
+  "loai_canh": "tham_chieu",
+  "ten_a": "Điều 32.3.LQ.42. Các trường hợp nhập khẩu xuất bản phẩm không kinh doanh không phải đề nghị cấp giấy phép",
+  "ten_b": "Điều 32.3.LQ.10. Những nội dung và hành vi bị cấm trong hoạt động xuất bản",
+  "cau_hoi": "Tôi đi du học về, mang theo mấy cuốn sách in nước ngoài trong hành lý xách tay để đọc cho mình thì có cần xin giấy phép nhập khẩu không?",
+  "ngoai_le": "Dù được miễn xin giấy phép nhập khẩu (chỉ làm thủ tục hải quan), xuất bản phẩm có nội dung bị cấm theo khoản 1 Điều 10 (chống Nhà nước, kích động bạo lực, đồi trụy, mê tín dị đoan, tiết lộ bí mật nhà nước, xuyên tạc lịch sử, thể hiện sai chủ quyền quốc gia, v.v.) thì không được đưa vào Việt Nam dưới mọi hình thức."
+ },
+ {
+  "a": "45001000000000006000000200000000000000000420000000000000000000802490800480002200",
+  "b": "45001000000000006000000200000000000000000420000000000000000000802490800480002600",
+  "loai_canh": "tham_chieu_ngoai_le",
+  "ten_a": "Điều 45.1.TT.51.22. Danh sách ưu tiên",
+  "ten_b": "Điều 45.1.TT.51.26. Cơ sở không được cấp Chứng thư cho lô hàng xuất khẩu",
+  "cau_hoi": "Cơ sở chế biến thủy sản của tôi đã nằm trong danh sách ưu tiên, được xếp hạng 1 và gần đây không có lô hàng nào bị phát hiện vi phạm. Vậy tôi có chắc chắn được cấp chứng thư cho lô hàng xuất khẩu sắp tới theo hình thức dành cho cơ sở ưu tiên không?",
+  "ngoai_le": "Cơ sở trong danh sách ưu tiên vẫn bị đưa ra khỏi danh sách và không được cấp Chứng thư nếu thuộc các trường hợp tại Điều 26 (bị nước nhập khẩu yêu cầu tạm dừng nhập khẩu, bị thu hồi Giấy chứng nhận ATTP, hoặc bị tạm đình chỉ sản xuất), cho đến khi khắc phục được xác nhận hiệu quả và (với trường hợp tạm dừng nhập khẩu) nước nhập khẩu dỡ bỏ tạm dừng."
+ },
+ {
+  "a": "410060000000000020000140000000000000000000802824300190000900",
+  "b": "4100600000000000100000900000000000000000",
+  "loai_canh": "lien_quan",
+  "ten_a": "Điều 41.6.TT.6.9. Tiêu chí đánh giá, chấm điểm, xếp loại kịch bản",
+  "ten_b": "Điều 41.6.LQ.9. Những nội dung và hành vi bị nghiêm cấm trong hoạt động điện ảnh",
+  "cau_hoi": "Tôi viết một kịch bản phim có nội dung tư tưởng sâu sắc, kỹ thuật viết rất tốt, được hội đồng chấm trung bình 9,5 điểm. Vậy kịch bản của tôi có chắc chắn được xếp loại Xuất sắc và được chọn sản xuất bằng ngân sách nhà nước không?",
+  "ngoai_le": "Dù điểm cao, kịch bản vẫn không đạt loại Xuất sắc/Tốt và không được chọn nếu có nội dung bị nghiêm cấm theo Điều 9 Luật Điện ảnh (ví dụ xuyên tạc lịch sử, xúc phạm danh nhân, anh hùng dân tộc, kích động bạo lực, vi phạm quyền trẻ em, định kiến giới...), vì các loại Xuất sắc, Tốt, Khá đều yêu cầu không vi phạm Điều 9."
+ },
+ {
+  "a": "240110000000000020000010000000000000000001500000000000000000",
+  "b": "2401100000000000100001300000000000000000",
+  "loai_canh": "tham_chieu_ngoai_le",
+  "ten_a": "Điều 24.11.LQ.15. Phòng bệnh động vật",
+  "ten_b": "Điều 24.11.LQ.13. Những hành vi bị nghiêm cấm",
+  "cau_hoi": "Trang trại nhà tôi có mấy con lợn bị ốm lừ đừ, bỏ ăn, tôi định tự chăm sóc rồi chở số lợn còn lại sang bán cho người ở huyện khác thì có được không?",
+  "ngoai_le": "Điều 13 cấm che giấu, không khai báo hoặc khai báo không kịp thời động vật mắc bệnh hay có dấu hiệu mắc bệnh; cấm vận chuyển động vật mắc bệnh hoặc động vật mẫn cảm ra khỏi vùng có dịch khi chưa được cơ quan thú y có thẩm quyền cho phép; cấm vận chuyển động vật không có giấy chứng nhận kiểm dịch; cấm vứt hoặc giết mổ, chữa bệnh động vật mắc bệnh thuộc danh mục cấm. Vì vậy người nuôi phải khai báo ngay và không được tự ý bán hay vận chuyển."
+ },
+ {
+  "a": "250140000000000030000310000000000000000000402311901300000300",
+  "b": "250140000000000030000310000000000000000000402311901300000500",
+  "loai_canh": "lien_quan",
+  "ten_a": "Điều 25.14.NĐ.4.3. Cấp lại, đổi, thu hồi Giấy chứng minh sĩ quan",
+  "ten_b": "Điều 25.14.NĐ.4.5. Sử dụng và quản lý Giấy chứng minh sĩ quan",
+  "cau_hoi": "Tôi là sĩ quan, thẻ chứng minh sĩ quan của tôi bị hỏng nặng nên tôi định tự sửa lại thông tin và chỉnh cho rõ nét rồi dùng tiếp, vậy có được không?",
+  "ngoai_le": "Điều A cho phép đổi Giấy chứng minh sĩ quan khi bị hỏng, nhưng Điều B cấm sĩ quan tự sửa chữa hoặc làm hỏng giấy; sĩ quan phải làm thủ tục đổi, và vi phạm có thể bị xử lý hành chính hoặc truy cứu trách nhiệm hình sự."
+ },
+ {
+  "a": "010110000000000040000260000000000000000000402835100130000900",
+  "b": "010110000000000040000260000000000000000000402835100130001700",
+  "loai_canh": "tham_chieu_ngoai_le",
+  "ten_a": "Điều 1.11.NĐ.1.9. Quyền của chủ thể dữ liệu",
+  "ten_b": "Điều 1.11.NĐ.1.17. Xử lý dữ liệu cá nhân trong trường hợp không cần sự đồng ý của chủ thể dữ liệu",
+  "cau_hoi": "Tôi không muốn công ty bảo hiểm tiếp tục xử lý thông tin cá nhân của tôi nữa, tôi không đồng ý thì họ có được dùng dữ liệu của tôi không? Tôi đang có hợp đồng với họ.",
+  "ngoai_le": "Quyền không đồng ý xử lý dữ liệu không áp dụng trong các trường hợp tại Điều 17 Nghị định: xử lý không cần sự đồng ý của chủ thể dữ liệu, ví dụ để thực hiện nghĩa vụ theo hợp đồng của chủ thể dữ liệu theo quy định của luật, trường hợp khẩn cấp bảo vệ tính mạng sức khỏe, công khai dữ liệu theo luật, cơ quan nhà nước xử lý theo luật. Vì vậy công ty vẫn có thể xử lý dữ liệu cần thiết để thực hiện hợp đồng dù người dân không đồng ý."
+ },
+ {
+  "a": "2700600000000000400002500000000000000000",
+  "b": "030030000000000020000050000000000000000000402621800730002000",
+  "loai_canh": "lien_quan",
+  "ten_a": "Điều 27.6.NĐ.25. Cung cấp thông tin, dữ liệu ảnh viễn thám, sản phẩm viễn thám cho tổ chức, cá nhân trong nước",
+  "ten_b": "Điều 3.3.NĐ.6.20. Trách nhiệm của tổ chức, cá nhân khai thác và sử dụng thông tin, dữ liệu tài nguyên và môi trường",
+  "cau_hoi": "Công ty tôi đã mua ảnh viễn thám của một cơ quan nhà nước để làm dự án, giờ có công ty đối tác muốn xin bản sao bộ ảnh đó để dùng cho dự án riêng của họ thì tôi đưa cho họ được không?",
+  "ngoai_le": "Bên khai thác, sử dụng không được chuyển thông tin, dữ liệu cho bên thứ ba sử dụng, trừ khi được thỏa thuận trong hợp đồng với bên cung cấp thông tin, dữ liệu."
+ },
+ {
+  "a": "180010000000000030000003000000000000000003600000000000000000",
+  "b": "180010000000000020000001000000000000000001100000000000000000",
+  "loai_canh": "tham_chieu_ngoai_le",
+  "ten_a": "Điều 18.1.LQ.36. Thụ lý giải quyết khiếu nại lần hai",
+  "ten_b": "Điều 18.1.LQ.11. Các khiếu nại không được thụ lý giải quyết",
+  "cau_hoi": "Tôi đã khiếu nại lần hai lên chủ tịch tỉnh về quyết định thu hồi đất của huyện, và đơn tôi gửi đã hơn 10 ngày rồi. Tôi cũng đã nộp đơn kiện ra Tòa án về việc này. Vậy chủ tịch tỉnh có bắt buộc phải thụ lý giải quyết khiếu nại của tôi không?",
+  "ngoai_le": "Theo Điều 11 khoản 9, khiếu nại đã được Tòa án thụ lý hoặc đã được giải quyết bằng bản án, quyết định của Tòa án (trừ quyết định đình chỉ giải quyết vụ án hành chính) thì không được thụ lý giải quyết, nên người giải quyết khiếu nại lần hai không thụ lý và phải thông báo nêu rõ lý do."
+ },
+ {
+  "a": "26002000000000003000002000000000000000000430000000000000000000402534300080000900",
+  "b": "26002000000000003000002000000000000000000420000000000000000000402534300080001000",
+  "loai_canh": "tham_chieu",
+  "ten_a": "Điều 26.2.NĐ.3.9. Chế độ ưu tiên",
+  "ten_b": "Điều 26.2.NĐ.3.10. Điều kiện để được áp dụng chế độ ưu tiên",
+  "cau_hoi": "Công ty tôi mới nhập khẩu lô hàng và nghe nói doanh nghiệp ưu tiên được làm thủ tục giao nhận hàng trước và miễn kiểm tra sau thông quan, vậy công ty tôi có được hưởng ngay những ưu đãi đó không? Năm ngoái công ty tôi bị phạt vì khai sai trốn thuế.",
+  "ngoai_le": "Chế độ ưu tiên chỉ áp dụng cho doanh nghiệp đáp ứng điều kiện tại Điều 10, trong đó trong 02 năm liên tục trước khi đề nghị công nhận doanh nghiệp không được bị xử lý vì hành vi trốn thuế, gian lận thuế, buôn lậu hoặc vi phạm hành chính có mức xử phạt vượt thẩm quyền Chi cục trưởng Hải quan; ngoài ra còn phải đáp ứng điều kiện về kế toán kiểm toán, kiểm soát nội bộ và kim ngạch xuất nhập khẩu, nên doanh nghiệp từng bị xử lý trốn thuế sẽ không được hưởng."
+ },
+ {
+  "a": "39013000000000002000000400000000000000000030000000000000000000402787901440001400",
+  "b": "300030000000000060000010000000000000000011100000000000000000",
+  "loai_canh": "lien_quan",
+  "ten_a": "Điều 39.13.NĐ.102.14. Vi phạm các quy định về thi hành án hình sự, thi hành các biện pháp xử lý hành chính",
+  "ten_b": "Điều 30.3.LQ.111. Xử lý người chấp hành án phạt cấm cư trú vi phạm nghĩa vụ",
+  "cau_hoi": "Tôi đang chấp hành án cấm cư trú, mấy lần không trình diện và không báo cáo theo yêu cầu của xã. Giờ tôi muốn xin miễn chấp hành phần thời hạn cấm cư trú còn lại thì có được xem xét không, nếu bị phạt thì chỉ bị phạt tiền thôi đúng không?",
+  "ngoai_le": "Người chấp hành án phạt cấm cư trú không chấp hành các nghĩa vụ theo điểm b và điểm c khoản 2 Điều 109 Luật Thi hành án hình sự thì không được xem xét miễn chấp hành thời hạn cấm cư trú còn lại, ngoài việc có thể bị xử phạt hành chính."
+ },
+ {
+  "a": "180010000000000030000002000000000000000002700000000000000000",
+  "b": "180010000000000020000001000000000000000001100000000000000000",
+  "loai_canh": "tham_chieu_ngoai_le",
+  "ten_a": "Điều 18.1.LQ.27. Thụ lý giải quyết khiếu nại",
+  "ten_b": "Điều 18.1.LQ.11. Các khiếu nại không được thụ lý giải quyết",
+  "cau_hoi": "Tôi nộp đơn khiếu nại quyết định xử phạt hành chính của UBND xã cách đây hơn một năm, giờ mới gửi đơn lên. Người có thẩm quyền có phải nhận và giải quyết khiếu nại của tôi trong vòng 10 ngày không?",
+  "ngoai_le": "Khiếu nại không được thụ lý giải quyết nếu thuộc các trường hợp tại Điều 11, ví dụ thời hiệu, thời hạn khiếu nại đã hết mà không có lý do chính đáng; khi đó người có thẩm quyền không thụ lý và phải nêu rõ lý do bằng văn bản."
+ },
+ {
+  "a": "34003000000000004000004000000000000000000990000000000000000000802705600190000600",
+  "b": "34003000000000004000004000000000000000000990000000000000000000802705600190000500",
+  "loai_canh": "tham_chieu",
+  "ten_a": "Điều 34.3.TT.49.6. Hồ sơ yêu cầu điều tra áp dụng biện pháp tự vệ chuyển tiếp",
+  "ten_b": "Điều 34.3.TT.49.5. Nguyên tắc áp dụng biện pháp tự vệ chuyển tiếp",
+  "cau_hoi": "Công ty tôi sản xuất thép trong nước, thấy hàng nhập khẩu từ các nước đối tác Hiệp định tăng mạnh gây thiệt hại. Tôi chuẩn bị hồ sơ yêu cầu điều tra áp dụng biện pháp tự vệ chuyển tiếp thì cần có những thông tin gì?",
+  "ngoai_le": "Dù hồ sơ đầy đủ, vẫn không được áp dụng biện pháp tự vệ chuyển tiếp nếu hàng hóa đó đang chịu hạn ngạch thuế quan theo cam kết Hiệp định, đang bị áp dụng đồng thời biện pháp tự vệ theo Luật Quản lý ngoại thương hoặc biện pháp khẩn cấp hàng dệt may, đã từng bị áp dụng biện pháp tự vệ chuyển tiếp một lần, hoặc đã hết giai đoạn chuyển tiếp."
+ },
+ {
+  "a": "39013000000000002000000100000000000000000001000000000000000002100000000000000000",
+  "b": "39013000000000002000000300000000000000000001000000000000000006500000000000000000",
+  "loai_canh": "tham_chieu_ngoai_le",
+  "ten_a": "Điều 39.13.LQ.21. Các hình thức xử phạt và nguyên tắc áp dụng",
+  "ten_b": "Điều 39.13.LQ.65. Những trường hợp không ra quyết định xử phạt vi phạm hành chính",
+  "cau_hoi": "Tôi bị lập biên bản vì vi phạm hành chính từ hơn hai năm trước, giờ cơ quan chức năng vẫn có thể phạt tiền tôi theo các hình thức xử phạt không?",
+  "ngoai_le": "Dù A quy định các hình thức xử phạt (cảnh cáo, phạt tiền, v.v.), theo Điều 65 sẽ không ra quyết định xử phạt nếu đã hết thời hiệu xử phạt hoặc hết thời hạn ra quyết định (cũng như các trường hợp không xác định được đối tượng, người vi phạm chết/mất tích, tổ chức giải thể/phá sản, chuyển hồ sơ vì có dấu hiệu tội phạm); tuy nhiên vẫn có thể bị tịch thu tang vật, phương tiện thuộc loại cấm tàng trữ, cấm lưu hành và áp dụng biện pháp khắc phục hậu quả."
+ },
+ {
+  "a": "040010000000000020000001000000000000000001900000000000000000",
+  "b": "0400100000000000100000900000000000000000",
+  "loai_canh": "lien_quan",
+  "ten_a": "Điều 4.1.LQ.19. Quyền và nghĩa vụ của đấu giá viên",
+  "ten_b": "Điều 4.1.LQ.9. Các hành vi bị nghiêm cấm",
+  "cau_hoi": "Tôi là đấu giá viên, có bạn nhờ tôi cho mượn chứng chỉ hành nghề để bạn ấy đứng ra điều hành một cuộc đấu giá, tôi hành nghề trên toàn quốc nên làm vậy có được không?",
+  "ngoai_le": "Đấu giá viên bị nghiêm cấm cho cá nhân, tổ chức khác sử dụng Chứng chỉ hành nghề đấu giá của mình; quyền hành nghề và trực tiếp điều hành cuộc đấu giá chỉ thuộc về chính đấu giá viên, không được cho mượn chứng chỉ."
+ },
+ {
+  "a": "14005000000000003000004000000000000000000620000000000000000000802644100040001900",
+  "b": "14005000000000003000004000000000000000000620000000000000000000802644100040003200",
+  "loai_canh": "tham_chieu",
+  "ten_a": "Điều 14.5.TT.24.19. Xe truyền tiếp nhiên liệu",
+  "ten_b": "Điều 14.5.TT.24.32. Tra nạp nhiên liệu hàng khôngcho tàu bay",
+  "cau_hoi": "Tôi phụ trách một kho nhiên liệu sân bay, muốn cho xe truyền tiếp nhiên liệu đã lắp đặt đúng tiêu chuẩn tra nạp thẳng cho tàu bay đang có sấm chớp vào chiều nay thì có được không?",
+  "ngoai_le": "Dù xe truyền tiếp đạt yêu cầu thiết kế, kỹ thuật, lắp đặt theo Điều 19, vẫn không được tra nạp nhiên liệu cho tàu bay khi đang có giông bão, bão từ, sấm chớp uy hiếp an toàn tra nạp (cũng như khi có rò rỉ, tràn nhiên liệu, không có lối thoát nhanh, không tiếp mát, tàu bay đang bảo dưỡng cánh tà)."
+ },
+ {
+  "a": "22004000000000003000000400000000000000000270000000000000000000402874500520001200",
+  "b": "22004000000000003000000400000000000000000280000000000000000000402874500520000800",
+  "loai_canh": "tham_chieu_ngoai_le",
+  "ten_a": "Điều 22.4.NĐ.8.12. Đóng tài khoản thanh toán",
+  "ten_b": "Điều 22.4.NĐ.8.8. Các hành vi bị cấm",
+  "cau_hoi": "Tôi cho bạn mượn tài khoản ngân hàng của mình để nhận tiền, giờ tôi muốn đóng tài khoản này thì ngân hàng có thể đóng không, và tôi có phải làm gì thêm không?",
+  "ngoai_le": "Cho mượn, cho thuê, mua bán tài khoản thanh toán là hành vi bị cấm (khoản 5 Điều 8), và vi phạm hành vi này là căn cứ để tài khoản bị đóng theo điểm d khoản 1 Điều 12, không chỉ khi chủ tài khoản yêu cầu."
+ },
+ {
+  "a": "240050000000000060000780000000000000000000402716900130002800",
+  "b": "24011000000000003000003000000000000000000610000000000000000000402582300350000900",
+  "loai_canh": "lien_quan",
+  "ten_a": "Điều 24.5.NĐ.1.28. Nhập khẩu sản phẩm chăn nuôi",
+  "ten_b": "Điều 24.11.NĐ.1.9. Cấm xuất khẩu, nhập khẩu động vật, sản phẩm động vật",
+  "cau_hoi": "Tôi muốn nhập khẩu thịt đông lạnh từ một nước đang có dịch bệnh động vật lây lan, theo quy định thì tôi cần làm thủ tục kiểm tra cơ sở sản xuất như thế nào để nhập về Việt Nam?",
+  "ngoai_le": "Dù Điều 24.5.NĐ.1.28 chỉ quy định việc kiểm tra cơ sở nước xuất khẩu đối với sản phẩm chăn nuôi nguy cơ cao, nhưng Điều 24.11.NĐ.1.9 cấm nhập khẩu sản phẩm động vật xuất phát từ quốc gia, vùng lãnh thổ mang mầm bệnh thuộc danh mục bệnh phải công bố dịch hoặc bệnh truyền lây giữa động vật và người, hay sản phẩm đã bị tạm ngừng nhập khẩu mà không khắc phục đạt yêu cầu; khi đó không được nhập khẩu."
+ },
+ {
+  "a": "040010000000000020000001000000000000000001000000000000000000",
+  "b": "040010000000000020000001000000000000000001500000000000000000",
+  "loai_canh": "tham_chieu",
+  "ten_a": "Điều 4.1.LQ.10. Tiêu chuẩn đấu giá viên",
+  "ten_b": "Điều 4.1.LQ.15. Những trường hợp không được cấp Chứng chỉ hành nghề đấu giá",
+  "cau_hoi": "Tôi là công dân Việt Nam, tốt nghiệp đại học luật, đã học xong khóa đào tạo nghề đấu giá và đạt kiểm tra tập sự. Hiện tôi đang làm công chức ở một sở của tỉnh, vậy tôi có thể xin làm đấu giá viên được không?",
+  "ngoai_le": "Người đang là cán bộ, công chức, viên chức (cũng như sĩ quan, quân nhân, công an...) không được cấp Chứng chỉ hành nghề đấu giá dù đủ tiêu chuẩn; chỉ ngoại lệ là công chức, viên chức được đề nghị cấp chứng chỉ để làm việc cho Trung tâm dịch vụ đấu giá tài sản."
+ },
+ {
+  "a": "150010000000000020000003000000000000000002300000000000000000",
+  "b": "150010000000000020000002000000000000000002200000000000000000",
+  "loai_canh": "tham_chieu_ngoai_le",
+  "ten_a": "Điều 15.1.NĐ.23. Trách nhiệm của người yêu cầu chứng thực chữ ký và người thực hiện chứng thực chữ ký",
+  "ten_b": "Điều 15.1.NĐ.22. Bản chính giấy tờ, văn bản không được dùng làm cơ sở để chứng thực bản sao",
+  "cau_hoi": "Tôi tự viết một bản cam kết rồi ký, giờ muốn ra UBND phường chứng thực chữ ký của tôi trên đó thì có được không, và tôi chịu trách nhiệm gì?",
+  "ngoai_le": "Người yêu cầu không được chứng thực chữ ký trong giấy tờ, văn bản có nội dung trái pháp luật, trái đạo đức xã hội, tuyên truyền chống chế độ, xuyên tạc lịch sử, xúc phạm danh dự nhân phẩm người khác hoặc vi phạm quyền công dân (nội dung tại Khoản 4 Điều 22 và Khoản 4 Điều 25 Nghị định), nên văn bản có nội dung như vậy sẽ bị từ chối chứng thực."
+ },
+ {
+  "a": "010110000000000040000260000000000000000000402835100130001900",
+  "b": "010110000000000040000260000000000000000000402835100130001700",
+  "loai_canh": "tham_chieu_ngoai_le",
+  "ten_a": "Điều 1.11.NĐ.1.19. Xử lý dữ liệu cá nhân của người bị tuyên bố mất tích, đã chết",
+  "ten_b": "Điều 1.11.NĐ.1.17. Xử lý dữ liệu cá nhân trong trường hợp không cần sự đồng ý của chủ thể dữ liệu",
+  "cau_hoi": "Bố tôi mới mất, một công ty đang giữ thông tin cá nhân của ông và tôi muốn họ chuyển dữ liệu đó cho bên khác. Vợ con của bố tôi không có ai, mẹ tôi cũng đã mất, thì có làm được không?",
+  "ngoai_le": "Điều 19 yêu cầu phải có sự đồng ý của vợ, chồng, con hoặc cha mẹ của người đã chết, nhưng theo Điều 17 và 18 thì vẫn có thể xử lý dữ liệu mà không cần sự đồng ý của họ trong các trường hợp ngoại lệ, như khẩn cấp cần bảo vệ tính mạng, sức khỏe, dữ liệu đã được công khai theo luật, cơ quan nhà nước có thẩm quyền xử lý trong tình trạng khẩn cấp hoặc để phòng chống tội phạm, thực hiện nghĩa vụ hợp đồng, hay phục vụ hoạt động của cơ quan nhà nước theo luật chuyên ngành."
+ },
+ {
+  "a": "3400200000000000300001100000000000000000",
+  "b": "3400200000000000300001200000000000000000",
+  "loai_canh": "tham_chieu",
+  "ten_a": "Điều 34.2.LQ.11. Thỏa thuận hạn chế cạnh tranh",
+  "ten_b": "Điều 34.2.LQ.12. Thỏa thuận hạn chế cạnh tranh bị cấm",
+  "cau_hoi": "Tôi và hai cửa hàng vật liệu xây dựng cùng khu vực muốn bàn nhau thống nhất bán xi măng theo một mức giá chung để khỏi bị cạnh tranh giá, như vậy có được không?",
+  "ngoai_le": "Điều 11 chỉ mô tả các dạng thỏa thuận hạn chế cạnh tranh; theo Điều 12, thỏa thuận ấn định giá giữa các doanh nghiệp trên cùng thị trường liên quan (khoản 1, 2, 3 Điều 11) bị cấm, nên việc thống nhất giá chung giữa các cửa hàng cạnh tranh là bị cấm."
+ },
+ {
+  "a": "3000200000000000600000010000000000000000148000000000000000000040255210062000380000802787800130001000",
+  "b": "300020000000000060000001000000000000000014100000000000000000",
+  "loai_canh": "lien_quan",
+  "ten_a": "Điều 30.2.TT.13.10. Rút khiếu nại, giải quyết khiếu nại trong trường hợp hoãn, tạm đình chỉ, đình chỉ thi hành án hoặc khi người khiếu nại là cá nhân chết",
+  "ten_b": "Điều 30.2.LQ.141. Những trường hợp khiếu nại không được thụ lý giải quyết",
+  "cau_hoi": "Tôi đã rút đơn khiếu nại về việc thi hành án được vài tháng rồi, giờ muốn nộp đơn khiếu nại lại thì cơ quan thi hành án có phải thụ lý giải quyết không?",
+  "ngoai_le": "Điều A cho phép khiếu nại trở lại trong 30 ngày kể từ ngày có thông báo đình chỉ, nhưng theo Điều B thì khiếu nại sẽ không được thụ lý nếu thời hiệu khiếu nại đã hết hoặc việc khiếu nại đã có quyết định giải quyết có hiệu lực thi hành (trừ các trường hợp luật quy định)."
+ },
+ {
+  "a": "14005000000000006000004000000000000000001450000000000000000000802543900140000400",
+  "b": "14005000000000006000004000000000000000001450000000000000000000802543900140000600",
+  "loai_canh": "tham_chieu_ngoai_le",
+  "ten_a": "Điều 14.5.TT.12.4. Nghĩa vụ của người vận chuyển",
+  "ten_b": "Điều 14.5.TT.12.6. Miễn trừ nghĩa vụ của người vận chuyển trong trường hợp hủy chuyến bay hoặc chuyến bay bị chậm kéo dài",
+  "cau_hoi": "Chuyến bay của tôi bị hủy sát giờ khởi hành dù tôi đã có vé và xác nhận chỗ. Hãng hàng không có phải bồi thường cho tôi không?",
+  "ngoai_le": "Hãng được miễn bồi thường ứng trước không hoàn lại nếu hủy hoặc chậm kéo dài do các lý do tại Điều 14.5.TT.12.6, như thời tiết xấu, nguy cơ an ninh, quyết định của cơ quan nhà nước, sự cố kỹ thuật, bất khả kháng, hoặc hành khách được bố trí chuyến bay khác đến nơi không quá 4 giờ (hoặc 6 giờ với chuyến nối chuyến) so với dự kiến."
+ },
+ {
+  "a": "22004000000000003000000400000000000000000270000000000000000000402874500520001000",
+  "b": "22004000000000003000000400000000000000000280000000000000000000402874500520000800",
+  "loai_canh": "tham_chieu_ngoai_le",
+  "ten_a": "Điều 22.4.NĐ.8.10. Sử dụng và ủy quyền sử dụng tài khoản thanh toán",
+  "ten_b": "Điều 22.4.NĐ.8.8. Các hành vi bị cấm",
+  "cau_hoi": "Tôi đang làm ăn xa, muốn cho người bạn thân mượn tài khoản ngân hàng của tôi để nhận và chuyển tiền giúp bạn ấy trong vài tháng thì có được không?",
+  "ngoai_le": "Điều 8 cấm mua, bán, thuê, cho thuê, mượn, cho mượn tài khoản thanh toán; chủ tài khoản chỉ được ủy quyền sử dụng bằng văn bản theo quy định về ủy quyền, không được cho mượn tài khoản, và ngân hàng có quyền từ chối lệnh thanh toán nếu có cơ sở xác định vi phạm hành vi bị cấm."
+ },
+ {
+  "a": "200020000000000140000050000000000000000020400000000000000000",
+  "b": "200020000000000140000050000000000000000020900000000000000000",
+  "loai_canh": "lien_quan",
+  "ten_a": "Điều 20.2.LQ.204. Trường hợp đình công bất hợp pháp",
+  "ten_b": "Điều 20.2.LQ.209. Nơi sử dụng lao động không được đình công",
+  "cau_hoi": "Tôi làm ở một bệnh viện, tập thể anh chị em đồng nghiệp đang bàn chuyện đình công để đòi tăng lương thì có được không?",
+  "ngoai_le": "Không được đình công tại nơi sử dụng lao động mà việc đình công có thể đe dọa quốc phòng, an ninh, trật tự công cộng, sức khỏe con người (theo danh mục Chính phủ quy định); đình công ở đó là bất hợp pháp và tranh chấp được giải quyết theo cơ chế riêng."
+ },
+ {
+  "a": "200020000000000110000010000000000000000014300000000000000000",
+  "b": "200020000000000110000010000000000000000014700000000000000000",
+  "loai_canh": "tham_chieu_ngoai_le",
+  "ten_a": "Điều 20.2.LQ.143. Lao động chưa thành niên",
+  "ten_b": "Điều 20.2.LQ.147. Công việc và nơi làm việc cấm sử dụng người lao động từ đủ 15 tuổi đến chưa đủ 18 tuổi",
+  "cau_hoi": "Con tôi 16 tuổi, nghỉ học và muốn xin vào làm phục vụ ở một quán karaoke gần nhà thì có được không?",
+  "ngoai_le": "Người từ đủ 15 tuổi đến chưa đủ 18 tuổi bị cấm làm việc tại các nơi như phòng hát karaoke, quán bar, vũ trường, khách sạn, nhà nghỉ, sòng bạc (khoản 2 Điều 147), nên không được nhận vào làm ở quán karaoke."
+ },
+ {
+  "a": "28003000000000003000006000000000000000000670000000000000000000402641801650003700",
+  "b": "28003000000000003000006000000000000000000670000000000000000000402641801650001500",
+  "loai_canh": "tham_chieu",
+  "ten_a": "Điều 28.3.NĐ.4.37. Thuê, khoán kinh phí sử dụng tài sản phục vụ hoạt động của đơn vị sự nghiệp của Đảng",
+  "ten_b": "Điều 28.3.NĐ.4.15. Khoán kinh phí sử dụng tài sản tại cơ quan của Đảng",
+  "cau_hoi": "Đơn vị sự nghiệp của Đảng chỗ tôi muốn khoán kinh phí sử dụng toàn bộ tài sản, kể cả thiết bị lưu trữ tài liệu mật của nhà nước, cho cán bộ phụ trách. Vậy làm vậy có được không?",
+  "ngoai_le": "Không được thực hiện khoán đối với các tài sản liên quan đến bí mật nhà nước; ngoài ra, tài sản đã khoán kinh phí sử dụng thì không được trang bị tài sản và không bố trí kinh phí vận hành, bảo dưỡng, sửa chữa cho tài sản đó."
+ },
+ {
+  "a": "22004000000000003000000400000000000000000280000000000000000000802586900199002700",
+  "b": "22004000000000003000000400000000000000000280000000000000000000802586900199000800",
+  "loai_canh": "tham_chieu_ngoai_le",
+  "ten_a": "Điều 22.4.TT.39.27. Từ chối thanh toán thẻ",
+  "ten_b": "Điều 22.4.TT.39.8. Các hành vi bị cấm",
+  "cau_hoi": "Tôi mở quán cà phê, khách quẹt thẻ thanh toán thì tôi có bắt buộc phải nhận thẻ không, hay muốn từ chối lúc nào cũng được?",
+  "ngoai_le": "Điều A là quy định về các trường hợp từ chối thanh toán thẻ, nhưng Điều B (khoản 1 Điều 8) cấm phân biệt giá hoặc thu phụ phí khi chủ thẻ thanh toán bằng thẻ, nên ĐVCNT không được thu thêm phí hay áp giá khác để ép khách không dùng thẻ; ngoài các trường hợp từ chối theo Điều A, ĐVCNT không được tự ý từ chối hoặc phân biệt đối xử với thanh toán thẻ."
+ },
+ {
+  "a": "010040000000000020000240000000000000000000402507600340000600",
+  "b": "010040000000000020000240000000000000000000402507600340001200",
+  "loai_canh": "tham_chieu_ngoai_le",
+  "ten_a": "Điều 1.4.NĐ.2.6. Đi vào khu vực biên giới đất liền",
+  "ten_b": "Điều 1.4.NĐ.2.12. Quản lý hoạt động trong vùng cấm",
+  "cau_hoi": "Tôi là công dân Việt Nam, có CCCD đầy đủ. Tôi muốn đi thăm một công trình quân sự sát đường biên giới ở tỉnh biên giới thì chỉ cần mang CCCD là vào được đúng không?",
+  "ngoai_le": "Chỉ có giấy tờ tùy thân là chưa đủ để vào vùng cấm trong khu vực biên giới (như công trình quốc phòng, công trình biên giới): ngoài giấy tờ theo quy định, người vào còn phải được người đứng đầu cơ quan, đơn vị quản lý vùng cấm đó cho phép (trừ người được phép thường trú, làm việc trong vùng cấm) và tuân thủ nội quy bảo vệ vùng cấm."
+ },
+ {
+  "a": "030030000000000020000050000000000000000000402621800730002200",
+  "b": "2700600000000000400002400000000000000000",
+  "loai_canh": "lien_quan",
+  "ten_a": "Điều 3.3.NĐ.6.22. Phối hợp kết nối, chia sẻ thông tin, dữ liệu giữa các cơ sở dữ liệu tài nguyên và môi trường",
+  "ten_b": "Điều 27.6.NĐ.24. Trách nhiệm và quyền hạn của tổ chức, cá nhân khai thác và sử dụng thông tin, dữ liệu ảnh viễn thám",
+  "cau_hoi": "Công ty tôi vừa được cấp quyền khai thác dữ liệu ảnh viễn thám từ một cơ quan nhà nước, giờ có đối tác muốn mua lại bộ ảnh đó để dùng cho dự án của họ thì tôi có chuyển giao cho họ được không?",
+  "ngoai_le": "Không được chuyển thông tin, dữ liệu ảnh viễn thám cho bên thứ ba sử dụng, trừ khi hợp đồng với bên cung cấp có thỏa thuận cho phép hoặc được cấp có thẩm quyền cho phép."
+ }
+]

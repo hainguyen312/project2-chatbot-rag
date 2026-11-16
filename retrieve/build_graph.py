@@ -7,11 +7,11 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 import os
-import re
 import pymysql
 from neo4j import GraphDatabase
 from tqdm import tqdm
 
+from retrieve import legal_graph as LG
 from retrieve.tavily_fallback import (
     is_context_sufficient,
     search_tavily,
@@ -20,36 +20,48 @@ from retrieve.tavily_fallback import (
 )
  
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
- 
+
 MYSQL_CONFIG = {
-    "host": "localhost",
-    "port": 3306,
-    "user": "root",
-    "password": "123456789",
-    "database": "law",
+    "host": os.getenv("MYSQL_HOST", "localhost"),
+    "port": int(os.getenv("MYSQL_PORT", "3306")),
+    "user": os.getenv("MYSQL_USER", "root"),
+    "password": os.getenv("MYSQL_PASSWORD", "123456789"),
+    "database": os.getenv("MYSQL_DATABASE", "law"),
     "charset": "utf8mb4",
 }
- 
-NEO4J_URI      = "bolt://localhost:7687"
-NEO4J_USER     = "neo4j"
-NEO4J_PASSWORD = "password123"
- 
+
+NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD = LG.NEO4J_URI, LG.NEO4J_USER, LG.NEO4J_PASSWORD
+
 BATCH_SIZE = 500   # số node insert mỗi lần (tối ưu tốc độ)
 
 # Retrieval (đọc từ env để A/B không cần sửa code)
 RRF_K             = int(os.getenv("RRF_K", "60"))
-RRF_W_VECTOR      = float(os.getenv("RRF_W_VECTOR", "1.0"))
+# Vector chỉ embed TÊN điều → dễ kéo nhiễu ("mũ bảo hiểm" → bảo hiểm y tế). Dò trọng số 2026-11-16 (50 câu thật,
+# judge Sonnet 5.5 + 100 câu known-item): 0.5 là mức duy nhất không kém mặc định cũ (1.0) ở chỉ số trung bình nào
+# (P@10 +0.024, nDCG@10 +0.018, MRR +0.013, Hit@10 +0.02); giảm tiếp (0.3, 0) tăng known-item nhưng đẩy điều trả lời
+# trực tiếp xuống (MRR rel=2 giảm). Khác biệt trên 50 câu chưa có ý nghĩa thống kê (sign test p > 0.4).
+RRF_W_VECTOR      = float(os.getenv("RRF_W_VECTOR", "0.5"))
 RRF_W_BM25        = float(os.getenv("RRF_W_BM25", "1.0"))
 RRF_W_CTX         = float(os.getenv("RRF_W_CTX", "1.0"))
 CTX_COLLECTION    = os.getenv("CTX_COLLECTION", "phapdien_ctx_chunks")
 CTX_CHUNK_POOL    = int(os.getenv("CTX_CHUNK_POOL", "300"))
 RERANK_LEX_WEIGHT = float(os.getenv("RERANK_LEX_WEIGHT", "0.3"))
- 
+
+# Trọng số quan hệ khi mở rộng đồ thị (graph_traverse): dẫn chiếu tường minh > được dẫn chiếu
+# (văn bản cấp dưới hướng dẫn) > "mục liên quan" của Pháp Điển > dẫn chiếu bắc cầu 2 bước.
+GRAPH_W = {
+    "goc": 1.0,
+    "dan_chieu": float(os.getenv("GRAPH_W_DAN_CHIEU", "0.8")),
+    "duoc_dan_chieu": float(os.getenv("GRAPH_W_DUOC_DAN_CHIEU", "0.65")),
+    "lien_quan": float(os.getenv("GRAPH_W_LIEN_QUAN", "0.5")),
+    "dan_chieu_2": float(os.getenv("GRAPH_W_DAN_CHIEU_2", "0.4")),
+}
+
 # ─── KẾT NỐI ──────────────────────────────────────────────────────────────────
- 
+
 def get_mysql():
     return pymysql.connect(**MYSQL_CONFIG, cursorclass=pymysql.cursors.DictCursor)
- 
+
 def get_neo4j():
     try:
         # Tắt notification (warning "property does not exist"… khi graph rỗng) để log gọn
@@ -57,195 +69,57 @@ def get_neo4j():
                                     notifications_min_severity="OFF")
     except TypeError:  # driver < 5.7
         return GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
- 
-# ─── BƯỚC 0: TẠO CONSTRAINTS & INDEX ─────────────────────────────────────────
- 
-def create_constraints(driver):
-    """
-    Chạy 1 lần để tạo index và unique constraint.
-    Giúp tăng tốc MERGE và tìm kiếm node.
-    """
-    constraints = [
-        "CREATE CONSTRAINT IF NOT EXISTS FOR (n:ChuDe)  REQUIRE n.id   IS UNIQUE",
-        "CREATE CONSTRAINT IF NOT EXISTS FOR (n:DeMuc)  REQUIRE n.id   IS UNIQUE",
-        "CREATE CONSTRAINT IF NOT EXISTS FOR (n:Chuong) REQUIRE n.mapc IS UNIQUE",
-        "CREATE CONSTRAINT IF NOT EXISTS FOR (n:Dieu)   REQUIRE n.mapc IS UNIQUE",
-        # Full-text search index cho tìm kiếm keyword
-        """CREATE FULLTEXT INDEX dieu_fulltext IF NOT EXISTS
-           FOR (n:Dieu) ON EACH [n.ten, n.noidung]""",
-    ]
-    with driver.session() as session:
-        for cypher in constraints:
-            try:
-                session.run(cypher)
-            except Exception as e:
-                print(f"[constraint] {e}")
-    print("✅ Constraints & indexes OK")
- 
-# ─── BƯỚC 1: INSERT PHÂN CẤP ──────────────────────────────────────────────────
- 
-def insert_chude(driver, conn):
-    with conn.cursor() as cur:
-        cur.execute("SELECT id, ten, stt FROM pdchude")
-        rows = cur.fetchall()
- 
-    with driver.session() as session:
-        session.run("""
-            UNWIND $rows AS r
-            MERGE (n:ChuDe {id: r.id})
-            SET n.ten = r.ten, n.stt = r.stt
-        """, rows=rows)
-    print(f"✅ ChuDe: {len(rows)} nodes")
- 
- 
-def insert_demuc(driver, conn):
-    with conn.cursor() as cur:
-        cur.execute("SELECT id, ten, stt, chude_id FROM pddemuc")
-        rows = cur.fetchall()
- 
-    with driver.session() as session:
-        # Insert node
-        session.run("""
-            UNWIND $rows AS r
-            MERGE (n:DeMuc {id: r.id})
-            SET n.ten = r.ten, n.stt = r.stt
-        """, rows=rows)
-        # Tạo relationship với ChuDe
-        session.run("""
-            UNWIND $rows AS r
-            MATCH (cd:ChuDe {id: r.chude_id})
-            MATCH (dm:DeMuc {id: r.id})
-            MERGE (cd)-[:CO_DE_MUC]->(dm)
-        """, rows=rows)
-    print(f"✅ DeMuc: {len(rows)} nodes + relationships")
- 
- 
-def insert_chuong(driver, conn):
-    with conn.cursor() as cur:
-        cur.execute("SELECT mapc, ten, chimuc, stt, demuc_id FROM pdchuong")
-        rows = cur.fetchall()
- 
-    with driver.session() as session:
-        session.run("""
-            UNWIND $rows AS r
-            MERGE (n:Chuong {mapc: r.mapc})
-            SET n.ten = r.ten, n.chimuc = r.chimuc, n.stt = r.stt
-        """, rows=rows)
-        session.run("""
-            UNWIND $rows AS r
-            MATCH (dm:DeMuc {id: r.demuc_id})
-            MATCH (ch:Chuong {mapc: r.mapc})
-            MERGE (dm)-[:CO_CHUONG]->(ch)
-        """, rows=rows)
-    print(f"✅ Chuong: {len(rows)} nodes + relationships")
- 
-# ─── BƯỚC 2: INSERT DIEU (batch vì 66k rows) ──────────────────────────────────
- 
-def insert_dieu(driver, conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            SELECT mapc, ten, noidung, chimuc, stt,
-                   chuong_id, demuc_id, chude_id
-            FROM pddieu
-        """)
-        rows = cur.fetchall()
- 
-    total = len(rows)
-    print(f"  Inserting {total} Dieu nodes...")
- 
-    for i in tqdm(range(0, total, BATCH_SIZE), desc="Dieu nodes"):
-        batch = rows[i : i + BATCH_SIZE]
 
-        with driver.session() as session:
-            session.run("""
-                UNWIND $batch AS r
-                MERGE (d:Dieu {mapc: r.mapc})
-                SET d.ten       = r.ten,
-                    d.noidung   = r.noidung,
-                    d.chimuc    = r.chimuc,
-                    d.stt       = r.stt,
-                    d.demuc_id  = r.demuc_id,
-                    d.chude_id  = r.chude_id
-            """, batch=batch)
- 
-    print(f"  Linking Dieu → Chuong...")
-    for i in tqdm(range(0, total, BATCH_SIZE), desc="Dieu→Chuong"):
-        batch = rows[i : i + BATCH_SIZE]
-        with driver.session() as session:
-            session.run("""
-                UNWIND $batch AS r
-                MATCH (d:Dieu   {mapc: r.mapc})
-                MATCH (ch:Chuong {mapc: r.chuong_id})
-                MERGE (ch)-[:CO_DIEU]->(d)
-            """, batch=batch)
- 
-    print(f"✅ Dieu: {total} nodes")
- 
-# ─── BƯỚC 3: INSERT LIEN_QUAN (38k edges) ─────────────────────────────────────
- 
+# ─── BUILD ĐỒ THỊ (MySQL → Neo4j) ─────────────────────────────────────────────
+# Logic phân tích + ghi nằm ở retrieve/legal_graph.py, dùng chung với đồng bộ từng phần
+# (services/lawdata khi admin duyệt văn bản).
+
 def insert_lienquan(driver, conn):
+    """'Mục liên quan' do Pháp Điển biên soạn (bảng pdmuclienquan) → LIEN_QUAN hai chiều."""
     with conn.cursor() as cur:
-        cur.execute("SELECT dieu_id1_id, dieu_id2_id FROM pdmuclienquan")
+        cur.execute("SELECT dieu_id1_id AS a, dieu_id2_id AS b FROM pdmuclienquan")
         rows = cur.fetchall()
- 
-    total = len(rows)
-    print(f"  Inserting {total} LIEN_QUAN edges...")
- 
-    for i in tqdm(range(0, total, BATCH_SIZE), desc="LIEN_QUAN"):
-        batch = rows[i : i + BATCH_SIZE]
+    for i in tqdm(range(0, len(rows), BATCH_SIZE), desc="LIEN_QUAN"):
         with driver.session() as session:
             session.run("""
                 UNWIND $batch AS r
-                MATCH (a:Dieu {mapc: r.dieu_id1_id})
-                MATCH (b:Dieu {mapc: r.dieu_id2_id})
+                MATCH (a:Dieu {mapc: r.a})
+                MATCH (b:Dieu {mapc: r.b})
                 MERGE (a)-[:LIEN_QUAN]->(b)
                 MERGE (b)-[:LIEN_QUAN]->(a)
-            """, batch=batch)
- 
-    print(f"✅ LIEN_QUAN: {total} edges (bidirectional)")
- 
-# ─── BƯỚC 4: PARSE THAM_CHIEU TỪ NỘI DUNG ────────────────────────────────────
- 
-# Pattern nhận dạng mã điều luật trong nội dung (vd: 1.1.LQ.1, 2.3.NĐ.5.2)
-MAPC_PATTERN = re.compile(r'\b(\d+\.\d+\.[A-ZĐ]+\.\d+(?:\.\d+)*)\b')
- 
-def insert_thamchieu(driver, conn):
-    with conn.cursor() as cur:
-        cur.execute("SELECT mapc, noidung FROM pddieu WHERE noidung IS NOT NULL")
-        rows = cur.fetchall()
+            """, batch=rows[i : i + BATCH_SIZE])
+    print(f"✅ LIEN_QUAN: {len(rows)} cặp (2 chiều)")
 
-    # LƯU Ý: nội dung điều luật hầu như KHÔNG chứa mã pháp điển (chỉ ~13/66k điều khớp
-    # MAPC_PATTERN); tham chiếu thực tế có dạng "khoản 2 Điều 5 của Luật này". Cạnh
-    # THAM_CHIEU vì vậy rất thưa — muốn đầy đủ cần parser "Điều X + văn bản Y" → mapc.
 
-    # Lấy tập hợp mapc hợp lệ để tránh tạo edge tới node không tồn tại
-    with conn.cursor() as cur:
-        cur.execute("SELECT mapc FROM pddieu")
-        valid_mapcs = {r["mapc"] for r in cur.fetchall()}
- 
-    edges = []
-    for row in rows:
-        src = row["mapc"]
-        found = MAPC_PATTERN.findall(row["noidung"] or "")
-        for tgt in set(found):
-            if tgt != src and tgt in valid_mapcs:
-                edges.append({"src": src, "tgt": tgt})
- 
-    total = len(edges)
-    print(f"  Parsed {total} THAM_CHIEU edges từ noidung...")
- 
-    for i in tqdm(range(0, total, BATCH_SIZE), desc="THAM_CHIEU"):
-        batch = edges[i : i + BATCH_SIZE]
-        with driver.session() as session:
-            session.run("""
-                UNWIND $batch AS r
-                MATCH (a:Dieu {mapc: r.src})
-                MATCH (b:Dieu {mapc: r.tgt})
-                MERGE (a)-[:THAM_CHIEU]->(b)
-            """, batch=batch)
- 
-    print(f"✅ THAM_CHIEU: {total} edges")
- 
+def build_all(driver, conn):
+    """Build toàn bộ đồ thị. Chạy lại an toàn (MERGE); THAM_CHIEU được xoá và dựng lại theo parser hiện tại."""
+    print("\n[0] Constraints & indexes...")
+    LG.ensure_schema(driver)
+    print("[1] ChuDe / DeMuc / Chuong...")
+    LG.write_hierarchy(driver, conn)
+    print("[2] Đọc pddieu...")
+    rows = LG.article_rows(conn)
+    print(f"[3] Dieu ({len(rows):,})...")
+    for i in tqdm(range(0, len(rows), 5000), desc="Dieu"):
+        LG.write_dieu(driver, rows[i:i + 5000])
+    print("[4] Khoan...")
+    n_k = 0
+    for i in tqdm(range(0, len(rows), 5000), desc="Khoan"):
+        n_k += LG.write_khoan(driver, rows[i:i + 5000], fresh=True)
+    print(f"✅ Khoan: {n_k:,}")
+    print("[5] VanBan + sửa đổi/bãi bỏ (từ vbqppl) + sổ cái admin...")
+    n_v = LG.write_vanban(driver, rows, fresh=True)
+    n_a = LG.write_admin_relations(driver, conn)
+    print(f"✅ THUOC: {n_v:,}, quan hệ sổ cái: {n_a:,}")
+    print("[6] LIEN_QUAN...")
+    insert_lienquan(driver, conn)
+    print("[7] THAM_CHIEU (parser dẫn chiếu trong nội dung)...")
+    edges = LG.reference_edges(rows, LG.build_lookup(rows))
+    LG.clear_thamchieu(driver)
+    LG.write_thamchieu(driver, edges)
+    print(f"✅ THAM_CHIEU: {len(edges):,}")
+    return LG.graph_stats(driver)
+
 # ─── GRAPH RAG RETRIEVER ───────────────────────────────────────────────────────
  
 class GraphRAGRetriever:
@@ -494,65 +368,218 @@ class GraphRAGRetriever:
                 "passage": "\n".join(filter(None, [r["tenchude"], r["tendemuc"], r["tenchuong"], r["ten"], r["noidung"]])),
                 "base_score": base_by_level.get(lv, 0.3),
                 "hop": lv,
+                "quan_he": "goc" if lv == 0 else "lien_quan",
             })
         return rows
 
     def _graph_expand_neo4j(self, seed_mapcs: list[str], hop: int) -> list[dict]:
-
-        # Neo4j không cho dùng $param trong *1..n — phải format trực tiếp
-        cypher = f"""
-            MATCH (seed:Dieu)
-            WHERE seed.mapc IN $mapcs
-
-            CALL {{
-                WITH seed
-                MATCH (seed)-[:LIEN_QUAN|THAM_CHIEU*1..{hop}]-(neighbor:Dieu)
-                RETURN neighbor
+        """
+        Mở rộng theo quan hệ có trọng số (GRAPH_W): dẫn chiếu đi ra > được dẫn chiếu (văn bản cấp
+        dưới hướng dẫn) > LIEN_QUAN; hop=2 chỉ đi tiếp qua THAM_CHIEU (2 bước LIEN_QUAN quá nhiễu).
+        Mỗi điều giữ quan hệ mạnh nhất: base_score = trọng số, quan_he = tên quan hệ.
+        """
+        cypher = """
+            MATCH (seed:Dieu) WHERE seed.mapc IN $mapcs
+            CALL {
+                WITH seed RETURN seed AS n, 'goc' AS quan_he
                 UNION
-                WITH seed
-                RETURN seed AS neighbor
-            }}
-
-            OPTIONAL MATCH (ch:Chuong)-[:CO_DIEU]->(neighbor)
+                WITH seed MATCH (seed)-[:THAM_CHIEU]->(n:Dieu) RETURN n, 'dan_chieu' AS quan_he
+                UNION
+                WITH seed MATCH (seed)<-[:THAM_CHIEU]-(n:Dieu)
+                RETURN n, 'duoc_dan_chieu' AS quan_he LIMIT 15
+                UNION
+                WITH seed MATCH (seed)-[:LIEN_QUAN]->(n:Dieu) RETURN n, 'lien_quan' AS quan_he LIMIT 15
+                UNION
+                WITH seed MATCH (seed)-[:THAM_CHIEU]->(:Dieu)-[:THAM_CHIEU]->(n:Dieu) WHERE $hop >= 2
+                RETURN n, 'dan_chieu_2' AS quan_he LIMIT 15
+            }
+            WITH n, quan_he, $w[quan_he] AS w
+            ORDER BY w DESC
+            WITH n, collect(quan_he)[0] AS quan_he, max(w) AS base_score
+            OPTIONAL MATCH (ch:Chuong)-[:CO_DIEU]->(n)
             OPTIONAL MATCH (dm:DeMuc)-[:CO_CHUONG]->(ch)
             OPTIONAL MATCH (cd:ChuDe)-[:CO_DE_MUC]->(dm)
-
-            RETURN DISTINCT
-                neighbor.mapc    AS mapc,
-                neighbor.ten     AS ten,
-                neighbor.noidung AS noidung,
-                ch.ten           AS tenchuong,
-                dm.ten           AS tendemuc,
-                cd.ten           AS tenchude,
-                CASE WHEN neighbor.mapc IN $mapcs THEN 1.0 ELSE 0.5 END AS base_score
+            RETURN n.mapc AS mapc, n.ten AS ten, n.noidung AS noidung, n.vbqppl AS vbqppl,
+                   ch.ten AS tenchuong, dm.ten AS tendemuc, cd.ten AS tenchude,
+                   base_score, quan_he
             ORDER BY base_score DESC
             LIMIT 40
         """
-
         with self.driver.session() as session:
-            result = session.run(cypher, mapcs=seed_mapcs)
-
             rows = []
-            for r in result:
-                passage = "\n".join(filter(None, [
-                    r["tenchude"],
-                    r["tendemuc"],
-                    r["tenchuong"],
-                    r["ten"],
-                    r["noidung"],
-                ]))
-                rows.append({
-                    "mapc":       r["mapc"],
-                    "ten":        r["ten"],
-                    "noidung":    r["noidung"],
-                    "tenchuong":  r["tenchuong"],
-                    "tendemuc":   r["tendemuc"],
-                    "tenchude":   r["tenchude"],
-                    "passage":    passage,
-                    "base_score": r["base_score"],
-                })
+            for r in session.run(cypher, mapcs=seed_mapcs, hop=hop, w=GRAPH_W):
+                d = dict(r)
+                d["passage"] = "\n".join(filter(None, [d["tenchude"], d["tendemuc"], d["tenchuong"],
+                                                        d["ten"], d["noidung"]]))
+                rows.append(d)
             return rows
- 
+
+    # ── Truy vấn đồ thị phục vụ agent ────────────────────────────────────────
+
+    def _reference_closure(self, seed_mapcs: list[str], exclude: set[str] | None = None,
+                           limit: int = 4, max_chars: int = 1500) -> list[dict]:
+        """
+        Điều/khoản mà các điều `seed_mapcs` DẪN CHIẾU TỚI (vd. Điều 8 "điều kiện kết hôn" → khoản 2
+        Điều 5 "các trường hợp cấm kết hôn"). Có ghi khoản → chỉ lấy đúng các khoản đó.
+        Trả [{mapc, ten, noidung, vbqppl, …, dan_chieu_tu, khoan, diem}] theo thứ tự seed.
+        """
+        if not seed_mapcs or self.driver is None:
+            return []
+        cypher = """
+            UNWIND range(0, size($seeds) - 1) AS i
+            MATCH (s:Dieu {mapc: $seeds[i]})-[r:THAM_CHIEU]->(t:Dieu)
+            WHERE NOT t.mapc IN $exclude
+            OPTIONAL MATCH (t)-[:CO_KHOAN]->(k:Khoan) WHERE k.so IN r.khoan
+            WITH i, s, r, t, k ORDER BY i, toInteger(k.so)
+            WITH i, s, r, t, [x IN collect(k.noidung) WHERE x IS NOT NULL] AS khoan_text
+            OPTIONAL MATCH (ch:Chuong)-[:CO_DIEU]->(t)
+            OPTIONAL MATCH (dm:DeMuc)-[:CO_CHUONG]->(ch)
+            OPTIONAL MATCH (cd:ChuDe)-[:CO_DE_MUC]->(dm)
+            RETURN t.mapc AS mapc, t.ten AS ten, t.vbqppl AS vbqppl,
+                   CASE WHEN size(khoan_text) > 0 THEN reduce(a = '', x IN khoan_text | a + x + '\n')
+                        ELSE t.noidung END AS noidung,
+                   size(khoan_text) > 0 AS chi_khoan,
+                   ch.ten AS tenchuong, dm.ten AS tendemuc, cd.ten AS tenchude,
+                   s.mapc AS dan_chieu_tu, s.ten AS ten_nguon, r.khoan AS khoan, r.diem AS diem, i
+            ORDER BY i
+        """
+        try:
+            with self.driver.session() as session:
+                rows = [dict(r) for r in session.run(cypher, seeds=list(seed_mapcs),
+                                                     exclude=sorted(exclude or set()))]
+        except Exception as e:
+            print(f"[GraphRAG] reference closure lỗi: {e}")
+            return []
+        out, seen = [], set()
+        for r in rows:
+            if r["mapc"] in seen:
+                continue
+            seen.add(r["mapc"])
+            r["noidung"] = LG.head_truncate(r["noidung"] or "", max_chars)
+            out.append(r)
+            if len(out) >= limit:
+                break
+        return out
+
+    def _exception_check(self, seed_mapcs: list[str], exclude: set[str] | None = None,
+                         limit: int = 3, max_chars: int = 1500) -> list[dict]:
+        """
+        NGOẠI LỆ / CẤM liên quan tới các điều `seed_mapcs` — loại "điều chính cho phép nhưng điều liên quan cấm":
+        điều nối với seed (THAM_CHIEU hai chiều hoặc LIEN_QUAN) mà là điều cấm/ngoại lệ (Dieu.ngoai_le), hoặc
+        cạnh dẫn chiếu nằm trong câu "trừ trường hợp… / không thuộc… / không được…" (THAM_CHIEU.ngoai_le).
+        Nội dung trả về = các khoản cấm/ngoại lệ + khoản được dẫn chiếu (không phải cả điều).
+        Ưu tiên: dẫn chiếu trong ngữ cảnh ngoại lệ > dẫn chiếu > mục liên quan; rồi theo thứ hạng seed.
+        """
+        if not seed_mapcs or self.driver is None:
+            return []
+        cypher = """
+            UNWIND range(0, size($seeds) - 1) AS i
+            MATCH (s:Dieu {mapc: $seeds[i]})-[r:THAM_CHIEU|LIEN_QUAN]-(t:Dieu)
+            WHERE NOT t.mapc IN $exclude AND (coalesce(t.ngoai_le, false) OR coalesce(r.ngoai_le, false))
+            WITH i, s, t,
+                 max(CASE WHEN type(r) = 'THAM_CHIEU' AND coalesce(r.ngoai_le, false) THEN 3
+                          WHEN type(r) = 'THAM_CHIEU' THEN 2 ELSE 1 END) AS w,
+                 reduce(a = [], x IN collect(CASE WHEN type(r) = 'THAM_CHIEU' AND startNode(r) = s
+                                                  THEN r.khoan ELSE [] END) | a + x) AS khoan_dc
+            OPTIONAL MATCH (t)-[:CO_KHOAN]->(k:Khoan)
+            WHERE coalesce(k.ngoai_le, false) OR k.so IN khoan_dc
+            WITH i, s, t, w, khoan_dc, k ORDER BY toInteger(k.so)
+            WITH i, s, t, w, khoan_dc, [x IN collect(k.noidung) WHERE x IS NOT NULL] AS ktext
+            OPTIONAL MATCH (ch:Chuong)-[:CO_DIEU]->(t)
+            OPTIONAL MATCH (dm:DeMuc)-[:CO_CHUONG]->(ch)
+            OPTIONAL MATCH (cd:ChuDe)-[:CO_DE_MUC]->(dm)
+            RETURN t.mapc AS mapc, t.ten AS ten, t.vbqppl AS vbqppl,
+                   CASE WHEN size(ktext) > 0 THEN reduce(a = '', x IN ktext | a + x + '\n')
+                        ELSE t.noidung END AS noidung,
+                   ch.ten AS tenchuong, dm.ten AS tendemuc, cd.ten AS tenchude,
+                   s.mapc AS ngoai_le_cua, s.ten AS ten_nguon, khoan_dc AS khoan, w, i
+            ORDER BY w DESC, i ASC
+        """
+        try:
+            with self.driver.session() as session:
+                rows = [dict(r) for r in session.run(cypher, seeds=list(seed_mapcs),
+                                                     exclude=sorted(exclude or set()))]
+        except Exception as e:
+            print(f"[GraphRAG] exception check lỗi: {e}")
+            return []
+        out, seen = [], set()
+        for r in rows:
+            if r["mapc"] in seen:
+                continue
+            seen.add(r["mapc"])
+            r["noidung"] = LG.head_truncate(r["noidung"] or "", max_chars)
+            out.append(r)
+            if len(out) >= limit:
+                break
+        return out
+
+    def _graph_degrees(self, mapcs: list[str]) -> dict[str, int]:
+        """Số điều KHÁC trong cùng danh sách ứng viên mà mỗi điều nối tới (THAM_CHIEU / LIEN_QUAN)."""
+        if not mapcs or self.driver is None:
+            return {}
+        try:
+            with self.driver.session() as session:
+                res = session.run("""
+                    UNWIND $mapcs AS m
+                    MATCH (a:Dieu {mapc: m})-[:THAM_CHIEU|LIEN_QUAN]-(b:Dieu)
+                    WHERE b.mapc IN $mapcs AND b.mapc <> m
+                    RETURN m AS mapc, count(DISTINCT b) AS deg
+                """, mapcs=list(mapcs))
+                return {r["mapc"]: int(r["deg"]) for r in res}
+        except Exception as e:
+            print(f"[GraphRAG] graph degree lỗi: {e}")
+            return {}
+
+    def _graph_boost(self, ranked: list[dict], beta: float, head: int = 30) -> list[dict]:
+        """
+        Cộng điểm cho ứng viên có liên kết với các ứng viên khác trong top `head`
+        (score += beta · min(bậc, 3) / 3): điều nằm giữa một cụm điều cùng được truy hồi thường đúng
+        trọng tâm hơn điều đứng lẻ. beta = 0 → giữ nguyên.
+        """
+        if beta <= 0 or not ranked:
+            return ranked
+        deg = self._graph_degrees([c.get("mapc") for c in ranked[:head] if c.get("mapc")])
+        if not deg:
+            return ranked
+        for c in ranked[:head]:
+            d = deg.get(c.get("mapc"), 0)
+            c["graph_degree"] = d
+            c["score"] = min(1.0, float(c.get("score", 0.0)) + beta * min(d, 3) / 3)
+        ranked[:head] = sorted(ranked[:head], key=lambda x: -float(x.get("score", 0.0)))
+        return ranked
+
+    def _newest_versions(self, so_hieus: list[str]) -> dict[str, dict]:
+        """
+        Văn bản đã bị THAY THẾ / BÃI BỎ (sổ cái admin) → văn bản mới nhất theo chuỗi thay thế
+        + số điều của văn bản đó đang có trong CSDL: {so_hieu: {"moi_nhat", "so_dieu_trong_db"}}.
+        """
+        so_hieus = sorted({s for s in so_hieus if s})
+        if not so_hieus or self.driver is None:
+            return {}
+        try:
+            with self.driver.session() as session:
+                res = session.run("""
+                    UNWIND $docs AS sh
+                    MATCH p = (moi:VanBan)-[:THAY_THE|BAI_BO*1..5]->(v:VanBan {so_hieu: sh})
+                    WHERE NOT ()-[:THAY_THE|BAI_BO]->(moi)
+                    WITH sh, moi, length(p) AS len ORDER BY len DESC
+                    WITH sh, collect(moi)[0] AS moi
+                    OPTIONAL MATCH (d:Dieu)-[:THUOC]->(moi)
+                    RETURN sh, moi.so_hieu AS moi_nhat, count(d) AS so_dieu
+                """, docs=so_hieus)
+                return {r["sh"]: {"moi_nhat": r["moi_nhat"], "so_dieu_trong_db": int(r["so_dieu"])}
+                        for r in res if r["moi_nhat"]}
+        except Exception as e:
+            print(f"[GraphRAG] newest versions lỗi: {e}")
+            return {}
+
+    def graph_stats(self) -> dict[str, int]:
+        try:
+            return LG.graph_stats(self.driver)
+        except Exception as e:
+            print(f"[GraphRAG] Không đọc được thống kê Neo4j: {e}")
+            return {}
+
     # ── Stage 3: Rerank = base_score (retrieval) + lexical coverage, có chặn ──
 
     def _rerank(self, candidates: list[dict], query: str, top_k: int) -> list[dict]:
@@ -641,68 +668,37 @@ class GraphRAGRetriever:
         return final
  
  
-# ─── NOTE: Thêm mapc vào metadata khi seed ────────────────────────────────────
-#
-# Trong seed_data_batch.py, sửa phần build metadata:
-#
-#   meta = {
-#       "mapc":     rec.get("mapc") or None,   # ← THÊM DÒNG NÀY
-#       "tenchude": rec.get("tenchude") or None,
-#       "tendemuc": rec.get("tendemuc") or None,
-#       "tenchuong":rec.get("tenchuong") or None,
-#       "tendieu":  rec.get("tendieu") or None,
-#       "noidung":  body[:500],
-#   }
-#
-# Và trong query MySQL thêm d.mapc:
-#   SELECT d.mapc, cd.ten AS tenchude, dm.ten AS tendemuc, ...
-#
-# ──────────────────────────────────────────────────────────────────────────────
- 
- 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
  
+def refresh_derived(driver, conn):
+    """Tính lại phần SUY RA từ nội dung (cờ ngoại lệ, cạnh THAM_CHIEU) trên đồ thị đã build — dùng khi đổi
+    parser, không phải ghi lại 66k điều + 196k khoản."""
+    rows = LG.article_rows(conn)
+    n = LG.mark_exceptions(driver, rows)
+    print(f"✅ Điều cấm/ngoại lệ: {n:,}")
+    edges = LG.reference_edges(rows, LG.build_lookup(rows))
+    LG.clear_thamchieu(driver)
+    LG.write_thamchieu(driver, edges)
+    print(f"✅ THAM_CHIEU: {len(edges):,} (ngữ cảnh ngoại lệ: {sum(e['ngoai_le'] for e in edges):,})")
+    return LG.graph_stats(driver)
+
+
 def main():
     print("=" * 60)
     print("Graph RAG Builder — MySQL → Neo4j")
     print("=" * 60)
- 
-    conn   = get_mysql()
+    conn = get_mysql()
     driver = get_neo4j()
- 
     try:
-        print("\n[0] Tạo constraints & indexes...")
-        create_constraints(driver)
- 
-        print("\n[1] Insert ChuDe...")
-        insert_chude(driver, conn)
- 
-        print("\n[2] Insert DeMuc...")
-        insert_demuc(driver, conn)
- 
-        print("\n[3] Insert Chuong...")
-        insert_chuong(driver, conn)
- 
-        print("\n[4] Insert Dieu (66k nodes — sẽ mất vài phút)...")
-        insert_dieu(driver, conn)
- 
-        print("\n[5] Insert LIEN_QUAN (38k edges)...")
-        insert_lienquan(driver, conn)
- 
-        print("\n[6] Parse & insert THAM_CHIEU từ noidung...")
-        insert_thamchieu(driver, conn)
- 
+        stats = refresh_derived(driver, conn) if "--refresh-derived" in sys.argv else build_all(driver, conn)
         print("\n" + "=" * 60)
-        print("🎉 DONE — Graph đã được build thành công!")
-        print("   Neo4j Browser: http://localhost:7474")
-        print("   Login: neo4j / password123")
+        print("🎉 DONE —", ", ".join(f"{k}={v:,}" for k, v in stats.items()))
+        print(f"   Neo4j Browser: http://localhost:7474  ({NEO4J_USER} / {NEO4J_PASSWORD})")
         print("=" * 60)
- 
     finally:
         conn.close()
         driver.close()
- 
- 
+
+
 if __name__ == "__main__":
     main()
- 

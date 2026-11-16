@@ -28,6 +28,10 @@ Pipelines:
    bm25_only / ctx_only : từng nguồn chạy riêng (không rerank)
    *_llmrr         : *_new + LLM rerank top-12 (gpt-4o-mini, như RAG_AGENT_LLM_RERANK=1);
                      tắt bằng EVAL_LLM_RERANK=0
+   hybrid_graph    : hybrid_new + cộng điểm theo liên kết đồ thị giữa các ứng viên
+                     (GraphRAGRetriever._graph_boost, beta = EVAL_GRAPH_BETA, mặc định 0.1)
+   hybrid_closure  : hybrid_new top-(k-3) + tối đa 3 điều được top-3 DẪN CHIẾU tới (THAM_CHIEU)
+   (2 pipeline đồ thị chỉ chạy khi Neo4j đã build; tắt bằng EVAL_GRAPH=0)
 
 Judge: Claude (mặc định claude-opus-5-5), structured output JSON {reason, score}.
 
@@ -253,6 +257,19 @@ def make_pipelines(retriever, k: int):
         mapcs, sc = _fused(q, "hybrid3")
         return [c["mapc"] for c in retriever._rerank(rows_for(mapcs, sc), q, top_k=k)]
 
+    beta = float(os.getenv("EVAL_GRAPH_BETA", "0.1"))
+
+    def p_hybrid_graph(q):
+        mapcs, sc = _fused(q, "hybrid")
+        ranked = retriever._rerank(rows_for(mapcs, sc), q, top_k=POOL_K)
+        return [c["mapc"] for c in retriever._graph_boost(ranked, beta)[:k]]
+
+    def p_hybrid_closure(q):
+        base = p_hybrid_new(q)
+        extra = retriever._reference_closure(base[:3], exclude=set(base), limit=3)
+        head = base[: k - len(extra)]
+        return head + [r["mapc"] for r in extra]
+
     pipes = {
         "old": p_old,
         "vector_new": p_vector_new,
@@ -265,10 +282,22 @@ def make_pipelines(retriever, k: int):
         pipes["hybrid3_w05"] = p_hybrid3_w05
         pipes["ctx_only"] = p_ctx_only
     pipes["bm25_only"] = p_bm25_only
+    # Dò trọng số RRF của vector (tên điều): EVAL_VEC_WEIGHTS="0.3,0.5" → hybrid_wv03, hybrid_wv05 (+ _rerank)
+    for w in [x for x in os.getenv("EVAL_VEC_WEIGHTS", "").split(",") if x.strip()]:
+        def p_w(q, _w=float(w)):
+            mapcs, sc = _fused(q, "hybrid", {"vec": _w})
+            return [c["mapc"] for c in retriever._rerank(rows_for(mapcs, sc), q, top_k=k)]
+        pipes[f"hybrid_wv{w.strip().replace('.', '')}"] = p_w
+    if os.getenv("EVAL_GRAPH", "1") == "1" and (retriever.graph_stats().get("tham_chieu") or 0) > 0:
+        pipes["hybrid_graph"] = p_hybrid_graph
+        pipes["hybrid_closure"] = p_hybrid_closure
     if os.getenv("EVAL_LLM_RERANK", "1") == "1":
         pipes["hybrid_llmrr"] = p_hybrid_llmrr
         if retriever.ctx_collection is not None:
             pipes["hybrid3_llmrr"] = p_hybrid3_llmrr
+    if os.getenv("EVAL_ONLY"):  # chỉ chạy các pipeline được liệt kê (tiết kiệm thời gian retrieve)
+        keep = {x.strip() for x in os.getenv("EVAL_ONLY").split(",")}
+        pipes = {n: f for n, f in pipes.items() if n in keep}
     return pipes
 
 
