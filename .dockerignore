@@ -1,0 +1,20 @@
+# Build context backend (Dockerfile ở gốc repo) — WHITELIST: chặn tất cả rồi mở từng mục.
+# Mục đích: không đưa .git (1.2 GB), law-crawler, frontend, dữ liệu, bí mật vào image.
+*
+
+!Dockerfile
+!requirements.txt
+!requirements.lock.txt
+!rag_api.py
+!agents/
+!services/
+!retrieve/
+!chat_history/*.py
+!scripts/*.py
+
+# Dù nằm trong thư mục được mở vẫn loại:
+**/__pycache__
+**/*.py[cod]
+**/.env*
+**/*credentials*.json
+**/.DS_Store
