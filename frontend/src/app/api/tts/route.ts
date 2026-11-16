@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { BACKEND_URL, backendHeaders } from "@/lib/backend";
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  const body = await req.json().catch(() => ({}));
 
-  const backendUrl = process.env.RAG_BACKEND_URL ?? "http://localhost:8001";
-
-  const res = await fetch(`${backendUrl}/tts`, {
+  const res = await fetch(`${BACKEND_URL}/tts`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: backendHeaders(req, { "Content-Type": "application/json" }),
     body: JSON.stringify(body),
   });
 

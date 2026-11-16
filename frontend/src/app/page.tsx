@@ -58,6 +58,9 @@ if (typeof CanvasRenderingContext2D !== "undefined" &&
   };
 }
 
+/** Lỗi có thông điệp hiển thị nguyên cho người dùng (cần đăng nhập, hết lượt hỏi…). */
+class UserFacingError extends Error {}
+
 /** Lấy hoặc tạo demo user_id lưu trong localStorage (sau này thay bằng auth thực). */
 function getOrCreateUserId(): string {
   if (typeof window === "undefined") return "guest";
@@ -164,7 +167,9 @@ export default function Home() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const [queryMode, setQueryMode]         = useState<"normal" | "situation">("normal");
-  const { user: authUser, getIdToken } = useAuth();
+  const { user: authUser, loading: authLoading, getIdToken } = useAuth();
+  // Khách vãng lai bị chặn: mọi tính năng gọi LLM cần đăng nhập (server cũng kiểm).
+  const needLogin = !authLoading && !authUser;
   const [anonId, setAnonId]               = useState<string>("");
   useEffect(() => { setAnonId(getOrCreateUserId()); }, []);
   // user_id ưu tiên Firebase uid khi đã login, fallback demo id ẩn danh
@@ -290,6 +295,10 @@ export default function Home() {
     if (sendingRef.current) return;
     const promptSent = (override ?? input).trim();
     if (!promptSent) return;
+    if (needLogin) {
+      chatActions.setError("Vui lòng đăng nhập để đặt câu hỏi.");
+      return;
+    }
 
     sendingRef.current = true;
     setSending(true);
@@ -366,7 +375,12 @@ export default function Home() {
           chat_id: chatId,
         }),
       });
-      if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok || !res.body) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        if (res.status === 401) throw new UserFacingError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        if (res.status === 429 && data.error) throw new UserFacingError(data.error);
+        throw new Error(`HTTP ${res.status}`);
+      }
 
       const reader  = res.body.getReader();
       const decoder = new TextDecoder();
@@ -436,7 +450,7 @@ export default function Home() {
       setStreamingChatId(null);
     } catch (err) {
       console.error("[onSend]", err);
-      const errMsg = "Mình gặp lỗi kết nối. Vui lòng thử lại sau.";
+      const errMsg = err instanceof UserFacingError ? err.message : "Mình gặp lỗi kết nối. Vui lòng thử lại sau.";
       metaPassages = [];
       await persistAssistant(errMsg);
       setStreamingChatId(chatId);
@@ -461,7 +475,12 @@ export default function Home() {
     const formData = new FormData();
     formData.append("file", audioBlob, "audio.webm");
     try {
-      const res  = await fetch("/api/stt", { method: "POST", body: formData });
+      const token = await getIdToken();
+      const res  = await fetch("/api/stt", {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
       const data = await res.json() as { text: string };
       if (data.text) { setInput(data.text); clearBlob(); }
     } catch (err) {
@@ -940,9 +959,10 @@ export default function Home() {
                           onSend();
                         }
                       }}
-                      disabled={sending}
+                      disabled={sending || needLogin}
                       aria-label="Câu hỏi của bạn"
-                      placeholder={queryMode === "situation" ? "Mô tả tình huống của bạn…" : "Nhập câu hỏi pháp luật…"}
+                      placeholder={needLogin ? "Đăng nhập (nút ở góc trên) để bắt đầu hỏi đáp"
+                        : queryMode === "situation" ? "Mô tả tình huống của bạn…" : "Nhập câu hỏi pháp luật…"}
                       className="max-h-[200px] min-h-[40px] flex-1 resize-none bg-transparent px-2 py-2 text-[15px] leading-relaxed outline-none placeholder:text-[var(--text-muted)] disabled:opacity-70"
                       style={{ color: "var(--text-primary)", minWidth: 0, boxShadow: "none" }}
                     />
@@ -971,7 +991,7 @@ export default function Home() {
                       <VoiceMessage audioBlob={audioBlob} onCancel={cancelRecording} />
                     </div>
                   )}
-                  {sttSupported && !recording && !audioBlob && (
+                  {sttSupported && !needLogin && !recording && !audioBlob && (
                     <button type="button" onClick={startRecording} title="Hỏi bằng giọng nói" aria-label="Hỏi bằng giọng nói"
                       className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[var(--bg-hover)]"
                       style={{ color: "var(--text-secondary)" }}>
@@ -981,10 +1001,10 @@ export default function Home() {
                   <button
                     type={audioBlob ? "button" : "submit"}
                     onClick={audioBlob ? sendVoice : undefined}
-                    disabled={loading || sending || (!audioBlob && !input.trim())}
+                    disabled={loading || sending || needLogin || (!audioBlob && !input.trim())}
                     title="Gửi câu hỏi" aria-label="Gửi câu hỏi"
                     className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors enabled:hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed"
-                    style={(loading || sending || (!audioBlob && !input.trim()))
+                    style={(loading || sending || needLogin || (!audioBlob && !input.trim()))
                       ? { background: "var(--bg-hover)", color: "var(--text-muted)" }
                       : { background: "var(--accent)", color: "var(--text-on-accent)" }}
                   >

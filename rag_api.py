@@ -65,6 +65,17 @@ from services.roles import RoleStore
 
 app = FastAPI(title="RAG Backend API", version="1.0.0")
 
+
+# ── Xác thực ─────────────────────────────────────────────────────────────────
+def require_login(authorization: Optional[str] = Header(default=None)) -> str:
+    """Dependency cho MỌI endpoint gọi LLM: bắt buộc Firebase ID token, trả uid (khách bị chặn).
+    Đặt trước khi định nghĩa endpoint — xem tests/test_llm_auth_wiring.py."""
+    try:
+        return auth_guard.require_uid(authorization, fb_auth.verify_id_token)
+    except auth_guard.AuthError as e:
+        raise HTTPException(status_code=e.status, detail=e.detail)
+
+
 # ── Memory Manager (long-term memory cho user) ────────────────────────────────
 MEMORY_ENABLED = os.getenv("MEMORY_ENABLED", "1").strip() in ("1", "true", "True", "yes")
 MEMORY_TOP_K_API = int(os.getenv("MEMORY_TOP_K", "5"))
@@ -415,8 +426,8 @@ def post_feedback(req: FeedbackRequest) -> Dict[str, bool]:
 
 
 @app.post("/rag/chat", response_model=RagChatResponse)
-def rag_chat(req: RagChatRequest, authorization: Optional[str] = Header(default=None)) -> RagChatResponse:
-    req.user_id = resolve_user_id(req.user_id, authorization)
+def rag_chat(req: RagChatRequest, uid: str = Depends(require_login)) -> RagChatResponse:
+    req.user_id = uid  # luôn từ token, bỏ user_id client gửi
     prompt = req.prompt.strip()
     history_for_processing = [m.model_dump() for m in req.history]
     decision = run_pre_retrieve(prompt, history_for_processing)
@@ -567,8 +578,8 @@ def _sse_stage(stage: str, text: str, **extra: Any) -> str:
 
 
 @app.post("/rag/stream")
-def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(default=None)):
-    req.user_id = resolve_user_id(req.user_id, authorization)
+def rag_stream(req: RagChatRequest, uid: str = Depends(require_login)):
+    req.user_id = uid  # luôn từ token, bỏ user_id client gửi
     """
     Server-Sent Events stream.
       data: {"type":"status", "text":"...", "stage"?: "...", "tool"?: "...", "iteration"?: n, "max"?: m}
@@ -759,8 +770,9 @@ def _verify_firebase_token(id_token: str) -> Dict[str, Any]:
 
 
 def resolve_user_id(body_user_id: Optional[str], authorization: Optional[str]) -> Optional[str]:
-    """uid đã xác thực (token) hoặc id ẩn danh demo_… — xem services/auth_guard.py."""
+    """uid đã xác thực (token) hoặc None — xem services/auth_guard.py."""
     return auth_guard.resolve_user_id(body_user_id, authorization, fb_auth.verify_id_token)
+
 
 
 @app.post("/auth/verify")
@@ -919,7 +931,7 @@ class ChatTitleRequest(BaseModel):
 
 
 @app.post("/chat/title")
-def chat_title(req: ChatTitleRequest) -> Dict[str, str]:
+def chat_title(req: ChatTitleRequest, uid: str = Depends(require_login)) -> Dict[str, str]:
     """Tên ngắn (3–8 từ) cho đoạn chat từ câu hỏi đầu + câu trả lời — xem services/chat_title.py."""
     return {"title": generate_chat_title(oai_client, req.question, req.answer)}
 
@@ -955,7 +967,7 @@ def _get_review_history() -> Optional[ReviewHistory]:
 
 
 def _review_owner(user_id: Optional[str], authorization: Optional[str]) -> str:
-    """uid đã xác thực hoặc id ẩn danh demo_…; không có → 401."""
+    """uid đã xác thực (token); không có → 401."""
     uid = resolve_user_id(user_id, authorization)
     if not uid:
         raise HTTPException(status_code=401, detail="Không xác định được người dùng")
@@ -985,7 +997,7 @@ async def review_analyze(
     text: str = Form(default=""),
     user_id: str = Form(default=""),
     save: bool = Form(default=True),
-    authorization: Optional[str] = Header(default=None),
+    uid: str = Depends(require_login),
 ):
     """
     Tóm tắt + cảnh báo rủi ro pháp lý cho văn bản (file PDF/DOCX/TXT, link, hoặc chữ dán vào).
@@ -998,7 +1010,7 @@ async def review_analyze(
         data = await file.read(doc_review.MAX_UPLOAD_BYTES + 1)
         filename, content_type = file.filename, file.content_type or ""
     url, text = url.strip(), text.strip()
-    owner = resolve_user_id(user_id or None, authorization) if save else None
+    owner = uid if save else None  # user_id trong form bị bỏ qua — chỉ tin token
 
     def event_stream():
         def sse(ev: Dict[str, Any]) -> str:
@@ -1123,7 +1135,7 @@ def put_memory_settings(user_id: str, req: MemorySettingsRequest,
 
 
 @app.post("/tts")
-async def text_to_speech(req: dict):
+async def text_to_speech(req: dict, uid: str = Depends(require_login)):
     from services.history import save_tts_url
 
     text    = (req.get("text") or "").strip()
@@ -1190,7 +1202,7 @@ async def text_to_speech(req: dict):
     )
 
 @app.post("/stt")
-async def speech_to_text(file: UploadFile = File(...)):
+async def speech_to_text(file: UploadFile = File(...), uid: str = Depends(require_login)):
     from fastapi import UploadFile, File
     
     audio_bytes = await file.read()

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND = process.env.RAG_BACKEND_URL ?? "http://localhost:8001";
+import { BACKEND_URL as BACKEND, backendHeaders } from "@/lib/backend";
 
 /** Proxy tới rag_api /chat/title: LLM đặt tên ngắn cho đoạn chat từ câu hỏi đầu + câu trả lời. */
 export async function POST(req: NextRequest) {
@@ -8,7 +7,7 @@ export async function POST(req: NextRequest) {
   try {
     const res = await fetch(`${BACKEND}/chat/title`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: backendHeaders(req, { "Content-Type": "application/json" }),
       body: JSON.stringify({
         question: String(body?.question ?? "").slice(0, 4000),
         answer: String(body?.answer ?? "").slice(0, 8000),

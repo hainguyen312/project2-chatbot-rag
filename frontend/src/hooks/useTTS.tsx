@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { authHeader } from "@/lib/client-auth";
 
 export function useTTS() {
   const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
@@ -30,7 +31,7 @@ export function useTTS() {
       if (!audioUrl) {
         const res = await fetch("/api/tts", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...(await authHeader()) },
           body: JSON.stringify({ text, voice: "nova", chat_id: chatId, msg_idx: idx }),
         });
         if (!res.ok) throw new Error(`TTS failed: ${res.status}`);

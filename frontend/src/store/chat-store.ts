@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase";
+import { authHeader } from "@/lib/client-auth";
 
 export type Passage = {
   mapc: string;
@@ -158,18 +158,6 @@ function getState() {
   return state;
 }
 
-/** Firebase ID token của người đang đăng nhập (server verify, không tin uid do client gửi). */
-async function authHeader(): Promise<Record<string, string>> {
-  if (!isFirebaseConfigured()) return {};
-  const user = getFirebaseAuth().currentUser;
-  if (!user) return {};
-  try {
-    return { Authorization: `Bearer ${await user.getIdToken()}` };
-  } catch {
-    return {};
-  }
-}
-
 async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const merged: RequestInit = {
     ...init,
@@ -262,7 +250,7 @@ export const chatActions = {
     try {
       const res = await fetch("/api/chats/title", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await authHeader()) },
         body: JSON.stringify({ question, answer }),
       });
       const data = (await res.json().catch(() => ({}))) as { title?: string };
