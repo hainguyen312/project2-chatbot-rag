@@ -191,7 +191,7 @@ if git -C "$REPO_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   url=$(git -C "$REPO_DIR" remote get-url origin 2>/dev/null || true)
   [ -n "$url" ] && pass "Remote origin có cấu hình" || warn "Chưa có remote origin (deploy.sh cần fetch origin/main)"
 fi
-for f in .env frontend/.env.local firebase-credentials.json; do
+for f in .env .env.prod frontend/.env.local firebase-credentials.json; do
   p="$REPO_DIR/$f"
   if [ ! -e "$p" ]; then warn "Không có $f"; continue; fi
   mode=$(stat -c '%a' "$p"); owner=$(stat -c '%U' "$p")
