@@ -5,6 +5,8 @@ rag_api và services/lawdata import `client`, `collection` từ module này.
 (`engine` SQLAlchemy chỉ app.py dùng — đã gỡ cùng app.py, xem legacy/.)
 Class TwoStageRetriever (rerank đợt 1) đã chuyển sang legacy/retrieve/two_stage_search.py.
 """
+import os
+
 from openai import OpenAI
 from pymilvus import Collection, connections
 
@@ -12,8 +14,11 @@ from pymilvus import Collection, connections
 client = OpenAI()
 
 # Milvus
-connections.connect("default", host="localhost", port="19530")
-print("Connected to Milvus")
+# MILVUS_HOST/PORT: trong docker compose là "milvus"; mặc định localhost cho máy dev.
+MILVUS_HOST = os.getenv("MILVUS_HOST", "localhost")
+MILVUS_PORT = os.getenv("MILVUS_PORT", "19530")
+connections.connect("default", host=MILVUS_HOST, port=MILVUS_PORT)
+print(f"Connected to Milvus {MILVUS_HOST}:{MILVUS_PORT}")
 
 collection_name = "phapdien_simple_tendieu"
 try:

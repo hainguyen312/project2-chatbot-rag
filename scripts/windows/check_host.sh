@@ -194,9 +194,12 @@ fi
 for f in .env .env.prod frontend/.env.local firebase-credentials.json; do
   p="$REPO_DIR/$f"
   if [ ! -e "$p" ]; then warn "Không có $f"; continue; fi
-  mode=$(stat -c '%a' "$p"); owner=$(stat -c '%U' "$p")
-  if [ "$mode" = "600" ] && [ "$owner" = "deploy" ]; then pass "$f: 600, chủ deploy"
-  else fail "$f: quyền $mode, chủ $owner (cần 600, deploy)"; fi
+  mode=$(stat -c '%a' "$p"); owner=$(stat -c '%U' "$p"); group=$(stat -c '%G' "$p")
+  # firebase-credentials.json: 640 nhóm deploy — container backend (uid 10001) đọc qua group_add.
+  want=600; [ "$f" = firebase-credentials.json ] && want=640
+  if [ "$mode" = "$want" ] && [ "$owner" = "deploy" ] && { [ "$want" = 600 ] || [ "$group" = deploy ]; }; then
+    pass "$f: $mode, chủ deploy"
+  else fail "$f: quyền $mode, chủ $owner:$group (cần $want, deploy:deploy)"; fi
   if git -C "$REPO_DIR" ls-files --error-unmatch "$f" >/dev/null 2>&1; then fail "$f đang bị git theo dõi!"
   elif git -C "$REPO_DIR" check-ignore -q "$f"; then pass "$f được gitignore"
   else fail "$f KHÔNG được gitignore"; fi

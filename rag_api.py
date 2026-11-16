@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Literal, Optional
 
 import firebase_admin
 from dotenv import load_dotenv
-from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException
+from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException, Response
 from fastapi.responses import StreamingResponse
 from fastapi import FastAPI, UploadFile, File
 from firebase_admin import auth as fb_auth, credentials, storage as fb_storage
@@ -56,6 +56,8 @@ from services.utils import (
     rewrite_query_v2,
 )
 from services.semantic_cache import semantic_cache
+from services import health as health_checks
+from services.sse import with_heartbeat
 from services import auth_guard
 from services.chat_title import generate_title as generate_chat_title
 from services.memory_manager import MemoryManager
@@ -365,9 +367,43 @@ def _strip_markdown(text: str) -> str:
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
+SSE_HEARTBEAT_S = float(os.getenv("SSE_HEARTBEAT_SECONDS", "15"))
+HEALTH_TIMEOUT_S = float(os.getenv("HEALTH_TIMEOUT_SECONDS", "3"))
+
+
+def _mysql_connect():
+    import pymysql
+    from services.agentic_rag import _MYSQL_CFG
+    return pymysql.connect(**_MYSQL_CFG, connect_timeout=2, read_timeout=2)
+
+
+def _milvus_version() -> str:
+    from pymilvus import utility
+    return utility.get_server_version()
+
+
+def _bm25_state():
+    from retrieve import lexical_bm25
+    return lexical_bm25._INDEX is not None, bool(lexical_bm25._FAILED)
+
+
 @app.get("/health")
-def health() -> Dict[str, bool]:
-    return {"ok": True}
+def health(response: Response) -> Dict[str, Any]:
+    """Kiểm thật MySQL, Milvus, Neo4j (critical → 503 nếu lỗi); MongoDB, BM25 chỉ báo."""
+    mongo = getattr(memory_manager, "_mongo_client", None) if memory_manager else None
+    ok, checks = health_checks.run_checks(
+        {
+            "mysql": (lambda: health_checks.check_mysql(_mysql_connect), True),
+            "milvus": (lambda: health_checks.check_milvus(collection, _milvus_version), True),
+            "neo4j": (lambda: health_checks.check_neo4j(neo4j_driver), True),
+            "mongodb": (lambda: health_checks.check_mongo(mongo), False),
+            "bm25": (lambda: health_checks.check_bm25(_bm25_state), False),
+        },
+        timeout=HEALTH_TIMEOUT_S,
+    )
+    if not ok:
+        response.status_code = 503
+    return {"ok": ok, "checks": checks}
 
 
 @app.post("/rag/feedback")
@@ -692,7 +728,7 @@ def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(defaul
         _schedule_memory_update(req.user_id, prompt, stream_full_answer, req.chat_id)
 
     return StreamingResponse(
-        event_stream(),
+        with_heartbeat(event_stream(), SSE_HEARTBEAT_S),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
@@ -1008,7 +1044,8 @@ async def review_analyze(
                                            web_search=_review_web_search):
             yield sse(ev)
 
-    return StreamingResponse(event_stream(), media_type="text/event-stream",
+    return StreamingResponse(with_heartbeat(event_stream(), SSE_HEARTBEAT_S),
+                             media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 

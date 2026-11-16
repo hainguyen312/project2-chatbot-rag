@@ -70,7 +70,7 @@ Internet → Cloudflare (HTTPS) → cloudflared (container, kết nối đi ra)
 | Lint | Sửa luôn 2 lỗi (`useAuth.tsx:75`, `useSTT.tsx:13` — setState trong effect). |
 | MySQL | **Giữ `mysql:9.6`** đúng như máy Mac (dump lấy từ 9.6). *(Ghi chú cũ nói dữ liệu là 8.0.45 — đã được chủ repo sửa lại: dùng 9.6.)* |
 | Neo4j | Ghim `neo4j:5.26.24` community (compose cũ ghi `neo4j:5` không ghim). |
-| Milvus | v2.4.14 + etcd `quay.io/coreos/etcd:v3.5.5` + minio `RELEASE.2023-03-20T20-16-18Z`. |
+| Milvus | v2.4.14 + etcd `quay.io/coreos/etcd:v3.5.5` + MinIO **`bitnamilegacy/minio:2023.3.20`** *(cập nhật 16/11: `minio/minio:RELEASE.2023-03-20T20-16-18Z` không còn tải được — Docker Hub chặn cả repo, quay.io đòi đăng nhập, mirror.gcr.io/ECR không có; bản copy từ Mac là arm64, chạy giả lập. Chủ repo chọn bản Bitnami cùng đợt phát hành: kho không còn cập nhật, MinIO chỉ ở mạng internal; dữ liệu Milvus nhúng lại ở bước 6 nên không cần tương thích với Mac)*. |
 | Embedding Milvus | Nhúng lại tên điều bằng `text-embedding-3-small`. **Đếm token thật trước**; chạy nếu **< 3M token (≈ $0.06)**, vượt thì hỏi lại. |
 | GPU sentiment | Chọn `cuda` nếu có, fallback `cpu`, log `device: …` khi khởi động. Có test. |
 | Shared secret | Header bí mật giữa Next.js và FastAPI; backend từ chối request thiếu header. |

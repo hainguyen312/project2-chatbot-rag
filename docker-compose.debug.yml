@@ -1,0 +1,28 @@
+# Debug cục bộ — CHỈ bind 127.0.0.1 (không ra LAN / Internet).
+#
+#   docker compose -f docker-compose.prod.yml -f docker-compose.debug.yml --env-file .env.prod up -d
+#
+# Mạng "data" là internal nên Docker không publish cổng cho container chỉ nằm trong đó →
+# thêm mạng "debug" (thường) cho các service cần mở cổng. Tắt debug: chạy lại `up -d` chỉ với
+# docker-compose.prod.yml (compose tự gỡ cổng/mạng thừa).
+
+services:
+  mysql:
+    networks: [data, debug]
+    ports: ["127.0.0.1:3306:3306"]
+  neo4j:
+    networks: [data, debug]
+    ports: ["127.0.0.1:7474:7474", "127.0.0.1:7687:7687"]
+  milvus:
+    networks: [data, debug]
+    ports: ["127.0.0.1:19530:19530", "127.0.0.1:9091:9091"]
+  minio:
+    networks: [data, debug]
+    ports: ["127.0.0.1:9001:9001"]
+  backend:
+    ports: ["127.0.0.1:8001:8001"]
+  frontend:
+    ports: ["127.0.0.1:3000:3000"]
+
+networks:
+  debug: {}
