@@ -27,9 +27,6 @@ os.environ.setdefault("TAVILY_API_KEY", "tvly-test-dummy")
 # ngay đầu file → thay bằng module giả để import retriever không chạm mạng.
 _fake_tavily = types.ModuleType("retrieve.tavily_fallback")
 _fake_tavily.search_tavily = lambda query, top_k=5: []
-_fake_tavily.search_tavily_realtime = lambda query: []
-_fake_tavily.decompose_query = lambda query: {"legal_query": query}
-_fake_tavily.is_context_sufficient = lambda candidates, query="", threshold=0.6: True
 sys.modules["retrieve.tavily_fallback"] = _fake_tavily
 
 

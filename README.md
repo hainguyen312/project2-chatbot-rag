@@ -29,7 +29,6 @@ Hệ thống hỏi–đáp pháp luật tiếng Việt dựa trên **Retrieval-A
 | **Neo4j** | Tầng cấu trúc + quan hệ: phân cấp, Khoản, VanBan, dẫn chiếu `THAM_CHIEU` (~24,7k), `LIEN_QUAN`, sửa đổi/bãi bỏ; nội dung full cho agent |
 | **rag_api** | API RAG, stream SSE, TTS/STT (Firebase tùy chọn) |
 | **frontend** | Chat UI (dark mode), markdown, passages, TTS/STT, lịch sử MongoDB |
-| **app.py** | Giao diện Streamlit (luồng cũ, tùy chọn) |
 
 > Docker dùng cho **MySQL** (`law-crawler/`), **Milvus + Neo4j** (`test_raptor/`). Code Python và Next.js chạy trên host (venv + `npm`).
 
@@ -231,7 +230,7 @@ AGENT_EXCEPTION_CHECK=1        # tự kèm khoản cấm/ngoại lệ liên quan
 # Tavily (web_search)
 TAVILY_API_KEY=tvly-...
 
-# Lịch sử chat Python/Streamlit (tùy chọn)
+# MongoDB: memory, semantic cache, feedback / TTS của lịch sử chat
 MONGODB_URI=
 MONGODB_DB=chatbot_rag
 MONGODB_COLLECTION=conversations
@@ -277,24 +276,11 @@ MONGODB_COLLECTION=conversations
 
 ---
 
-## 5. Streamlit (tùy chọn)
-
-```bash
-source .venv/bin/activate
-pip install streamlit
-streamlit run app.py
-```
-
-`http://localhost:8501` — luồng graph/RAG cũ hơn (có `analyze_complex_situation` cho chế độ tình huống), không dùng agentic API mới.
-
----
-
 ## Cấu trúc thư mục chính
 
 ```
 project2-chatbot-rag/
 ├── rag_api.py                 # FastAPI entry
-├── app.py                     # Streamlit UI
 ├── services/
 │   ├── agentic_rag.py         # Tool-calling, hydrate Neo4j, rerank, SSE helpers
 │   ├── utils.py               # rewrite, intent, generate
@@ -370,6 +356,7 @@ Mã chuyển vào `legacy/` (không xoá); chatbot và eval hiện tại không 
 | `hybrid_graph` (cộng điểm theo liên kết đồ thị) | Không tăng chỉ số retrieval (known-item Hit@1 0.27 → 0.22) |
 | `hybrid_closure` | Không tăng chỉ số retrieval; phần kèm điều được dẫn chiếu vẫn giữ trong `vector_search` của agent |
 | `hybrid_wv*` | Gộp thành một tham số `RRF_W_VECTOR` (0.5) |
+| `app.py` + module đi kèm: `.streamlit/`, `retrieve/elastic_search.py`, `data_processing/ingest.py` (nạp Elasticsearch), `testz/test_connect_elasticsearch.py`, các hàm Streamlit trong `services/utils.py` (`generate_response*`, `retrieve_parallel`, `analyze_complex_situation`, `rewrite_query*`, Elasticsearch), `GraphRAGRetriever.retrieve()`, phần Tavily realtime / decompose trong `retrieve/tavily_fallback.py`, `engine` SQLAlchemy trong `retrieve/two_stage_search.py` | Giao diện Streamlit cũ, đã thay bằng Next.js; không chạy được vì thiếu streamlit |
 | LLM rerank (`RAG_AGENT_LLM_RERANK`, `hybrid_llmrr`) | Chưa từng đo trên `hybrid_new`, vốn tắt mặc định. Nếu làm lại (top 20 → gpt-4o-mini chấm 0–1 → top 10), tham khảo prompt chấm điểm trong `legacy/services/llm_rerank.py` thay vì viết từ đầu |
 
 ### Vấn đề đã biết, ngoài phạm vi dọn dẹp

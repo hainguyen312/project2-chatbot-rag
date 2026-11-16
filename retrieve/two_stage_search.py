@@ -1,18 +1,15 @@
 """
-Kết nối dùng chung: OpenAI client, MySQL engine (SQLAlchemy) và Milvus collection tên điều.
+Kết nối dùng chung: OpenAI client và Milvus collection tên điều.
 
-rag_api, services/lawdata và app.py import `client`, `collection`, `engine` từ module này.
+rag_api và services/lawdata import `client`, `collection` từ module này.
+(`engine` SQLAlchemy chỉ app.py dùng — đã gỡ cùng app.py, xem legacy/.)
 Class TwoStageRetriever (rerank đợt 1) đã chuyển sang legacy/retrieve/two_stage_search.py.
 """
 from openai import OpenAI
 from pymilvus import Collection, connections
-from sqlalchemy import create_engine
 
 # OpenAI client (embedding + chat)
 client = OpenAI()
-
-# MySQL engine (app.py — giao diện Streamlit cũ)
-engine = create_engine("mysql+mysqlconnector://root:123456789@localhost:3306/law")
 
 # Milvus
 connections.connect("default", host="localhost", port="19530")
