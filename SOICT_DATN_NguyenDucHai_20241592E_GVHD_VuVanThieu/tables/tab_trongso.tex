@@ -5,9 +5,10 @@
 \small
 \caption{Dò trọng số vector trong RRF (cùng một lần chạy, 50 câu hỏi thật và 100 câu mục đã biết)}
 \label{tab:trongso}
-\begin{tabular}{|L{1.6cm}|c|c|c|c|c|c|L{3.0cm}|}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|L{1.4cm}|c|c|c|c|c|c|L{2.9cm}|}
 \hline
-\textbf{$w_{v}$} & \textbf{P@5} & \textbf{P@10} & \textbf{nDCG@10} & \textbf{MRR} & \textbf{KI Hit@1} & \textbf{KI Hit@10} & \textbf{Thắng/thua so với $w_{v}=1{,}0$ (nDCG)} \\ \hline
+\textbf{$w_{v}$} & \textbf{P@5} & \textbf{P@10} & \textbf{nDCG@10} & \textbf{MRR} & \textbf{\shortstack{KI\\Hit@1}} & \textbf{\shortstack{KI\\Hit@10}} & \textbf{Thắng/thua so với $w_{v}=1{,}0$ (nDCG)} \\ \hline
 1,0 & 0{,}588 & 0{,}520 & 0{,}602 & 0{,}458 & 0{,}27 & 0{,}67 & -- \\ \hline
 0,7 & 0{,}596 & 0{,}540 & 0{,}617 & 0{,}468 & 0{,}25 & 0{,}68 & 18/13 ($p=0{,}473$) \\ \hline
 0,5 & 0{,}588 & 0{,}544 & 0{,}620 & 0{,}471 & 0{,}27 & 0{,}69 & 21/15 ($p=0{,}405$) \\ \hline

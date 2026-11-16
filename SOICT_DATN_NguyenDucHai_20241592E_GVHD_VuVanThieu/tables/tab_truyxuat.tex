@@ -5,9 +5,10 @@
 \small
 \caption{Kết quả truy xuất: chấm mù bằng LLM trên 50 câu hỏi thật và đánh giá theo mục đã biết (KI) trên 100 câu}
 \label{tab:kq_truyxuat}
-\begin{tabular}{|L{5.2cm}|c|c|c|c|c|c|c|}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|L{4.4cm}|c|c|c|c|c|c|c|}
 \hline
-\textbf{Cấu hình} & \textbf{P@5} & \textbf{P@10} & \textbf{MRR} & \textbf{Top1} & \textbf{KI Hit@1} & \textbf{KI Hit@10} & \textbf{KI MRR} \\ \hline
+\textbf{Cấu hình} & \textbf{P@5} & \textbf{P@10} & \textbf{MRR} & \textbf{Top1} & \textbf{\shortstack{KI\\Hit@1}} & \textbf{\shortstack{KI\\Hit@10}} & \textbf{\shortstack{KI\\MRR}} \\ \hline
 Ban đầu: vector tên điều, xếp hạng cũ & 0{,}448 & 0{,}368 & 0{,}280 & 0{,}52 & 0{,}09 & 0{,}32 & 0{,}150 \\ \hline
 Vector tên điều, xếp hạng lại & 0{,}448 & 0{,}376 & 0{,}409 & 0{,}62 & 0{,}18 & 0{,}35 & 0{,}236 \\ \hline
 Vector đoạn nội dung & 0{,}464 & 0{,}388 & 0{,}426 & 0{,}60 & 0{,}15 & 0{,}50 & 0{,}260 \\ \hline

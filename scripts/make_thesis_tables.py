@@ -84,8 +84,10 @@ def write(name: str, sources: list[str], body: str) -> None:
     print(f"  ✓ tables/{name}  ← {', '.join(sources)}")
 
 
-def table(caption: str, label: str, spec: str, header: list[str], rows: list[list[str]], note: str = "") -> str:
+def table(caption: str, label: str, spec: str, header: list[str], rows: list[list[str]], note: str = "",
+          sep: str = "") -> str:
     lines = [r"\begin{table}[H]", r"\centering", r"\small", rf"\caption{{{caption}}}", rf"\label{{{label}}}",
+             *([rf"\setlength{{\tabcolsep}}{{{sep}}}"] if sep else []),
              rf"\begin{{tabular}}{{{spec}}}", r"\hline", " & ".join(rf"\textbf{{{h}}}" for h in header) + r" \\ \hline"]
     lines += [" & ".join(r) + r" \\ \hline" for r in rows]
     lines.append(r"\end{tabular}")
@@ -209,10 +211,11 @@ def tab_truyxuat() -> None:
                      vn(k["Hit@1"], 2), vn(k["Hit@10"], 2), vn(k["MRR@10"])])
     write("tab_truyxuat.tex", [RUN_MAIN, RUN_SWEEP + " (dòng w=0,5)"], table(
         "Kết quả truy xuất: chấm mù bằng LLM trên 50 câu hỏi thật và đánh giá theo mục đã biết (KI) trên 100 câu",
-        "tab:kq_truyxuat", "|L{5.2cm}|c|c|c|c|c|c|c|",
-        ["Cấu hình", "P@5", "P@10", "MRR", "Top1", "KI Hit@1", "KI Hit@10", "KI MRR"], rows,
+        "tab:kq_truyxuat", "|L{4.4cm}|c|c|c|c|c|c|c|",
+        ["Cấu hình", "P@5", "P@10", "MRR", "Top1", r"\shortstack{KI\\Hit@1}", r"\shortstack{KI\\Hit@10}",
+         r"\shortstack{KI\\MRR}"], rows,
         "MRR tính với điều có mức liên quan 2 đầu tiên trong 10 kết quả. Không đưa nDCG vào bảng vì nDCG "
-        "chuẩn hoá theo tập kết quả gộp của từng lần chạy nên không so được giữa hai lần chạy."))
+        "chuẩn hoá theo tập kết quả gộp của từng lần chạy nên không so được giữa hai lần chạy.", sep="4pt"))
 
 
 def tab_trongso() -> None:
@@ -237,9 +240,10 @@ def tab_trongso() -> None:
                      vn(k["Hit@1"], 2), vn(k["Hit@10"], 2), cmp])
     write("tab_trongso.tex", [RUN_SWEEP], table(
         "Dò trọng số vector trong RRF (cùng một lần chạy, 50 câu hỏi thật và 100 câu mục đã biết)",
-        "tab:trongso", "|L{1.6cm}|c|c|c|c|c|c|L{3.0cm}|",
-        ["$w_{v}$", "P@5", "P@10", "nDCG@10", "MRR", "KI Hit@1", "KI Hit@10", r"Thắng/thua so với $w_{v}=1{,}0$ (nDCG)"],
-        rows, "nDCG so được giữa các dòng vì cùng một tập kết quả gộp. Kiểm định dấu hai phía trên 50 câu."))
+        "tab:trongso", "|L{1.4cm}|c|c|c|c|c|c|L{2.9cm}|",
+        ["$w_{v}$", "P@5", "P@10", "nDCG@10", "MRR", r"\shortstack{KI\\Hit@1}", r"\shortstack{KI\\Hit@10}",
+         r"Thắng/thua so với $w_{v}=1{,}0$ (nDCG)"],
+        rows, "nDCG so được giữa các dòng vì cùng một tập kết quả gộp. Kiểm định dấu hai phía trên 50 câu.", sep="4pt"))
 
 
 def tab_sign_old() -> None:
@@ -254,6 +258,23 @@ def tab_sign_old() -> None:
     write("tab_sign_old.tex", [RUN_SWEEP], table(
         "So sánh từng câu hỏi theo nDCG@10 với cấu hình ban đầu (50 câu, kiểm định dấu hai phía)",
         "tab:pl_sign", "|L{6.4cm}|c|c|c|c|", ["Cấu hình", "Thắng", "Hoà", "Thua", "$p$"], rows))
+
+
+def tab_sign_hybrid() -> None:
+    """Các biến thể so với hybrid_new (w=1,0) trong CÙNG lần chạy chính — nDCG@10 so được trong một lần chạy."""
+    mn = load(RUN_MAIN)
+    pq, qs = mn["per_query"], list(mn["per_query"]["hybrid_new"])
+    rows = []
+    for n, label in [("hybrid3_new", "Lai ba nguồn (thêm vector đoạn nội dung)"), ("hybrid_graph", NAMES["hybrid_graph"]),
+                     ("hybrid_closure", NAMES["hybrid_closure"]), ("bm25_only", NAMES["bm25_only"])]:
+        w = sum(pq[n][q]["nDCG@10"] > pq["hybrid_new"][q]["nDCG@10"] + 1e-9 for q in qs)
+        l = sum(pq[n][q]["nDCG@10"] < pq["hybrid_new"][q]["nDCG@10"] - 1e-9 for q in qs)
+        rows.append([label, vn(mn["summary"][n]["nDCG@10"]), str(w), str(len(qs) - w - l), str(l), fmt_p(sign_p(w, l))])
+    write("tab_sign_hybrid.tex", [RUN_MAIN], table(
+        r"So sánh từng câu hỏi theo nDCG@10 với cấu hình lai, xếp hạng lại ($w_{v}=1{,}0$; nDCG@10 $=$ "
+        + vn(mn["summary"]["hybrid_new"]["nDCG@10"]) + ") trong cùng lần chạy",
+        "tab:pl_sign_hybrid", "|L{6.0cm}|c|c|c|c|c|", ["Cấu hình", "nDCG@10", "Thắng", "Hoà", "Thua", "$p$"], rows,
+        "Kiểm định dấu hai phía trên 50 câu."))
 
 
 def tab_dot1() -> None:
@@ -311,8 +332,8 @@ def tab_memory() -> list[str]:
                      f"{act.get('ADD', 0)}/{act.get('UPDATE', 0)}/{act.get('DELETE', 0)}/{act.get('NOOP', 0)}",
                      vn(statistics.median(lat), 2) if lat else "--"])
     write("tab_memory.tex", files, table(
-        "Các lần chạy đánh giá bộ nhớ dài hạn (14 kịch bản)", "tab:pl_mem_runs", "|L{3.2cm}|c|c|c|L{2.6cm}|L{2.4cm}|",
-        ["Lần chạy", "Đạt", "Lộ nhạy cảm", "Trùng/lỗi thời", "Thêm/sửa/xoá/bỏ qua", "Trung vị độ trễ (giây)"], rows))
+        "Các lần chạy đánh giá bộ nhớ dài hạn (14 kịch bản)", "tab:pl_mem_runs", "|L{2.4cm}|c|L{1.7cm}|L{1.9cm}|L{2.5cm}|L{2.1cm}|",
+        ["Lần chạy", "Đạt", "Lộ nhạy cảm", "Trùng/lỗi thời", "Thêm / sửa / xoá / bỏ qua", "Trung vị độ trễ (giây)"], rows))
     return files
 
 
@@ -393,6 +414,7 @@ def main():
     tab_truyxuat()
     tab_trongso()
     tab_sign_old()
+    tab_sign_hybrid()
     tab_dot1()
     tab_toolcall()
     tab_memory()
