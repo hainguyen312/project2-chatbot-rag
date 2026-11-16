@@ -14,10 +14,20 @@ Internet → Cloudflare (HTTPS) → cloudflared (container, kết nối đi ra)
 
 - Tất cả chạy bằng `docker compose` trong WSL2 Ubuntu 24.04, **không publish cổng ra host**.
   Debug: `docker-compose.debug.yml` bind `127.0.0.1` khi cần. Không dùng Caddy.
-- Chưa có domain: chạy trước bằng **quick tunnel trycloudflare** (URL ngẫu nhiên, đổi mỗi lần
-  cloudflared khởi động lại → script phải ghi URL mới ra file/log). Giữ sẵn cấu hình để chuyển
-  sang **named tunnel** (`CLOUDFLARE_TUNNEL_TOKEN`) + domain thật sau (dự kiến `<tên>.id.vn`,
-  trỏ nameserver về Cloudflare).
+- ~~Chưa có domain: chạy trước bằng quick tunnel trycloudflare~~ → **Cập nhật 16/11/2026: đã có
+  domain `haichatbot.id.vn`**, nameserver đã chuyển sang Cloudflare. Dùng **named tunnel**
+  `chatbot-prod`, public hostname `haichatbot.id.vn` → `http://frontend:3000`.
+  - Token trong `.env.prod` (gốc repo, chmod 600, đã gitignore), tên biến
+    `CLOUDFLARE_TUNNEL_TOKEN`. Không đọc/in nội dung file.
+  - Chủ repo đã thử bằng container tạm `cloudflare/cloudflared` với `TUNNEL_TOKEN`: 4 kết nối
+    "Registered tunnel connection", protocol quic, location hkg.
+  - **Yêu cầu cho `docker-compose.prod.yml`:** service `cloudflared` dùng
+    `TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}`, lệnh `tunnel --no-autoupdate run`, cùng network
+    với `frontend`, **ghim phiên bản image cụ thể** (không `latest`).
+  - Health gate của `deploy.sh` và nghiệm thu reboot dùng `https://haichatbot.id.vn`.
+  - Quick tunnel trycloudflare không còn là đường chính (chỉ dự phòng khi debug).
+  - **Trước nghiệm thu (bước 7): nhắc chủ repo thêm `haichatbot.id.vn` vào Firebase →
+    Authentication → Settings → Authorized domains.**
 
 ## 2. Máy chủ (Windows 11 Pro 10.0.26200)
 
@@ -49,7 +59,7 @@ Internet → Cloudflare (HTTPS) → cloudflared (container, kết nối đi ra)
 | # | Quyết định |
 |---|---|
 | Docker | **Docker Engine trong WSL + NVIDIA Container Toolkit**, tắt Docker Desktop (gỡ tích hợp WSL, tắt tự khởi động). Lý do: Desktop chỉ chạy khi có người đăng nhập Windows; Engine là service systemd. |
-| Nghiệm thu bắt buộc | Khởi động lại máy **không đăng nhập Windows**, chờ 5 phút, trang truy cập được (qua URL trycloudflare mới — ghi ra file/log — hoặc domain). |
+| Nghiệm thu bắt buộc | Khởi động lại máy **không đăng nhập Windows**, chờ 5 phút, `https://haichatbot.id.vn` truy cập được (đã thêm domain vào Firebase Authorized domains). |
 | Repo | **PUBLIC** → **không dùng self-hosted GitHub runner**, **không có `deploy.yml`**. |
 | CD | **Pull-based**: `scripts/deploy.sh` chạy bằng **systemd timer mỗi 5 phút** dưới user `deploy`: fetch `origin/main`; nếu sha mới ≠ sha đang chạy **và** CI (`ci.yml`) trên đúng sha đó đã `success` (GitHub API công khai, không token) → `docker compose build` (IMAGE_TAG=sha, build tại máy, không registry) → `up -d` → health gate (backend + frontend + URL công khai) → fail trong N giây thì tự quay về tag trước. `flock` chống chạy chồng, ghi log. Lưu tag đang chạy vào file; giữ 3 image gần nhất. `scripts/rollback.sh <tag>`. |
 | CI | `.github/workflows/ci.yml` trên `ubuntu-latest` (PR + push): backend pytest với torch CPU (không gọi OpenAI/Tavily), frontend `npm ci` + lint + build, build thử 2 Dockerfile (backend bản CPU). |
@@ -134,7 +144,7 @@ Internet → Cloudflare (HTTPS) → cloudflared (container, kết nối đi ra)
 5. Bảo mật: `/api/chats` trước → auth Firebase cho route LLM → trần ngày → rate limit →
    shared secret → tài liệu Cloudflare/Firebase/trần chi tiêu.
 6. MIGRATE_DATA, BACKUP (+`backup.sh`, cron, giữ 7 bản), RUNBOOK.
-7. Kiểm tra toàn bộ + nghiệm thu reboot không đăng nhập.
+7. Kiểm tra toàn bộ + nghiệm thu reboot không đăng nhập (nhắc Firebase Authorized domains trước).
 
 ## 8. Ràng buộc
 
