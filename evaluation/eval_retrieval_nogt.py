@@ -8,30 +8,21 @@ Hai phép đo bổ trợ nhau:
    - LLM chấm MÙ từng cặp (câu hỏi, điều luật) thang 0/1/2, không biết điều đến từ pipeline nào.
      2 = trả lời trực tiếp, 1 = liên quan/hữu ích một phần, 0 = không liên quan.
    - Tính P@5, P@10 (rel ≥ 1), nDCG@10 (graded, ideal = các điều tốt nhất trong pool),
-     MRR@10 (điều rel = 2 đầu tiên), Top1 (rel ≥ 1). So từng cặp pipeline vs baseline:
+     MRR@10 (điều rel = 2 đầu tiên), Top1 (rel ≥ 1). So hybrid_new với baseline (bm25_only):
      win/tie/loss theo nDCG@10 + sign test.
    - Kết quả chấm được cache (evaluation/results/judgments_cache.json) → chạy lại rẻ.
 
 2) Known-item (tuỳ chọn --synthetic N)
-   - Sinh câu hỏi đời thường từ N điều ngẫu nhiên (dùng lại compare_title_vs_context),
-     "gold" = chính điều đó. Đo Hit@1/5/10, MRR@10. Thiên vị nhẹ về nội dung điều,
+   - Câu hỏi đời thường sinh từ N điều ngẫu nhiên (evaluation/synthetic.py, cache synthetic_queries.json),
+     "gold" = chính điều đó. Đo Hit@1/5/10, MRR@10. Thiên vị nhẹ về nội dung điều (lợi cho BM25),
      nên đọc cùng với (1).
 
 Pipelines:
-   old             : Milvus(tên điều) top-30 → base 0.8 cho mọi hit → overlap cũ (+0.05/token)
-   vector_new      : Milvus giữ điểm (RRF) → _rerank mới (base + coverage có chặn)
-   hybrid_norerank : Milvus + BM25 (RRF), không rerank lexical
-   hybrid_new      : Milvus + BM25 (RRF) → _rerank mới
-   hybrid3_*       : Milvus tên điều + Milvus ctx_chunks (header + nội dung) + BM25 (RRF),
-                     có / không _rerank — chỉ chạy khi đã seed phapdien_ctx_chunks
-   hybrid3_w05     : như hybrid3_new, trọng số RRF của ctx = 0.5
-   bm25_only / ctx_only : từng nguồn chạy riêng (không rerank)
-   *_llmrr         : *_new + LLM rerank top-12 (gpt-4o-mini, như RAG_AGENT_LLM_RERANK=1);
-                     tắt bằng EVAL_LLM_RERANK=0
-   hybrid_graph    : hybrid_new + cộng điểm theo liên kết đồ thị giữa các ứng viên
-                     (GraphRAGRetriever._graph_boost, beta = EVAL_GRAPH_BETA, mặc định 0.1)
-   hybrid_closure  : hybrid_new top-(k-3) + tối đa 3 điều được top-3 DẪN CHIẾU tới (THAM_CHIEU)
-   (2 pipeline đồ thị chỉ chạy khi Neo4j đã build; tắt bằng EVAL_GRAPH=0)
+   hybrid_new : pipeline chatbot đang chạy — RRF(BM25 w=1.0, Milvus tên điều w=RRF_W_VECTOR, k=60) chuẩn hoá
+                về (0,1] → rerank từ khoá (0.7 × RRF + 0.3 × độ phủ) (GraphRAGRetriever._hybrid_search + _rerank)
+   bm25_only  : chỉ BM25 — mốc tham chiếu
+   Các pipeline thử nghiệm cũ (old, vector_new, ctx_only, hybrid3_*, hybrid_wv*, hybrid_graph, hybrid_closure,
+   hybrid_llmrr) đã lược bỏ — xem README "Đã lược bỏ"; kết quả cũ vẫn ở evaluation/results/.
 
 Judge: Claude (mặc định claude-opus-5-5), structured output JSON {reason, score}.
 
@@ -179,126 +170,20 @@ def load_queries(limit: int | None) -> list[str]:
 
 
 # ------------------------------------------------------------------ pipelines
-def old_rerank(rows: list[dict], query: str, top_k: int) -> list[str]:
-    """Bản sao logic CŨ: base 0.8 hằng + 0.05 × token trùng (split khoảng trắng, gồm hư từ)."""
-    q_tokens = set(query.lower().split())
-    scored = []
-    for i, r in enumerate(rows):
-        text = ((r.get("ten") or "") + " " + (r.get("noidung") or "")[:12000]).lower()
-        scored.append((0.8 + 0.05 * sum(1 for t in q_tokens if t in text), -i, r["mapc"]))
-    scored.sort(reverse=True)
-    return [m for _, _, m in scored[:top_k]]
-
-
 def make_pipelines(retriever, k: int):
-    def rows_for(mapcs: list[str], scores: dict[str, float]) -> list[dict]:
-        arts = fetch_articles(mapcs)
-        return [dict(arts[m], base_score=scores.get(m, 0.3)) for m in mapcs if m in arts]
-
-    def p_old(q):
-        mapcs = retriever._vector_search(q, top_k=POOL_K)
-        return old_rerank(rows_for(mapcs, {}), q, k)
-
-    def _fused(q, mode, weights=None):
-        fused = retriever._hybrid_search(q, top_k=POOL_K, mode=mode, weights=weights)
-        return [d["mapc"] for d in fused], {d["mapc"]: d["score"] for d in fused}
-
-    def _llm_rerank(q, ranked: list[dict], head_n: int = 12) -> list[str]:
-        """Giống RAG_AGENT_LLM_RERANK=1 (services/agentic_rag._apply_llm_rerank_head): LLM chấm
-        lại top-N (pointwise 0–1) rồi nối phần đuôi; chạy song song cho nhanh."""
-        from services.agentic_rag import _llm_score_passage
-
-        head, tail = ranked[:head_n], ranked[head_n:]
-        def score(c):
-            passage = "\n".join(filter(None, [c.get("ten"), (c.get("noidung") or "")[:8000]]))
-            return _llm_score_passage(retriever.client, q, passage)
-        with ThreadPoolExecutor(max_workers=8) as ex:
-            scores = list(ex.map(score, head))
-        order = sorted(range(len(head)), key=lambda i: -scores[i])  # sort ổn định: hoà giữ thứ tự cũ
-        return [head[i]["mapc"] for i in order] + [c["mapc"] for c in tail]
+    def p_hybrid_new(q):
+        fused = retriever._hybrid_search(q, top_k=POOL_K)
+        arts = fetch_articles([d["mapc"] for d in fused])
+        rows = [dict(arts[d["mapc"]], base_score=d["score"]) for d in fused if d["mapc"] in arts]
+        return [c["mapc"] for c in retriever._rerank(rows, q, top_k=k)]
 
     def p_bm25_only(q):
-        mapcs, _ = _fused(q, "bm25")
-        return mapcs[:k]
+        from retrieve.lexical_bm25 import get_bm25
 
-    def p_ctx_only(q):
-        mapcs, _ = _fused(q, "ctx")
-        return mapcs[:k]
+        idx = get_bm25()
+        return [m for m, _ in idx.search(q, top_k=50)][:k] if idx is not None else []
 
-    def p_hybrid_llmrr(q):
-        mapcs, sc = _fused(q, "hybrid")
-        return _llm_rerank(q, retriever._rerank(rows_for(mapcs, sc), q, top_k=POOL_K))[:k]
-
-    def p_hybrid3_llmrr(q):
-        mapcs, sc = _fused(q, "hybrid3")
-        return _llm_rerank(q, retriever._rerank(rows_for(mapcs, sc), q, top_k=POOL_K))[:k]
-
-    def p_hybrid3_w05(q):
-        mapcs, sc = _fused(q, "hybrid3", {"ctx": 0.5})
-        return [c["mapc"] for c in retriever._rerank(rows_for(mapcs, sc), q, top_k=k)]
-
-    def p_vector_new(q):
-        mapcs, sc = _fused(q, "vector")
-        return [c["mapc"] for c in retriever._rerank(rows_for(mapcs, sc), q, top_k=k)]
-
-    def p_hybrid_norerank(q):
-        mapcs, _ = _fused(q, "hybrid")
-        return mapcs[:k]
-
-    def p_hybrid_new(q):
-        mapcs, sc = _fused(q, "hybrid")
-        return [c["mapc"] for c in retriever._rerank(rows_for(mapcs, sc), q, top_k=k)]
-
-    def p_hybrid3_norerank(q):
-        mapcs, _ = _fused(q, "hybrid3")
-        return mapcs[:k]
-
-    def p_hybrid3_new(q):
-        mapcs, sc = _fused(q, "hybrid3")
-        return [c["mapc"] for c in retriever._rerank(rows_for(mapcs, sc), q, top_k=k)]
-
-    beta = float(os.getenv("EVAL_GRAPH_BETA", "0.1"))
-
-    def p_hybrid_graph(q):
-        mapcs, sc = _fused(q, "hybrid")
-        ranked = retriever._rerank(rows_for(mapcs, sc), q, top_k=POOL_K)
-        return [c["mapc"] for c in retriever._graph_boost(ranked, beta)[:k]]
-
-    def p_hybrid_closure(q):
-        base = p_hybrid_new(q)
-        extra = retriever._reference_closure(base[:3], exclude=set(base), limit=3)
-        head = base[: k - len(extra)]
-        return head + [r["mapc"] for r in extra]
-
-    pipes = {
-        "old": p_old,
-        "vector_new": p_vector_new,
-        "hybrid_norerank": p_hybrid_norerank,
-        "hybrid_new": p_hybrid_new,
-    }
-    if retriever.ctx_collection is not None:
-        pipes["hybrid3_norerank"] = p_hybrid3_norerank
-        pipes["hybrid3_new"] = p_hybrid3_new
-        pipes["hybrid3_w05"] = p_hybrid3_w05
-        pipes["ctx_only"] = p_ctx_only
-    pipes["bm25_only"] = p_bm25_only
-    # Dò trọng số RRF của vector (tên điều): EVAL_VEC_WEIGHTS="0.3,0.5" → hybrid_wv03, hybrid_wv05 (+ _rerank)
-    for w in [x for x in os.getenv("EVAL_VEC_WEIGHTS", "").split(",") if x.strip()]:
-        def p_w(q, _w=float(w)):
-            mapcs, sc = _fused(q, "hybrid", {"vec": _w})
-            return [c["mapc"] for c in retriever._rerank(rows_for(mapcs, sc), q, top_k=k)]
-        pipes[f"hybrid_wv{w.strip().replace('.', '')}"] = p_w
-    if os.getenv("EVAL_GRAPH", "1") == "1" and (retriever.graph_stats().get("tham_chieu") or 0) > 0:
-        pipes["hybrid_graph"] = p_hybrid_graph
-        pipes["hybrid_closure"] = p_hybrid_closure
-    if os.getenv("EVAL_LLM_RERANK", "1") == "1":
-        pipes["hybrid_llmrr"] = p_hybrid_llmrr
-        if retriever.ctx_collection is not None:
-            pipes["hybrid3_llmrr"] = p_hybrid3_llmrr
-    if os.getenv("EVAL_ONLY"):  # chỉ chạy các pipeline được liệt kê (tiết kiệm thời gian retrieve)
-        keep = {x.strip() for x in os.getenv("EVAL_ONLY").split(",")}
-        pipes = {n: f for n, f in pipes.items() if n in keep}
-    return pipes
+    return {"hybrid_new": p_hybrid_new, "bm25_only": p_bm25_only}
 
 
 # ------------------------------------------------------------------ judge
@@ -588,7 +473,7 @@ def main():
     ap.add_argument("--dry-run", action="store_true",
                     help="chỉ retrieve + ước tính chi phí judge (count_tokens miễn phí), không chấm")
     ap.add_argument("--workers", type=int, default=8)
-    ap.add_argument("--baseline", default="old")
+    ap.add_argument("--baseline", default="bm25_only")
     ap.add_argument("--synthetic", type=int, default=0, help="thêm đánh giá known-item với N câu sinh tự động")
     ap.add_argument("--seed", type=int, default=7)
     args = ap.parse_args()
@@ -640,7 +525,7 @@ def main():
         print(f"  {n:<18} win {w:>3}  tie {len(queries) - w - l:>3}  loss {l:>3}   p={sign_test_p(w, l):.4f}")
 
     # Câu tệ nhất của cấu hình mới → để soi lỗi bằng mắt
-    best_name = "hybrid3_new" if "hybrid3_new" in per_q else "hybrid_new"
+    best_name = "hybrid_new"
     worst = sorted(queries, key=lambda q: per_q[best_name][q][nd])[:5]
     arts = fetch_articles([m for q in worst for m in runs[best_name][q][:3]])
     print(f"\n=== 5 câu {best_name} kém nhất (top-3 + điểm judge) ===")
@@ -654,7 +539,7 @@ def main():
 
     # ---------- (2) known-item synthetic
     if args.synthetic:
-        from compare_title_vs_context import load_synthetic
+        from synthetic import load_synthetic
 
         synth = load_synthetic(args.synthetic)
         ki: dict[str, list[dict]] = {n: [] for n in pipelines}
