@@ -12,8 +12,6 @@ from typing import Any
 LLM_MAX_NOIDUNG_CHARS = int(os.getenv("AGENT_LLM_MAX_NOIDUNG_CHARS", "4000"))
 LLM_MAX_PASSAGE_CHARS = int(os.getenv("AGENT_LLM_MAX_PASSAGE_CHARS", "4000"))
 LLM_MAX_WEB_CHARS = int(os.getenv("AGENT_LLM_MAX_WEB_CHARS", "1500"))
-# Rerank: 1 = sau overlap gọi LLM chấm lại top-N (tốn API); 0 = chỉ overlap + Milvus order
-RAG_AGENT_LLM_RERANK = os.getenv("RAG_AGENT_LLM_RERANK", "0").strip().lower() in ("1", "true", "yes")
 AGENT_VECTOR_POOL_MULT = max(1, int(os.getenv("AGENT_VECTOR_POOL_MULT", "3")))
 # Đồ thị (Neo4j): tự kèm điều/khoản được dẫn chiếu bởi top kết quả vector_search
 AGENT_REF_CLOSURE = os.getenv("AGENT_REF_CLOSURE", "1").strip().lower() in ("1", "true", "yes")
@@ -294,65 +292,6 @@ def hit_dict_to_row(h: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _llm_score_passage(client: Any, query: str, passage: str, *, model: str | None = None) -> float:
-    """Chấm liên quan query–passage (0–1), cùng logic TwoStageRetriever._score_pair."""
-    model = model or os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-    passage = (passage or "")[:8000]
-    if not passage.strip():
-        return 0.0
-    system_prompt = (
-        "Bạn là một hệ thống chấm điểm truy hồi văn bản phục vụ cho trả lời truy vấn pháp luật. "
-        "Nhiệm vụ của bạn là đánh giá mức độ đoạn văn (passage) trả lời được câu hỏi (query). "
-        "Đoạn văn nào trực tiếp cần dùng để trả lời câu hỏi thì điểm cao."
-        "Hãy trả về MỘT số thực trong khoảng từ 0 đến 1:\n"
-        "- 0: hoàn toàn không liên quan\n"
-        "- 1: rất liên quan, trả lời trực tiếp câu hỏi\n"
-        "Chỉ in ra đúng MỘT số, không giải thích gì thêm."
-    )
-    try:
-        resp = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Query:\n{query}\n\nPassage:\n{passage}"},
-            ],
-            temperature=0.0,
-            max_tokens=8,
-        )
-        text = (resp.choices[0].message.content or "").strip()
-        m = re.search(r"([01](?:\.\d+)?)", text)
-        if not m:
-            return 0.0
-        return max(0.0, min(1.0, float(m.group(1))))
-    except Exception:
-        return 0.0
-
-
-def _apply_llm_rerank_head(
-    retriever: Any,
-    query: str,
-    ranked: list[dict[str, Any]],
-    *,
-    head_n: int = 12,
-) -> list[dict[str, Any]]:
-    """Chấm LLM lại phần đầu danh sách đã overlap-rerank, rồi gộp đuôi."""
-    client = getattr(retriever, "client", None)
-    if not client or not ranked:
-        return ranked
-    n = min(head_n, len(ranked))
-    head = [dict(x) for x in ranked[:n]]
-    tail = ranked[n:]
-    for c in head:
-        passage = (c.get("passage") or "").strip()
-        if not passage:
-            passage = "\n".join(
-                filter(None, [c.get("ten"), c.get("noidung")])
-            )
-        c["score"] = _llm_score_passage(client, query, passage)
-    head.sort(key=lambda x: float(x.get("score", 0)), reverse=True)
-    return head + tail
-
-
 def rerank_phapdien_hits(
     retriever: Any,
     rerank_query: str,
@@ -361,9 +300,8 @@ def rerank_phapdien_hits(
     top_k: int,
 ) -> list[dict[str, Any]]:
     """
-    Sắp xếp lại passage Pháp Điển theo truy vấn người dùng:
-    1) GraphRAGRetriever._rerank (overlap từ khóa + base_score)
-    2) Tuỳ chọn: LLM chấm lại top-N (RAG_AGENT_LLM_RERANK=1)
+    Sắp xếp lại passage Pháp Điển theo truy vấn: GraphRAGRetriever._rerank
+    (0.7 × điểm truy hồi + 0.3 × độ phủ từ khoá). (LLM rerank cũ: legacy/services/llm_rerank.py)
     """
     q = (rerank_query or "").strip()
     if not full_hits or not q or not hasattr(retriever, "_rerank"):
@@ -388,8 +326,6 @@ def rerank_phapdien_hits(
 
     pool = max(top_k, min(len(candidates), 40))
     ranked = retriever._rerank(candidates, q, top_k=pool)
-    if RAG_AGENT_LLM_RERANK and ranked:
-        ranked = _apply_llm_rerank_head(retriever, q, ranked, head_n=12)
 
     out: list[dict[str, Any]] = []
     for c in ranked[:top_k]:
