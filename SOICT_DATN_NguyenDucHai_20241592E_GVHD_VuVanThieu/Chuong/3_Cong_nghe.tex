@@ -33,7 +33,7 @@ Truy xuất dày (dense retrieval) biểu diễn câu hỏi và tài liệu thà
 \begin{equation}\label{eq:cosine}
     \cos(\mathbf{q}, \mathbf{d}) = \frac{\mathbf{q}\cdot\mathbf{d}}{\lVert\mathbf{q}\rVert\,\lVert\mathbf{d}\rVert}
 \end{equation}
-Đồ án dùng mô hình nhúng \texttt{text-embedding-3-small} của OpenAI với vector 1536 chiều, hỗ trợ tiếng Việt tốt và chi phí thấp. Với 66.706 điều luật và 147.641 đoạn văn bản, tìm kiếm vét cạn là không khả thi trong thời gian tương tác, nên cần chỉ mục tìm láng giềng gần đúng. HNSW \cite{malkov2020hnsw} xây dựng đồ thị nhiều tầng, tầng trên thưa giúp di chuyển nhanh tới vùng lân cận, tầng dưới dày giúp tìm chính xác; độ phức tạp tìm kiếm xấp xỉ logarit theo số phần tử. Đồ án cấu hình HNSW với $M=16$ và $efConstruction=200$, khoảng cách cosine.
+Đồ án dùng mô hình nhúng \texttt{text-embedding-3-small} của OpenAI với vector 1536 chiều, hỗ trợ tiếng Việt tốt và chi phí thấp. Với 66.706 điều luật, tìm kiếm vét cạn trên mỗi truy vấn tốn nhiều thời gian so với yêu cầu tương tác, nên cần chỉ mục tìm láng giềng gần đúng. HNSW \cite{malkov2020hnsw} xây dựng đồ thị nhiều tầng, tầng trên thưa giúp di chuyển nhanh tới vùng lân cận, tầng dưới dày giúp tìm chính xác; độ phức tạp tìm kiếm xấp xỉ logarit theo số phần tử. Đồ án cấu hình HNSW với $M=16$ và $efConstruction=200$, khoảng cách cosine.
 
 \subsection{BM25 cho tiếng Việt}
 Truy xuất dày bắt được ngữ nghĩa nhưng dễ bỏ lỡ các thuật ngữ chính xác như ``án treo'', ``thai sản'' hay ``nồng độ cồn''. BM25 \cite{robertson2009bm25} là hàm xếp hạng theo từ khoá, tính điểm của tài liệu $d$ với câu hỏi $q$ như sau:
@@ -47,7 +47,7 @@ Kết hợp nhiều bộ truy xuất cần một cách gộp kết quả. Điể
 \begin{equation}\label{eq:rrf}
     \mathrm{RRF}(d) = \sum_{s \in S} \frac{w_s}{k + \mathrm{rank}_s(d)}
 \end{equation}
-với $S$ là tập nguồn, $\mathrm{rank}_s(d)$ là thứ hạng của $d$ trong nguồn $s$, $w_s$ là trọng số nguồn và $k$ là hằng số làm mượt (thường bằng 60). RRF đơn giản, không cần huấn luyện và được chứng minh hiệu quả hơn nhiều phương pháp học thứ hạng phức tạp.
+với $S$ là tập nguồn, $\mathrm{rank}_s(d)$ là thứ hạng của $d$ trong nguồn $s$ (bắt đầu từ 1), $w_s$ là trọng số nguồn và $k$ là hằng số làm mượt (thường bằng 60). RRF đơn giản, không cần huấn luyện và trong thực nghiệm của Cormack và cộng sự cho kết quả tốt hơn nhiều phương pháp học thứ hạng phức tạp \cite{cormack2009rrf}. Một hệ quả của công thức là tài liệu chỉ xuất hiện ở một nguồn có thể xếp sau tài liệu xuất hiện ở nhiều nguồn với thứ hạng trung bình; ảnh hưởng của đặc điểm này tới hệ thống được phân tích ở phần \ref{section:5.1}.
 
 \section{Bộ nhớ dài hạn và bộ đệm ngữ nghĩa}
 \label{section:3.4}
