@@ -67,6 +67,11 @@ from services.roles import RoleStore
 
 app = FastAPI(title="RAG Backend API", version="1.0.0")
 
+# Chỉ Next.js (biết BACKEND_SHARED_SECRET) gọi được backend — services/internal_secret.py
+from services.internal_secret import InternalSecretMiddleware  # noqa: E402
+
+app.add_middleware(InternalSecretMiddleware, secret=os.getenv("BACKEND_SHARED_SECRET", ""))
+
 
 # ── Xác thực ─────────────────────────────────────────────────────────────────
 def require_login(authorization: Optional[str] = Header(default=None)) -> str:

@@ -1,7 +1,9 @@
 /** src/lib/backend.ts: header gửi tới backend (Authorization, X-Client-IP cho rate limit). */
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { backendHeaders, clientIp, passThroughStatus } from "@/lib/backend";
+import { backendHeaders, clientIp, internalHeaders, passThroughStatus } from "@/lib/backend";
+
+afterEach(() => vi.unstubAllEnvs());
 
 const req = (headers: Record<string, string>) => new Request("http://localhost/api/x", { headers });
 
@@ -26,6 +28,7 @@ describe("backendHeaders", () => {
     expect(h).toEqual({ "Content-Type": "application/json", Authorization: "Bearer t", "X-Client-IP": "1.2.3.4" });
   });
   it("không bịa header khi thiếu", () => {
+    vi.stubEnv("BACKEND_SHARED_SECRET", "");
     expect(backendHeaders(req({}))).toEqual({});
   });
   it("cắt IP quá dài", () => {
@@ -36,4 +39,19 @@ describe("backendHeaders", () => {
 it("passThroughStatus", () => {
   expect([401, 403, 429].every(passThroughStatus)).toBe(true);
   expect([200, 400, 500, 502].some(passThroughStatus)).toBe(false);
+});
+
+describe("shared secret Next.js → FastAPI", () => {
+  it("backendHeaders + internalHeaders gửi X-Internal-Secret khi có BACKEND_SHARED_SECRET", () => {
+    vi.stubEnv("BACKEND_SHARED_SECRET", "s3cret");
+    expect(backendHeaders(req({ authorization: "Bearer t" }))["X-Internal-Secret"]).toBe("s3cret");
+    expect(internalHeaders({ "Content-Type": "application/json" })).toEqual({
+      "Content-Type": "application/json",
+      "X-Internal-Secret": "s3cret",
+    });
+  });
+  it("internalHeaders không chuyển header người dùng", () => {
+    vi.stubEnv("BACKEND_SHARED_SECRET", "s3cret");
+    expect(Object.keys(internalHeaders())).toEqual(["X-Internal-Secret"]);
+  });
 });

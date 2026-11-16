@@ -7,8 +7,8 @@
  * hạn của token.
  */
 import { NextRequest, NextResponse } from "next/server";
+import { BACKEND_URL as BACKEND, internalHeaders } from "@/lib/backend";
 
-const BACKEND = process.env.RAG_BACKEND_URL ?? "http://localhost:8001";
 const CACHE_TTL_MS = 5 * 60_000;
 const CACHE_MAX = 1000;
 
@@ -55,7 +55,7 @@ export async function requireUser(req: NextRequest): Promise<AuthedUser | NextRe
   try {
     res = await fetch(`${BACKEND}/auth/verify`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: internalHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ id_token: token }),
       signal: AbortSignal.timeout(10_000),
     });

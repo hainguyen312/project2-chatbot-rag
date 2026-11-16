@@ -145,6 +145,8 @@ services:
       MILVUS_HOST: milvus
       MILVUS_PORT: "19530"
       FIREBASE_CRED_PATH: /run/secrets/firebase-credentials.json
+      # Chỉ frontend gọi được backend (services/internal_secret.py)
+      BACKEND_SHARED_SECRET: ${BACKEND_SHARED_SECRET:?thiếu BACKEND_SHARED_SECRET trong .env.prod}
       # Bắt buộc
       OPENAI_API_KEY: ${OPENAI_API_KEY:?thiếu OPENAI_API_KEY trong .env.prod}
       OPENAI_MODEL: ${OPENAI_MODEL:?thiếu OPENAI_MODEL trong .env.prod}
@@ -255,6 +257,7 @@ services:
     image: chatbot-frontend:${IMAGE_TAG:-local}
     environment:
       RAG_BACKEND_URL: http://backend:8001
+      BACKEND_SHARED_SECRET: ${BACKEND_SHARED_SECRET:?thiếu BACKEND_SHARED_SECRET trong .env.prod}
       MONGODB_URI: ${MONGODB_URI:?thiếu MONGODB_URI trong .env.prod}
       MONGODB_DB: ${MONGODB_DB:?thiếu MONGODB_DB trong .env.prod}
       MONGODB_COLLECTION: ${MONGODB_COLLECTION:?thiếu MONGODB_COLLECTION trong .env.prod}

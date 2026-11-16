@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND = process.env.RAG_BACKEND_URL ?? "http://localhost:8001";
+import { BACKEND_URL as BACKEND, backendHeaders } from "@/lib/backend";
 
 function forwardHeaders(req: NextRequest): Record<string, string> {
-  const h: Record<string, string> = {};
-  const auth = req.headers.get("authorization");
-  if (auth) h["Authorization"] = auth;
-  return h;
+  return backendHeaders(req);
 }
 
 export async function GET(
