@@ -10,3 +10,16 @@ test_raptor/volumes/
 
 firebase-credentials.json
 .cache/
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.bbl
+*.blg
+
+.DS_Store

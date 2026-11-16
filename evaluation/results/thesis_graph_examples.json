@@ -1,0 +1,514 @@
+{
+ "ngay": "2026-11-16",
+ "ghi_chu": "output tool vector_search (execute_agent_tool), top_k=10",
+ "vi_du": [
+  {
+   "id": "ket_hon",
+   "query": "điều kiện kết hôn",
+   "tinh_huong": "Người hỏi muốn kết hôn với con gái của chú ruột",
+   "tat_kiem_tra_ngoai_le": [
+    {
+     "hang": 1,
+     "ma_phap_dien": "8.4.LQ.8",
+     "ten": "Điều kiện kết hôn",
+     "vbqppl": "(Điều 8 Luật số 52/2014/QH13, có hiệu lực thi hành kể từ ngày 01/01/2015)",
+     "diem_lien_quan": 1.0,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 2,
+     "ma_phap_dien": "8.4.LQ.126",
+     "ten": "Kết hôn có yếu tố nước ngoài",
+     "vbqppl": "(Điều 126 Luật số 52/2014/QH13, có hiệu lực thi hành kể từ ngày 01/01/2015)",
+     "diem_lien_quan": 0.88,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 3,
+     "ma_phap_dien": "15.3.LQ.18",
+     "ten": "Thủ tục đăng ký kết hôn",
+     "vbqppl": "(Điều 18 Luật số 60/2014/QH13, có hiệu lực thi hành kể từ ngày 01/01/2016)",
+     "diem_lien_quan": 0.88,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 4,
+     "ma_phap_dien": "8.4.TL.1.2",
+     "ten": "Căn cứ hủy việc kết hôn trái pháp luật",
+     "vbqppl": "(Điều 2 Thông tư liên tịch số 01/2016/TTLT-TANDTC-VKSNDTC-BTP, có hiệu lực thi hành kể từ ngày 01/03/2016)",
+     "diem_lien_quan": 0.87,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 5,
+     "ma_phap_dien": "15.6.TT.4.8",
+     "ten": "Đăng ký kết hôn",
+     "vbqppl": "(Điều 8 Thông tư số 03/2015/TT-BTP, có hiệu lực thi hành kể từ ngày 16/05/2015)",
+     "diem_lien_quan": 0.86,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 6,
+     "ma_phap_dien": "8.4.LQ.11",
+     "ten": "Xử lý việc kết hôn trái pháp luật",
+     "vbqppl": "(Điều 11 Luật số 52/2014/QH13, có hiệu lực thi hành kể từ ngày 01/01/2015)",
+     "diem_lien_quan": 0.85,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 7,
+     "ma_phap_dien": "8.4.TL.1.4",
+     "ten": "Xử lý yêu cầu hủy việc kết hôn trái pháp luật",
+     "vbqppl": "(Điều 4 Thông tư liên tịch số 01/2016/TTLT-TANDTC-VKSNDTC-BTP, có hiệu lực thi hành kể từ ngày 01/03/2016)",
+     "diem_lien_quan": 0.85,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 8,
+     "ma_phap_dien": "15.3.LQ.38",
+     "ten": "Thủ tục đăng ký kết hôn",
+     "vbqppl": "(Điều 38 Luật số 60/2014/QH13, có hiệu lực thi hành kể từ ngày 01/01/2016)",
+     "diem_lien_quan": 0.84,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 9,
+     "ma_phap_dien": "8.4.TL.1.3",
+     "ten": "Thụ lý, giải quyết đơn yêu cầu hủy việc kết hôn trái pháp luật",
+     "vbqppl": "(Điều 3 Thông tư liên tịch số 01/2016/TTLT-TANDTC-VKSNDTC-BTP, có hiệu lực thi hành kể từ ngày 01/03/2016)",
+     "diem_lien_quan": 0.82,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 10,
+     "ma_phap_dien": "8.4.LQ.14",
+     "ten": "Giải quyết hậu quả của việc nam, nữ chung sống với nhau như vợ chồng mà không đăng ký kết hôn",
+     "vbqppl": "(Điều 14 Luật số 52/2014/QH13, có hiệu lực thi hành kể từ ngày 01/01/2015)",
+     "diem_lien_quan": 0.78,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 11,
+     "ma_phap_dien": "8.4.LQ.5",
+     "ten": "Bảo vệ chế độ hôn nhân và gia đình",
+     "vbqppl": "(Điều 5 Luật số 52/2014/QH13, có hiệu lực thi hành kể từ ngày 01/01/2015)",
+     "diem_lien_quan": 0.8,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": "mã Pháp điển 8.4.LQ.8 (dẫn chiếu điểm a, b, c, d khoản 2)",
+     "noidung": "2. Cấm các hành vi sau đây:\n\na) Kết hôn giả tạo, ly hôn giả tạo;\n\nb) Tảo hôn, cưỡng ép kết hôn, lừa dối kết hôn, cản trở kết hôn;\n\nc) Người đang có vợ, có chồng mà kết hôn hoặc chung sống như vợ chồng với người khác hoặc chưa có vợ, chưa có chồng mà kết hôn hoặc chung sống như vợ chồng với người đang có chồng, có vợ;\n\nd) Kết hôn hoặc chung sống như vợ chồng giữa những người cùng dòng máu về trực hệ; giữa những người có họ trong phạm vi ba đời; giữa cha, mẹ nuôi với con nuôi; giữa người đã từng là cha, mẹ nuôi với con nuôi, cha chồng với con dâu, mẹ vợ với con rể, cha dượng với con riêng của vợ, mẹ kế với con riêng của chồng;\n\nđ) Yêu sách của cải trong kết hôn;\n\ne) Cưỡng ép ly hôn, lừa dối ly hôn, cản trở ly hôn;\n\ng) Thực hiện sinh con bằng kỹ thuật hỗ trợ sinh sản vì mục đích thương mại, mang thai hộ vì mục đích thương mại, lựa chọn giới tính thai nhi, sinh sản vô tính;\n\nh) Bạo lực gia đình;\n\ni) Lợi dụng việc thực hiện quyền về hôn nhân và gia đình để mua bán người, bóc lột sức lao động, xâm phạm tình dục hoặc có hành vi khác nhằm mục đích trục lợi."
+    }
+   ],
+   "bat_kiem_tra_ngoai_le": [
+    {
+     "hang": 1,
+     "ma_phap_dien": "8.4.LQ.8",
+     "ten": "Điều kiện kết hôn",
+     "vbqppl": "(Điều 8 Luật số 52/2014/QH13, có hiệu lực thi hành kể từ ngày 01/01/2015)",
+     "diem_lien_quan": 1.0,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 2,
+     "ma_phap_dien": "8.4.LQ.126",
+     "ten": "Kết hôn có yếu tố nước ngoài",
+     "vbqppl": "(Điều 126 Luật số 52/2014/QH13, có hiệu lực thi hành kể từ ngày 01/01/2015)",
+     "diem_lien_quan": 0.88,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 3,
+     "ma_phap_dien": "15.3.LQ.18",
+     "ten": "Thủ tục đăng ký kết hôn",
+     "vbqppl": "(Điều 18 Luật số 60/2014/QH13, có hiệu lực thi hành kể từ ngày 01/01/2016)",
+     "diem_lien_quan": 0.88,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 4,
+     "ma_phap_dien": "8.4.TL.1.2",
+     "ten": "Căn cứ hủy việc kết hôn trái pháp luật",
+     "vbqppl": "(Điều 2 Thông tư liên tịch số 01/2016/TTLT-TANDTC-VKSNDTC-BTP, có hiệu lực thi hành kể từ ngày 01/03/2016)",
+     "diem_lien_quan": 0.87,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 5,
+     "ma_phap_dien": "15.6.TT.4.8",
+     "ten": "Đăng ký kết hôn",
+     "vbqppl": "(Điều 8 Thông tư số 03/2015/TT-BTP, có hiệu lực thi hành kể từ ngày 16/05/2015)",
+     "diem_lien_quan": 0.86,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 6,
+     "ma_phap_dien": "8.4.LQ.11",
+     "ten": "Xử lý việc kết hôn trái pháp luật",
+     "vbqppl": "(Điều 11 Luật số 52/2014/QH13, có hiệu lực thi hành kể từ ngày 01/01/2015)",
+     "diem_lien_quan": 0.85,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 7,
+     "ma_phap_dien": "8.4.TL.1.4",
+     "ten": "Xử lý yêu cầu hủy việc kết hôn trái pháp luật",
+     "vbqppl": "(Điều 4 Thông tư liên tịch số 01/2016/TTLT-TANDTC-VKSNDTC-BTP, có hiệu lực thi hành kể từ ngày 01/03/2016)",
+     "diem_lien_quan": 0.85,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 8,
+     "ma_phap_dien": "15.3.LQ.38",
+     "ten": "Thủ tục đăng ký kết hôn",
+     "vbqppl": "(Điều 38 Luật số 60/2014/QH13, có hiệu lực thi hành kể từ ngày 01/01/2016)",
+     "diem_lien_quan": 0.84,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 9,
+     "ma_phap_dien": "8.4.TL.1.3",
+     "ten": "Thụ lý, giải quyết đơn yêu cầu hủy việc kết hôn trái pháp luật",
+     "vbqppl": "(Điều 3 Thông tư liên tịch số 01/2016/TTLT-TANDTC-VKSNDTC-BTP, có hiệu lực thi hành kể từ ngày 01/03/2016)",
+     "diem_lien_quan": 0.82,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 10,
+     "ma_phap_dien": "8.4.LQ.14",
+     "ten": "Giải quyết hậu quả của việc nam, nữ chung sống với nhau như vợ chồng mà không đăng ký kết hôn",
+     "vbqppl": "(Điều 14 Luật số 52/2014/QH13, có hiệu lực thi hành kể từ ngày 01/01/2015)",
+     "diem_lien_quan": 0.78,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 11,
+     "ma_phap_dien": "8.4.LQ.5",
+     "ten": "Bảo vệ chế độ hôn nhân và gia đình",
+     "vbqppl": "(Điều 5 Luật số 52/2014/QH13, có hiệu lực thi hành kể từ ngày 01/01/2015)",
+     "diem_lien_quan": 0.8,
+     "ngoai_le_cua": "mã Pháp điển 8.4.LQ.8 (Điều kiện kết hôn) — khoản cấm/ngoại lệ, đối chiếu trước khi kết luận",
+     "duoc_dan_chieu_tu": null,
+     "noidung": "2. Cấm các hành vi sau đây:\n\na) Kết hôn giả tạo, ly hôn giả tạo;\n\nb) Tảo hôn, cưỡng ép kết hôn, lừa dối kết hôn, cản trở kết hôn;\n\nc) Người đang có vợ, có chồng mà kết hôn hoặc chung sống như vợ chồng với người khác hoặc chưa có vợ, chưa có chồng mà kết hôn hoặc chung sống như vợ chồng với người đang có chồng, có vợ;\n\nd) Kết hôn hoặc chung sống như vợ chồng giữa những người cùng dòng máu về trực hệ; giữa những người có họ trong phạm vi ba đời; giữa cha, mẹ nuôi với con nuôi; giữa người đã từng là cha, mẹ nuôi với con nuôi, cha chồng với con dâu, mẹ vợ với con rể, cha dượng với con riêng của vợ, mẹ kế với con riêng của chồng;\n\nđ) Yêu sách của cải trong kết hôn;\n\ne) Cưỡng ép ly hôn, lừa dối ly hôn, cản trở ly hôn;\n\ng) Thực hiện sinh con bằng kỹ thuật hỗ trợ sinh sản vì mục đích thương mại, mang thai hộ vì mục đích thương mại, lựa chọn giới tính thai nhi, sinh sản vô tính;\n\nh) Bạo lực gia đình;\n\ni) Lợi dụng việc thực hiện quyền về hôn nhân và gia đình để mua bán người, bóc lột sức lao động, xâm phạm tình dục hoặc có hành vi khác nhằm mục đích trục lợi."
+    }
+   ]
+  },
+  {
+   "id": "sa_thai",
+   "query": "tự ý bỏ việc 5 ngày bị sa thải",
+   "tinh_huong": "Người sử dụng lao động muốn sa thải lao động nữ đang mang thai tự ý nghỉ việc",
+   "tat_kiem_tra_ngoai_le": [
+    {
+     "hang": 1,
+     "ma_phap_dien": "20.2.LQ.125",
+     "ten": "Áp dụng hình thức xử lý kỷ luật sa thải",
+     "vbqppl": "(Điều 125 Bộ luật số 45/2019/QH14, có hiệu lực thi hành kể từ ngày 01/01/2021)",
+     "diem_lien_quan": 0.83,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 2,
+     "ma_phap_dien": "3.1.TT.5.15",
+     "ten": "Chấm dứt hoặc thay đổi công việc",
+     "vbqppl": "(Điều 15 Thông tư số 18 /2018/TT-NHNN, có hiệu lực thi hành kể từ ngày 01/01/2019)",
+     "diem_lien_quan": 0.61,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 3,
+     "ma_phap_dien": "13.1.NĐ.21.12",
+     "ten": "Bồi hoàn chi phí đào tạo",
+     "vbqppl": "(Điều 12 Nghị định số 86/2021/NĐ-CP, có hiệu lực thi hành kể từ ngày 01/12/2021)",
+     "diem_lien_quan": 0.56,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 4,
+     "ma_phap_dien": "16.1.LQ.162",
+     "ten": "Tội buộc công chức, viên chức thôi việc hoặc sa thải người lao động trái pháp luật",
+     "vbqppl": "(Điều 162 Bộ luật số 100/2015/QH13, có hiệu lực thi hành kể từ ngày 01/01/2018, có nội dung được sửa đổi, có nội dung được bổ sung bởi Điều 1 Luật số 12/2017/QH14 có hiệu lực thi hành kể từ ngày 01/01/2018)",
+     "diem_lien_quan": 0.55,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 5,
+     "ma_phap_dien": "22.4.TT.65.16",
+     "ten": "Chấm dứt hoặc thay đổi công việc",
+     "vbqppl": "(Điều 16 Thông tư số 09/2020/TT-NHNN, có hiệu lực thi hành kể từ ngày 01/01/2021)",
+     "diem_lien_quan": 0.55,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 6,
+     "ma_phap_dien": "13.1.NĐ.14.11",
+     "ten": "Đền bù chi phí đào tạo",
+     "vbqppl": "(Điều 11 Nghị định số 71/2020/NĐ-CP, có hiệu lực thi hành kể từ ngày 18/08/2020)",
+     "diem_lien_quan": 0.54,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 7,
+     "ma_phap_dien": "36.3.NĐ.3.14",
+     "ten": "Trách nhiệm của người tham gia tổ chức thanh niên xung phong",
+     "vbqppl": "(Điều 14 Nghị định số 17/2021/NĐ-CP Quy định về chính sách đối với thanh niên xung phong, thanh niên tình nguyện ngày 09/03/2021 của Chính phủ, có hiệu lực thi hành kể từ ngày 09/03/2021)",
+     "diem_lien_quan": 0.53,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 8,
+     "ma_phap_dien": "37.5.LQ.119",
+     "ten": "Tạm đình chỉ thi hành quyết định đơn phương chấm dứt hợp đồng lao động, quyết định sa thải người lao động",
+     "vbqppl": "(Điều 119 Bộ luật số 92/2015/QH13, có hiệu lực thi hành kể từ ngày 01/07/2016)",
+     "diem_lien_quan": 0.52,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 9,
+     "ma_phap_dien": "5.2.LQ.19",
+     "ten": "Những việc viên chức không được làm",
+     "vbqppl": "(Điều 19 Luật số 58/2010/QH12, có hiệu lực thi hành kể từ ngày 01/01/2012)",
+     "diem_lien_quan": 0.52,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 10,
+     "ma_phap_dien": "20.2.NĐ.3.89",
+     "ten": "Một số quy định riêng đối với lao động là người giúp việc gia đình",
+     "vbqppl": "(Điều 89 Nghị định số 145/2020/NĐ-CP, có hiệu lực thi hành kể từ ngày 01/02/2021)",
+     "diem_lien_quan": 0.51,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 11,
+     "ma_phap_dien": "20.2.LQ.126",
+     "ten": "Xóa kỷ luật, giảm thời hạn chấp hành kỷ luật lao động",
+     "vbqppl": "(Điều 126 Bộ luật số 45/2019/QH14, có hiệu lực thi hành kể từ ngày 01/01/2021)",
+     "diem_lien_quan": 0.67,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": "mã Pháp điển 20.2.LQ.125",
+     "noidung": "1. Người lao động bị khiển trách sau 03 tháng hoặc bị xử lý kỷ luật kéo dài thời hạn nâng lương sau 06 tháng hoặc bị xử lý kỷ luật cách chức sau 03 năm kể từ ngày bị xử lý, nếu không tiếp tục vi phạm kỷ luật lao động thì đương nhiên được xóa kỷ luật.\n\n2. Người lao động bị xử lý kỷ luật kéo dài thời hạn nâng lương sau khi chấp hành được một nửa thời hạn nếu sửa chữa tiến bộ thì có thể được người sử dụng lao động xét giảm thời hạn."
+    },
+    {
+     "hang": 12,
+     "ma_phap_dien": "13.1.NĐ.21.3",
+     "ten": "Giải thích từ ngữ",
+     "vbqppl": "(Điều 3 Nghị định số 86/2021/NĐ-CP, có hiệu lực thi hành kể từ ngày 01/12/2021)",
+     "diem_lien_quan": 0.45,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": "mã Pháp điển 13.1.NĐ.21.12 (dẫn chiếu điểm a, b, c khoản 1)",
+     "noidung": "1. Du học sinh học bổng ngân sách nhà nước là công dân Việt Nam ra nước ngoài học tập được nhận toàn phần hoặc một phần chi phí đào tạo, chi phí đi lại, sinh hoạt phí và các chi phí khác liên quan đến học tập từ một hoặc nhiều nguồn trong các nguồn kinh phí sau đây:\n\na) Học bổng ngân sách nhà nước cấp trong khuôn khổ hiệp định, thỏa thuận hợp tác giữa Chính phủ Việt Nam với Chính phủ nước ngoài;\n\nb) Học bổng ngân sách nhà nước cấp thông qua các cơ quan nhà nước, doanh nghiệp nhà nước, đơn vị sự nghiệp công lập;\n\nc) Học bổng do Chính phủ nước ngoài, nguồn hỗ trợ phát triển chính thức (ODA), chính quyền các vùng lãnh thổ, các tổ chức quốc tế, các tổ chức phi chính phủ hoặc cá nhân tài trợ thông qua Chính phủ Việt Nam (sau đây gọi chung là học bổng do phía nước ngoài đài thọ)."
+    },
+    {
+     "hang": 13,
+     "ma_phap_dien": "13.1.NĐ.21.13",
+     "ten": "Thu hồi chi phí bồi hoàn",
+     "vbqppl": "(Điều 13 Nghị định số 86/2021/NĐ-CP, có hiệu lực thi hành kể từ ngày 01/12/2021)",
+     "diem_lien_quan": 0.45,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": "mã Pháp điển 13.1.NĐ.21.12",
+     "noidung": "1. Chi phí bồi hoàn bao gồm toàn bộ chi phí đào tạo đã được ngân sách nhà nước chi trả cho du học sinh quy định tại điểm a và điểm b khoản 1 Điều 3 Nghị định này và do cơ quan cử đi học cung cấp.\n\n2. Việc thu hồi chi phí bồi hoàn đối với du học sinh quy định tại khoản 3 và khoản 4 Điều 12 Nghị định này được thực hiện như sau:\n\na) Cơ quan quản lý trực tiếp hoặc cơ quan cử đi học (đối với trường hợp không có cơ quan công tác) ra quyết định về việc thu hồi chi phí bồi hoàn và gửi quyết định này cho du học sinh thuộc diện bồi hoàn. Việc xem xét miễn, giảm chi phí bồi hoàn do cơ quan quản lý trực tiếp hoặc cơ quan cử đi học quyết định căn cứ trên hồ sơ của du học sinh và chịu trách nhiệm giải trình với cơ quan có thẩm quyền khi được yêu cầu;\n\nb) Trong thời hạn 120 ngày, kể từ ngày nhận được quyết định thu hồi chi phí bồi hoàn của cơ quan quản lý trực tiếp hoặc cơ quan cử đi học, du học sinh có trách nhiệm nộp trả đầy đủ chi phí bồi hoàn;\n\nc) Chi phí bồi hoàn được nộp cho cơ quan quản lý trực tiếp hoặc cơ quan cử đi học đã chi trả kinh phí cho du học sinh;\n\nd) Trong trường hợp du học sinh phải bồi hoàn chi phí đào tạo không thực hiện nghĩa vụ bồi hoàn thì cơ quan quản lý trực tiếp hoặc cơ quan cử đi học có quyền khởi kiện tại Tòa án theo quy định của pháp luật.\n\n3. Việc thu hồi chi phí bồi hoàn đối với du học sinh quy định tại điểm c khoản 1 Điều 3 Nghị định này được thực hiện theo quy định hợp tác giữa các cơ quan nhà nước của Việt Nam với phía nước ngoài đài thọ học bổng."
+    }
+   ],
+   "bat_kiem_tra_ngoai_le": [
+    {
+     "hang": 1,
+     "ma_phap_dien": "20.2.LQ.125",
+     "ten": "Áp dụng hình thức xử lý kỷ luật sa thải",
+     "vbqppl": "(Điều 125 Bộ luật số 45/2019/QH14, có hiệu lực thi hành kể từ ngày 01/01/2021)",
+     "diem_lien_quan": 0.83,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 2,
+     "ma_phap_dien": "3.1.TT.5.15",
+     "ten": "Chấm dứt hoặc thay đổi công việc",
+     "vbqppl": "(Điều 15 Thông tư số 18 /2018/TT-NHNN, có hiệu lực thi hành kể từ ngày 01/01/2019)",
+     "diem_lien_quan": 0.61,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 3,
+     "ma_phap_dien": "13.1.NĐ.21.12",
+     "ten": "Bồi hoàn chi phí đào tạo",
+     "vbqppl": "(Điều 12 Nghị định số 86/2021/NĐ-CP, có hiệu lực thi hành kể từ ngày 01/12/2021)",
+     "diem_lien_quan": 0.56,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 4,
+     "ma_phap_dien": "16.1.LQ.162",
+     "ten": "Tội buộc công chức, viên chức thôi việc hoặc sa thải người lao động trái pháp luật",
+     "vbqppl": "(Điều 162 Bộ luật số 100/2015/QH13, có hiệu lực thi hành kể từ ngày 01/01/2018, có nội dung được sửa đổi, có nội dung được bổ sung bởi Điều 1 Luật số 12/2017/QH14 có hiệu lực thi hành kể từ ngày 01/01/2018)",
+     "diem_lien_quan": 0.55,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 5,
+     "ma_phap_dien": "22.4.TT.65.16",
+     "ten": "Chấm dứt hoặc thay đổi công việc",
+     "vbqppl": "(Điều 16 Thông tư số 09/2020/TT-NHNN, có hiệu lực thi hành kể từ ngày 01/01/2021)",
+     "diem_lien_quan": 0.55,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 6,
+     "ma_phap_dien": "13.1.NĐ.14.11",
+     "ten": "Đền bù chi phí đào tạo",
+     "vbqppl": "(Điều 11 Nghị định số 71/2020/NĐ-CP, có hiệu lực thi hành kể từ ngày 18/08/2020)",
+     "diem_lien_quan": 0.54,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 7,
+     "ma_phap_dien": "36.3.NĐ.3.14",
+     "ten": "Trách nhiệm của người tham gia tổ chức thanh niên xung phong",
+     "vbqppl": "(Điều 14 Nghị định số 17/2021/NĐ-CP Quy định về chính sách đối với thanh niên xung phong, thanh niên tình nguyện ngày 09/03/2021 của Chính phủ, có hiệu lực thi hành kể từ ngày 09/03/2021)",
+     "diem_lien_quan": 0.53,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 8,
+     "ma_phap_dien": "37.5.LQ.119",
+     "ten": "Tạm đình chỉ thi hành quyết định đơn phương chấm dứt hợp đồng lao động, quyết định sa thải người lao động",
+     "vbqppl": "(Điều 119 Bộ luật số 92/2015/QH13, có hiệu lực thi hành kể từ ngày 01/07/2016)",
+     "diem_lien_quan": 0.52,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 9,
+     "ma_phap_dien": "5.2.LQ.19",
+     "ten": "Những việc viên chức không được làm",
+     "vbqppl": "(Điều 19 Luật số 58/2010/QH12, có hiệu lực thi hành kể từ ngày 01/01/2012)",
+     "diem_lien_quan": 0.52,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 10,
+     "ma_phap_dien": "20.2.NĐ.3.89",
+     "ten": "Một số quy định riêng đối với lao động là người giúp việc gia đình",
+     "vbqppl": "(Điều 89 Nghị định số 145/2020/NĐ-CP, có hiệu lực thi hành kể từ ngày 01/02/2021)",
+     "diem_lien_quan": 0.51,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": null,
+     "noidung": null
+    },
+    {
+     "hang": 11,
+     "ma_phap_dien": "13.1.NĐ.21.13",
+     "ten": "Thu hồi chi phí bồi hoàn",
+     "vbqppl": "(Điều 13 Nghị định số 86/2021/NĐ-CP, có hiệu lực thi hành kể từ ngày 01/12/2021)",
+     "diem_lien_quan": 0.45,
+     "ngoai_le_cua": "mã Pháp điển 13.1.NĐ.21.12 (Bồi hoàn chi phí đào tạo) — khoản cấm/ngoại lệ, đối chiếu trước khi kết luận",
+     "duoc_dan_chieu_tu": null,
+     "noidung": "1. Chi phí bồi hoàn bao gồm toàn bộ chi phí đào tạo đã được ngân sách nhà nước chi trả cho du học sinh quy định tại điểm a và điểm b khoản 1 Điều 3 Nghị định này và do cơ quan cử đi học cung cấp.\n\n2. Việc thu hồi chi phí bồi hoàn đối với du học sinh quy định tại khoản 3 và khoản 4 Điều 12 Nghị định này được thực hiện như sau:\n\na) Cơ quan quản lý trực tiếp hoặc cơ quan cử đi học (đối với trường hợp không có cơ quan công tác) ra quyết định về việc thu hồi chi phí bồi hoàn và gửi quyết định này cho du học sinh thuộc diện bồi hoàn. Việc xem xét miễn, giảm chi phí bồi hoàn do cơ quan quản lý trực tiếp hoặc cơ quan cử đi học quyết định căn cứ trên hồ sơ của du học sinh và chịu trách nhiệm giải trình với cơ quan có thẩm quyền khi được yêu cầu;\n\nb) Trong thời hạn 120 ngày, kể từ ngày nhận được quyết định thu hồi chi phí bồi hoàn của cơ quan quản lý trực tiếp hoặc cơ quan cử đi học, du học sinh có trách nhiệm nộp trả đầy đủ chi phí bồi hoàn;\n\nc) Chi phí bồi hoàn được nộp cho cơ quan quản lý trực tiếp hoặc cơ quan cử đi học đã chi trả kinh phí cho du học sinh;\n\nd) Trong trường hợp du học sinh phải bồi hoàn chi phí đào tạo không thực hiện nghĩa vụ bồi hoàn thì cơ quan quản lý trực tiếp hoặc cơ quan cử đi học có quyền khởi kiện tại Tòa án theo quy định của pháp luật.\n\n3. Việc thu hồi chi phí bồi hoàn đối với du học sinh quy định tại điểm c khoản 1 Điều 3 Nghị định này được thực hiện theo quy định hợp tác giữa các cơ quan nhà nước của Việt Nam với phía nước ngoài đài thọ học bổng."
+    },
+    {
+     "hang": 12,
+     "ma_phap_dien": "20.2.LQ.122",
+     "ten": "Nguyên tắc, trình tự, thủ tục xử lý kỷ luật lao động",
+     "vbqppl": "(Điều 122 Bộ luật số 45/2019/QH14, có hiệu lực thi hành kể từ ngày 01/01/2021)",
+     "diem_lien_quan": 0.67,
+     "ngoai_le_cua": "mã Pháp điển 20.2.LQ.125 (Áp dụng hình thức xử lý kỷ luật sa thải) — khoản cấm/ngoại lệ, đối chiếu trước khi kết luận",
+     "duoc_dan_chieu_tu": null,
+     "noidung": "2. Không được áp dụng nhiều hình thức xử lý kỷ luật lao động đối với một hành vi vi phạm kỷ luật lao động.\n4. Không được xử lý kỷ luật lao động đối với người lao động đang trong thời gian sau đây:\n\na) Nghỉ ốm đau, điều dưỡng; nghỉ việc được sự đồng ý của người sử dụng lao động;\n\nb) Đang bị tạm giữ, tạm giam;\n\nc) Đang chờ kết quả của cơ quan có thẩm quyền điều tra xác minh và kết luận đối với hành vi vi phạm được quy định tại khoản 1 và khoản 2 Điều 125 của Bộ luật này;\n\nd) Người lao động nữ mang thai; người lao động nghỉ thai sản, nuôi con dưới 12 tháng tuổi.\n5. Không xử lý kỷ luật lao động đối với người lao động vi phạm kỷ luật lao động trong khi mắc bệnh tâm thần hoặc một bệnh khác làm mất khả năng nhận thức hoặc khả năng điều khiển hành vi của mình."
+    },
+    {
+     "hang": 13,
+     "ma_phap_dien": "20.2.LQ.126",
+     "ten": "Xóa kỷ luật, giảm thời hạn chấp hành kỷ luật lao động",
+     "vbqppl": "(Điều 126 Bộ luật số 45/2019/QH14, có hiệu lực thi hành kể từ ngày 01/01/2021)",
+     "diem_lien_quan": 0.67,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": "mã Pháp điển 20.2.LQ.125",
+     "noidung": "1. Người lao động bị khiển trách sau 03 tháng hoặc bị xử lý kỷ luật kéo dài thời hạn nâng lương sau 06 tháng hoặc bị xử lý kỷ luật cách chức sau 03 năm kể từ ngày bị xử lý, nếu không tiếp tục vi phạm kỷ luật lao động thì đương nhiên được xóa kỷ luật.\n\n2. Người lao động bị xử lý kỷ luật kéo dài thời hạn nâng lương sau khi chấp hành được một nửa thời hạn nếu sửa chữa tiến bộ thì có thể được người sử dụng lao động xét giảm thời hạn."
+    },
+    {
+     "hang": 14,
+     "ma_phap_dien": "13.1.NĐ.21.3",
+     "ten": "Giải thích từ ngữ",
+     "vbqppl": "(Điều 3 Nghị định số 86/2021/NĐ-CP, có hiệu lực thi hành kể từ ngày 01/12/2021)",
+     "diem_lien_quan": 0.45,
+     "ngoai_le_cua": null,
+     "duoc_dan_chieu_tu": "mã Pháp điển 13.1.NĐ.21.12 (dẫn chiếu điểm a, b, c khoản 1)",
+     "noidung": "1. Du học sinh học bổng ngân sách nhà nước là công dân Việt Nam ra nước ngoài học tập được nhận toàn phần hoặc một phần chi phí đào tạo, chi phí đi lại, sinh hoạt phí và các chi phí khác liên quan đến học tập từ một hoặc nhiều nguồn trong các nguồn kinh phí sau đây:\n\na) Học bổng ngân sách nhà nước cấp trong khuôn khổ hiệp định, thỏa thuận hợp tác giữa Chính phủ Việt Nam với Chính phủ nước ngoài;\n\nb) Học bổng ngân sách nhà nước cấp thông qua các cơ quan nhà nước, doanh nghiệp nhà nước, đơn vị sự nghiệp công lập;\n\nc) Học bổng do Chính phủ nước ngoài, nguồn hỗ trợ phát triển chính thức (ODA), chính quyền các vùng lãnh thổ, các tổ chức quốc tế, các tổ chức phi chính phủ hoặc cá nhân tài trợ thông qua Chính phủ Việt Nam (sau đây gọi chung là học bổng do phía nước ngoài đài thọ)."
+    }
+   ]
+  }
+ ]
+}

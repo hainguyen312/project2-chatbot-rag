@@ -1,0 +1,41 @@
+{
+ "ngay": "2026-11-16",
+ "truy_van": "Lao động nữ đang mang thai có bị sa thải không?",
+ "dieu": "Điều 137 45/2019/QH14",
+ "mapc": "2000200000000001000013700000000000000000",
+ "ten": "Điều 20.2.LQ.137. Bảo vệ thai sản",
+ "ket_qua_moi_nguon_khi_hop_nhat": 50,
+ "so_ung_vien_xep_hang_lai": 30,
+ "pham_vi_do_hang": {
+  "bm25": 200,
+  "vector": 128
+ },
+ "hang_bm25": 1,
+ "hang_vector_ten_dieu": 97,
+ "theo_trong_so": [
+  {
+   "w_vector": 1.0,
+   "hang_sau_rrf": 17,
+   "hang_sau_xep_hang_lai": 19,
+   "top5_sau_xep_hang_lai": [
+    "Điều 20.2.LQ.138. Quyền đơn phương chấm dứt, tạm hoãn hợp đồng lao động của lao động nữ mang thai",
+    "Điều 20.2.NĐ.3.80. Chăm sóc sức khỏe đối với lao động nữ",
+    "Điều 45.2.LQ.45. Sử dụng lao động nữ.",
+    "Điều 20.2.LQ.125. Áp dụng hình thức xử lý kỷ luật sa thải",
+    "Điều 20.2.NĐ.3.74. Người sử dụng lao động có sử dụng nhiều lao động nữ"
+   ]
+  },
+  {
+   "w_vector": 0.5,
+   "hang_sau_rrf": 16,
+   "hang_sau_xep_hang_lai": 13,
+   "top5_sau_xep_hang_lai": [
+    "Điều 20.2.LQ.138. Quyền đơn phương chấm dứt, tạm hoãn hợp đồng lao động của lao động nữ mang thai",
+    "Điều 20.2.NĐ.3.80. Chăm sóc sức khỏe đối với lao động nữ",
+    "Điều 45.2.LQ.45. Sử dụng lao động nữ.",
+    "Điều 20.2.LQ.125. Áp dụng hình thức xử lý kỷ luật sa thải",
+    "Điều 20.2.LQ.139. Nghỉ thai sản"
+   ]
+  }
+ ]
+}
