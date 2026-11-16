@@ -149,7 +149,9 @@ else
     fail "Không kết nối được Docker daemon (đã đăng xuất/đăng nhập lại sau khi thêm group docker?)"
   fi
   if cv=$(docker compose version --short 2>/dev/null); then
-    case "$cv" in v2*|2*) pass "docker compose plugin $cv" ;; *) warn "docker compose $cv (cần v2)" ;; esac
+    cmajor=$(printf '%s' "$cv" | sed -E 's/^v//; s/[^0-9].*$//')
+    if [ -n "$cmajor" ] && [ "$cmajor" -ge 2 ]; then pass "docker compose plugin $cv"
+    else warn "docker compose $cv (cần >= 2)"; fi
   else fail "Thiếu docker compose plugin (gói docker-compose-plugin)"; fi
   have docker-buildx || docker buildx version >/dev/null 2>&1 && pass "docker buildx có sẵn" || warn "Thiếu docker buildx (gói docker-buildx-plugin)"
 

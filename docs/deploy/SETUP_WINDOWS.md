@@ -11,6 +11,8 @@ Trạng thái lúc viết (16/11/2026, `check_host.sh`): WSL 15 GB RAM / 4 GB sw
 (RTX 5060 Ti, driver 591.86) đã thấy trong WSL. Tích hợp WSL của Docker Desktop đã không còn
 (`docker` không có trong WSL).
 
+Cập nhật 16/11/2026: chủ máy đã làm xong A và B; `check_host.sh --gpu-test` → 40 PASS, 0 FAIL.
+
 ---
 
 ## A. Phía Windows (PowerShell **Run as Administrator**, tài khoản `Admin`)
@@ -76,6 +78,11 @@ Register-ScheduledTask -TaskName "WSL-Ubuntu-KeepAlive" -Action $action -Trigger
 ```
 
 Lưu ý:
+- **Bắt buộc tài khoản có mật khẩu.** Task chạy "dù người dùng có đăng nhập hay không" phải
+  lưu mật khẩu (`-LogonType Password`); Windows không cho đăng ký task kiểu này với tài khoản
+  mật khẩu rỗng. Nếu `Admin` chưa có mật khẩu: đặt trước (Settings → Accounts → Sign-in
+  options → Password, hoặc `net user Admin *` trong PowerShell admin) rồi mới chạy lệnh trên.
+  (Máy này: `Admin` ban đầu không có mật khẩu, chủ máy đã đặt rồi tạo task — 16/11/2026.)
 - Phải chạy dưới **chính tài khoản sở hữu distro** (`Admin`), không dùng `SYSTEM` (distro
   đăng ký theo user).
 - Nếu `Admin` là tài khoản Microsoft: nhập **mật khẩu tài khoản Microsoft**, không phải PIN
