@@ -35,16 +35,13 @@ NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD = LG.NEO4J_URI, LG.NEO4J_USER, LG.NEO4J_PA
 BATCH_SIZE = 500   # số node insert mỗi lần (tối ưu tốc độ)
 
 # Retrieval (đọc từ env để A/B không cần sửa code)
-RRF_K             = int(os.getenv("RRF_K", "60"))
+RRF_K             = 60    # hằng số RRF chuẩn
+RRF_W_BM25        = 1.0   # BM25 là nguồn chính; trọng số vector tính tương đối với nó
 # Vector chỉ embed TÊN điều → dễ kéo nhiễu ("mũ bảo hiểm" → bảo hiểm y tế). Dò trọng số 2026-11-16 (50 câu thật,
 # judge Sonnet 5.5 + 100 câu known-item): 0.5 là mức duy nhất không kém mặc định cũ (1.0) ở chỉ số trung bình nào
 # (P@10 +0.024, nDCG@10 +0.018, MRR +0.013, Hit@10 +0.02); giảm tiếp (0.3, 0) tăng known-item nhưng đẩy điều trả lời
 # trực tiếp xuống (MRR rel=2 giảm). Khác biệt trên 50 câu chưa có ý nghĩa thống kê (sign test p > 0.4).
-RRF_W_VECTOR      = float(os.getenv("RRF_W_VECTOR", "0.5"))
-RRF_W_BM25        = float(os.getenv("RRF_W_BM25", "1.0"))
-RRF_W_CTX         = float(os.getenv("RRF_W_CTX", "1.0"))
-CTX_COLLECTION    = os.getenv("CTX_COLLECTION", "phapdien_ctx_chunks")
-CTX_CHUNK_POOL    = int(os.getenv("CTX_CHUNK_POOL", "300"))
+RRF_W_VECTOR      = float(os.getenv("RRF_W_VECTOR", "0.5"))   # = vector_weight (tham số config duy nhất)
 RERANK_LEX_WEIGHT = float(os.getenv("RERANK_LEX_WEIGHT", "0.3"))
 
 # Trọng số quan hệ khi mở rộng đồ thị (graph_traverse): dẫn chiếu tường minh > được dẫn chiếu
@@ -132,29 +129,10 @@ class GraphRAGRetriever:
         # results: list[dict] với keys: mapc, ten, noidung, score, source
     """
  
-    def __init__(self, neo4j_driver, milvus_collection, openai_client, ctx_collection=None):
+    def __init__(self, neo4j_driver, milvus_collection, openai_client):
         self.driver     = neo4j_driver
         self.collection = milvus_collection
         self.client     = openai_client
-        # Collection chunk ngữ cảnh (header + nội dung điều). None → tự load lần đầu nếu có.
-        self._ctx_collection = ctx_collection
-        self._ctx_checked = ctx_collection is not None
-
-    @property
-    def ctx_collection(self):
-        if not self._ctx_checked:
-            self._ctx_checked = True
-            try:
-                from pymilvus import Collection, utility
-
-                if utility.has_collection(CTX_COLLECTION):
-                    col = Collection(CTX_COLLECTION)
-                    col.load()
-                    self._ctx_collection = col
-                    print(f"[GraphRAG] Loaded ctx collection: {CTX_COLLECTION}")
-            except Exception as e:
-                print(f"[GraphRAG] Không load được {CTX_COLLECTION}: {e}")
-        return self._ctx_collection
  
     # ── Embedding ────────────────────────────────────────────────────────────
  
@@ -226,63 +204,24 @@ class GraphRAGRetriever:
 
         return scored
 
-    def _ctx_search_scored(self, query: str, top_k: int, vec: list[float] | None = None) -> list[tuple[str, float]]:
-        """Vector search trên chunk ngữ cảnh, gộp về Điều bằng max score: [(mapc, score)]."""
-        col = self.ctx_collection
-        if col is None:
-            return []
-        try:
-            vec = vec or self._embed(query)
-            chunk_k = min(CTX_CHUNK_POOL, max(top_k * 6, 100))
-            res = col.search(
-                data=[vec], anns_field="embedding",
-                param={"metric_type": "COSINE", "params": {"ef": max(chunk_k, 128)}},
-                limit=chunk_k, output_fields=["mapc"],
-            )
-        except Exception as e:
-            print(f"[GraphRAG] ctx search lỗi: {e}")
-            return []
-        best: dict[str, float] = {}
-        for h in (res[0] if res else []):
-            m = h.entity.get("mapc")
-            sc = float(h.distance)
-            if m and sc > best.get(m, -1.0):
-                best[m] = sc
-        return sorted(best.items(), key=lambda x: x[1], reverse=True)[:top_k]
-
     # ── Stage 1b: Hybrid (vector + BM25, Reciprocal Rank Fusion) ─────────────
 
-    def _hybrid_search(self, query: str, top_k: int, pool: int = 50, mode: str | None = None,
-                       weights: dict[str, float] | None = None) -> list[dict]:
+    def _hybrid_search(self, query: str, top_k: int, pool: int = 50) -> list[dict]:
         """
-        Fuse bằng weighted RRF các nguồn:
-          vec  : Milvus embed TÊN điều        (mọi mode trừ "ctx")
-          ctx  : Milvus chunk header+nội dung (mode "hybrid3", "ctx")
-          bm25 : BM25 tên + nội dung          (mode "hybrid", "hybrid3", "bm25")
-        weights: ghi đè trọng số RRF theo nguồn, vd. {"ctx": 0.5} (mặc định lấy từ env).
-        Trả về [{mapc, score, <src>_score, <src>_rank}], score ∈ (0, 1].
-        Mode mặc định: RETRIEVAL_MODE, không đặt thì "hybrid". Đánh giá 2026-11-12 (50 câu, judge
-        Sonnet 5.5): hybrid3 hoà hybrid (24 thắng / 24 thua theo nDCG@10) — sửa được vài câu văn nói
-        nhưng kéo nhiễu ngữ nghĩa ("mũ bảo hiểm" → bảo hiểm y tế) → chưa bật mặc định.
+        hybrid_new — bước truy hồi của chatbot: weighted RRF hai nguồn
+          vec  : Milvus phapdien_simple_tendieu (embed TÊN điều), trọng số RRF_W_VECTOR (mặc định 0.5)
+          bm25 : BM25 tên ×3 + nội dung (điều dài tách theo khoản), trọng số 1.0
+        score(d) = Σ_nguồn w / (RRF_K + hạng + 1), chuẩn hoá về (0, 1] bằng cách chia cho điểm tối đa có thể
+        (hạng 1 ở mọi nguồn có kết quả). Bước sau: _rerank (0.7 × score + 0.3 × độ phủ từ khoá).
+        Trả về [{mapc, score, <src>_score, <src>_rank}].
         """
-        mode = (mode or os.getenv("RETRIEVAL_MODE") or "hybrid").strip().lower()
-        use_vec = mode in ("vector", "hybrid", "hybrid3")
-        use_ctx = mode in ("ctx", "hybrid3")
-        use_bm25 = mode in ("hybrid", "hybrid3", "bm25")
+        from retrieve.lexical_bm25 import get_bm25
 
-        qvec = self._embed(query) if (use_vec or use_ctx) else None
-        vec = self._vector_search_scored(query, top_k=pool, vec=qvec) if use_vec else []
-        ctx = self._ctx_search_scored(query, top_k=pool, vec=qvec) if use_ctx else []
-        bm25: list[tuple[str, float]] = []
-        if use_bm25:
-            from retrieve.lexical_bm25 import get_bm25
+        vec = self._vector_search_scored(query, top_k=pool)
+        idx = get_bm25()
+        bm25 = idx.search(query, top_k=pool) if idx is not None else []
 
-            idx = get_bm25()
-            if idx is not None:
-                bm25 = idx.search(query, top_k=pool)
-
-        wt = {"vec": RRF_W_VECTOR, "ctx": RRF_W_CTX, "bm25": RRF_W_BM25, **(weights or {})}
-        sources = (("vec", vec, wt["vec"]), ("ctx", ctx, wt["ctx"]), ("bm25", bm25, wt["bm25"]))
+        sources = (("vec", vec, RRF_W_VECTOR), ("bm25", bm25, RRF_W_BM25))
         info: dict[str, dict] = {}
         for name, lst, w in sources:
             for rank, (m, s) in enumerate(lst):
@@ -292,7 +231,6 @@ class GraphRAGRetriever:
                 d[f"{name}_rank"] = rank + 1
         if not info:
             return []
-        # Chuẩn hoá về (0,1]: chia cho điểm tối đa có thể (hạng 1 ở mọi nguồn có kết quả)
         max_rrf = sum(w for _, lst, w in sources if lst) / (RRF_K + 1)
         out = sorted(info.values(), key=lambda d: d["rrf"], reverse=True)[:top_k]
         for d in out:

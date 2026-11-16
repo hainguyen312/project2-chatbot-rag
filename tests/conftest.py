@@ -115,7 +115,7 @@ def fake_retriever():
             self.graph_rows: list[dict] = []     # kết quả _graph_expand trả về
             self.calls: list[tuple] = []
 
-        def _hybrid_search(self, query, top_k, pool=50, mode=None, weights=None):
+        def _hybrid_search(self, query, top_k, pool=50):
             self.calls.append(("hybrid", query, top_k))
             return [dict(d) for d in self.fused[:top_k]]
 

@@ -96,11 +96,10 @@ else:
           "nội dung điều đọc từ MySQL. Build: python -m retrieve.build_graph")
 
 # BM25 lexical index (hybrid search): load/build nền để request đầu không phải chờ
-if os.getenv("RETRIEVAL_MODE", "hybrid").strip().lower() != "vector":
-    import threading
-    from retrieve.lexical_bm25 import get_bm25
+import threading  # noqa: E402
+from retrieve.lexical_bm25 import get_bm25  # noqa: E402
 
-    threading.Thread(target=get_bm25, name="bm25-warmup", daemon=True).start()
+threading.Thread(target=get_bm25, name="bm25-warmup", daemon=True).start()
 
 # Agentic RAG — OpenAI function tools (bản đầy đủ trong services/agentic_rag.py)
 TOOLS = RAG_AGENT_TOOLS
