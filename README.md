@@ -372,6 +372,15 @@ Mã chuyển vào `legacy/` (không xoá); chatbot và eval hiện tại không 
 | `hybrid_wv*` | Gộp thành một tham số `RRF_W_VECTOR` (0.5) |
 | LLM rerank (`RAG_AGENT_LLM_RERANK`, `hybrid_llmrr`) | Chưa từng đo trên `hybrid_new`, vốn tắt mặc định. Nếu làm lại (top 20 → gpt-4o-mini chấm 0–1 → top 10), tham khảo prompt chấm điểm trong `legacy/services/llm_rerank.py` thay vì viết từ đầu |
 
+### Vấn đề đã biết, ngoài phạm vi dọn dẹp
+
+Chưa sửa trong branch dọn dẹp; ghi lại để xử lý riêng.
+
+- **Quy tắc buộc `web_search` bỏ sót một số loại câu hỏi.** Quy tắc dựa trên từ khoá (phạt, mức tiền, hiện hành…) và ngưỡng điểm Pháp Điển 0.5, nên câu hỏi kiểu tranh chấp đất ("Hàng xóm xây nhà lấn sang đất nhà tôi thì xử lý sao?", case `gap_encroach`) không bị buộc kiểm tra web. Ngưỡng 0.5 chưa được hiệu chỉnh trên dữ liệu.
+- **Tool-call eval mới chạy 1 lần mỗi case nên dễ nhiễu.** Agent không tất định: cùng một câu, lúc gọi `web_search` lúc không. Muốn có mốc tin cậy cần chạy mỗi case ít nhất 3 lần (`--repeat 3`) và so tỉ lệ đạt.
+- **RRF đánh rơi điều BM25 xếp hạng 1 khi vector tên điều yếu.** Ví dụ `scope_pregnant` ("Lao động nữ đang mang thai có bị sa thải không?"): Điều 137 BLLĐ đứng hạng 1 ở BM25, hạng 66–97 ở vector (ngoài pool 50), hạng 14–16 sau RRF và 13 sau rerank, nên không đến được agent. Khớp với known-item: Hit@1 của hybrid 0.27 so với BM25 0.42. Hướng xử lý sau: giảm `RRF_W_VECTOR` hoặc đổi model embedding.
+- **`setuptools<81` đang được ghim** vì pymilvus 2.4 import `pkg_resources` (đã bị gỡ khỏi setuptools ≥ 81). Lâu dài nên nâng pymilvus để bỏ ghim.
+
 ---
 
 ## License
