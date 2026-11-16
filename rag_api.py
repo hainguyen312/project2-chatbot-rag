@@ -57,6 +57,7 @@ from services.utils import (
 )
 from services.semantic_cache import semantic_cache
 from services import health as health_checks
+from services import usage_cap
 from services.sse import with_heartbeat
 from services import auth_guard
 from services.chat_title import generate_title as generate_chat_title
@@ -74,6 +75,23 @@ def require_login(authorization: Optional[str] = Header(default=None)) -> str:
         return auth_guard.require_uid(authorization, fb_auth.verify_id_token)
     except auth_guard.AuthError as e:
         raise HTTPException(status_code=e.status, detail=e.detail)
+
+
+# Trần chung số câu hỏi/ngày cho cả hệ thống (DAILY_QUESTION_CAP, mặc định 300; 0 = tạm dừng).
+daily_cap = usage_cap.DailyCap(lambda: _mysql_connect(), usage_cap.cap_from_env())
+print(f"[UsageCap] Trần câu hỏi/ngày: {daily_cap.cap}")
+
+
+def question_quota(uid: str = Depends(require_login)) -> str:
+    """Dependency cho endpoint ĐẶT CÂU HỎI (chat, stream, rà soát): đăng nhập + trần chung/ngày.
+    Vượt trần → 429 kèm thông điệp, không gọi LLM; không đếm được (MySQL lỗi) → 503."""
+    try:
+        daily_cap.consume()
+    except usage_cap.CapExceeded:
+        raise HTTPException(status_code=429, detail=usage_cap.CAP_MESSAGE)
+    except usage_cap.CapUnavailable:
+        raise HTTPException(status_code=503, detail=usage_cap.UNAVAILABLE_MESSAGE)
+    return uid
 
 
 # ── Memory Manager (long-term memory cho user) ────────────────────────────────
@@ -409,6 +427,7 @@ def health(response: Response) -> Dict[str, Any]:
             "neo4j": (lambda: health_checks.check_neo4j(neo4j_driver), True),
             "mongodb": (lambda: health_checks.check_mongo(mongo), False),
             "bm25": (lambda: health_checks.check_bm25(_bm25_state), False),
+            "daily_cap": (lambda: f"{daily_cap.used_today()}/{daily_cap.cap} câu hỏi hôm nay", False),
         },
         timeout=HEALTH_TIMEOUT_S,
     )
@@ -426,7 +445,7 @@ def post_feedback(req: FeedbackRequest) -> Dict[str, bool]:
 
 
 @app.post("/rag/chat", response_model=RagChatResponse)
-def rag_chat(req: RagChatRequest, uid: str = Depends(require_login)) -> RagChatResponse:
+def rag_chat(req: RagChatRequest, uid: str = Depends(question_quota)) -> RagChatResponse:
     req.user_id = uid  # luôn từ token, bỏ user_id client gửi
     prompt = req.prompt.strip()
     history_for_processing = [m.model_dump() for m in req.history]
@@ -578,7 +597,7 @@ def _sse_stage(stage: str, text: str, **extra: Any) -> str:
 
 
 @app.post("/rag/stream")
-def rag_stream(req: RagChatRequest, uid: str = Depends(require_login)):
+def rag_stream(req: RagChatRequest, uid: str = Depends(question_quota)):
     req.user_id = uid  # luôn từ token, bỏ user_id client gửi
     """
     Server-Sent Events stream.
@@ -997,7 +1016,7 @@ async def review_analyze(
     text: str = Form(default=""),
     user_id: str = Form(default=""),
     save: bool = Form(default=True),
-    uid: str = Depends(require_login),
+    uid: str = Depends(question_quota),
 ):
     """
     Tóm tắt + cảnh báo rủi ro pháp lý cho văn bản (file PDF/DOCX/TXT, link, hoặc chữ dán vào).

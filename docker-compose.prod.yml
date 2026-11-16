@@ -156,6 +156,7 @@ services:
       FIREBASE_STORAGE_BUCKET:
       # Tuỳ chọn — khoá không giá trị: chỉ truyền khi có trong .env.prod, nếu không thì
       # code dùng mặc định (không ghi đè bằng chuỗi rỗng, vd int("") sẽ lỗi).
+      DAILY_QUESTION_CAP:
       SENTIMENT_DEVICE:
       SSE_HEARTBEAT_SECONDS:
       HEALTH_TIMEOUT_SECONDS:
