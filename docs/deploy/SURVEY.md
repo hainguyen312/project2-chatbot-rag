@@ -142,3 +142,21 @@ Internet → Cloudflare (HTTPS) → cloudflared (container, kết nối đi ra)
 - Không đổi logic retrieval/agent; chỉ sửa code ở các mục đã chốt, mỗi thay đổi có test.
 - Không gọi API LLM. Embedding: báo token/chi phí trước (ngưỡng 3M token).
 - Việc cần quyền Windows (PowerShell admin, BIOS, driver) → viết hướng dẫn cho chủ máy tự làm.
+
+## 9. Quét bí mật trong lịch sử git (gitleaks 8.30.1, 16/11/2026)
+
+Lệnh: `gitleaks git --redact --log-opts="--all"` trên toàn bộ 38 commit, mọi nhánh (~520 MB).
+Báo cáo đầy đủ (đã che giá trị): `/home/deploy/reports/gitleaks.json` (ngoài repo).
+
+| Phát hiện | File | Commit | Nhánh còn chứa | Đánh giá |
+|---|---|---|---|---|
+| `openai-api-key` | `.env` (dòng 4; file còn chứa `ES_ENDPOINT`, `ES_API_KEY`, `OPENAI_API_KEY`, `OPENAI_MODEL`) | `2fdae55` (04/04/2026) | `origin/win` (`.env` **vẫn còn ở đầu nhánh**) | **THẬT — phải đổi khoá OpenAI + thu hồi khoá Elasticsearch** |
+| `generic-api-key` ×4 | `testz/test_connect_elasticsearch.py` (dòng 6, 9) | `71cb19a`, `95afb55` (24/03/2026) | `origin/win` | **THẬT — khoá Elasticsearch, thu hồi** |
+| `square-access-token` ×2 | `law-crawler/phap-dien/jsonData.js`, `treeNode.json` | `71cb19a` | `origin/win` | Báo nhầm: GUID dữ liệu pháp điển chứa chuỗi `EAAA` |
+
+- `main` (HEAD `2fe63fd`) **không** chứa các file trên; nhưng repo PUBLIC nên lịch sử/nhánh
+  `win` ai cũng đọc được. Không viết lại lịch sử (quyết định chủ repo); chủ repo tự đổi khoá.
+  Tuỳ chọn sau khi đổi khoá: xoá nhánh `win` trên GitHub để bớt lộ (khoá cũ vẫn phải coi là lộ).
+- Mật khẩu mặc định trong compose cũ (`123456789`, `password123`, `minioadmin`) coi như lộ;
+  production chỉ dùng mật khẩu mới trong `.env.prod`.
+- CI sẽ chạy gitleaks trên mỗi PR/push để chặn tái diễn (bước 4).
