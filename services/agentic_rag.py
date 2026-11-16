@@ -660,14 +660,10 @@ def execute_agent_tool(
                 return json.dumps([], ensure_ascii=False), empty
 
             pool_k = min(max(top_k * AGENT_VECTOR_POOL_MULT, top_k), 40)
-            # Hybrid (Milvus + BM25, RRF) — giữ điểm retrieval thật làm base_score cho rerank
-            if hasattr(retriever, "_hybrid_search"):
-                fused = retriever._hybrid_search(q, top_k=pool_k)
-                score_by_mapc = {d["mapc"]: float(d["score"]) for d in fused}
-                mapcs = [d["mapc"] for d in fused]
-            else:
-                mapcs = retriever._vector_search(q, top_k=pool_k)
-                score_by_mapc = {m: max(0.35, 1.0 - i * 0.012) for i, m in enumerate(mapcs)}
+            # hybrid_new (Milvus + BM25, RRF) — giữ điểm retrieval thật làm base_score cho rerank
+            fused = retriever._hybrid_search(q, top_k=pool_k)
+            score_by_mapc = {d["mapc"]: float(d["score"]) for d in fused}
+            mapcs = [d["mapc"] for d in fused]
             if not mapcs:
                 return json.dumps([], ensure_ascii=False), empty
 
