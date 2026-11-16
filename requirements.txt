@@ -1,31 +1,25 @@
-elasticsearch>=8.13.0
 python-dotenv
 uvicorn
 fastapi
+python-multipart      # FastAPI Form/UploadFile (rà soát văn bản, STT, admin ingest)
 numpy
 pandas
-faiss-cpu
-sentence-transformers
-sqlitedict
 openai>=1.90.0
 torch
+transformers          # agents/spam_agent.py, sentiment_agent.py (trước đây kéo theo qua sentence-transformers)
 sentencepiece
 # huggingface_hub
 # vllm
-langchain==0.3.*
-langchain_community==0.3.*
 pymilvus==2.4.*
+setuptools<81         # pymilvus 2.4 import pkg_resources — đã bị gỡ khỏi setuptools ≥ 81
 scikit-learn==1.5.*
-# optional
-hdbscan
-rank_bm25
 bm25s>=0.2   # BM25 lexical cho hybrid retrieval (retrieve/lexical_bm25.py)
 
-markdown
 pymongo
+pymysql               # MySQL pddieu (retrieval, agent, đồ thị, BM25, eval)
+firebase-admin        # rag_api: xác thực + TTS (import khi khởi động)
 
 neo4j
 tavily-python
-nest_asyncio
 pytest
 pdfplumber==0.11.10
