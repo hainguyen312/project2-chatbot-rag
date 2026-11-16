@@ -112,7 +112,7 @@ Bảng \ref{tab:uc01} đặc tả use case UC01.
 2c. Người dùng có cảm xúc tiêu cực mạnh: đề xuất chuyển cán bộ xử lý. \newline
 3a. Câu hỏi ngoài phạm vi pháp luật: thông báo phạm vi hỗ trợ, kết thúc. \newline
 5a. Bộ đệm có câu trả lời với độ tương đồng từ 0,97 trở lên: trả câu trả lời đã lưu, sang bước 8. \newline
-6a. Câu hỏi về mức phạt, mức tiền hoặc kết quả Pháp Điển yếu: tác tử bị buộc gọi tìm kiếm web trước khi trả lời. \newline
+6a. Câu hỏi về mức phạt, mức tiền hoặc kết quả Pháp Điển yếu: sau vòng gọi công cụ đầu tiên, tác tử bị buộc gọi tìm kiếm web trước khi viết câu trả lời. \newline
 7a. Độ tin cậy thấp: hiển thị cảnh báo đề nghị đối chiếu văn bản chính thức. \\ \hline
 \textbf{Hậu điều kiện} & Câu trả lời và các điều luật căn cứ được lưu trong hội thoại; bộ nhớ dài hạn có thể được bổ sung hoặc cập nhật \\ \hline
 \end{tabular}
@@ -603,27 +603,27 @@ Bảng \ref{tab:uc13} đặc tả use case UC13.
 \textbf{Tiền điều kiện} & Đã hoàn thành UC12; Milvus đang chạy \\ \hline
 \textbf{Luồng sự kiện chính} &
 1. Quản trị viên chạy công cụ nhúng tên điều; công cụ tạo collection và nhúng theo lô. \newline
-2. Quản trị viên chạy công cụ chia đoạn có ngữ cảnh (tuỳ chọn \texttt{--dry-run} trước để ước tính chi phí). \newline
-3. Chỉ mục BM25 được xây dựng tự động ở lần khởi động đầu tiên của máy chủ dịch vụ. \\ \hline
+2. Chỉ mục BM25 được xây dựng tự động ở lần khởi động đầu tiên của máy chủ dịch vụ; điều dài hơn 6.000 ký tự được tách thành nhiều tài liệu theo nhóm khoản. \\ \hline
 \textbf{Luồng sự kiện phát sinh} &
 1a. Một lô nhúng lỗi: nhúng từng bản ghi, ghi bản ghi lỗi vào \texttt{embed\_errors.csv}. \newline
-1b. Một trong hai công cụ bị gián đoạn: chạy lại với \texttt{--resume}, bỏ qua bản ghi đã có. \\ \hline
-\textbf{Hậu điều kiện} & Hai collection vector và chỉ mục BM25 sẵn sàng cho tìm kiếm lai \\ \hline
+1b. Công cụ bị gián đoạn: chạy lại với \texttt{--resume}, bỏ qua bản ghi đã có. \newline
+2a. Bộ đệm BM25 trên đĩa khác phiên bản cách dựng chỉ mục: xây lại chỉ mục. \\ \hline
+\textbf{Hậu điều kiện} & Collection vector tên điều và chỉ mục BM25 sẵn sàng cho tìm kiếm lai \\ \hline
 \end{tabular}
 \end{table}
 
 \subsubsection{Biểu đồ use case}
-Hình \ref{fig:uc13_uc} cho thấy ba chức năng lập chỉ mục (vector tên điều, đoạn có ngữ cảnh, BM25) và các chức năng mở rộng ước tính chi phí, chạy tiếp, ghi bản ghi lỗi.
+Hình \ref{fig:uc13_uc} cho thấy hai chức năng lập chỉ mục (vector tên điều, BM25), việc tách điều dài theo nhóm khoản khi xây BM25 và các chức năng mở rộng chạy tiếp, ghi bản ghi lỗi.
 
 \hinh{Hinhve/UC13_UC.png}{0.8\linewidth}{Biểu đồ use case UC13 Lập chỉ mục vector và BM25}{fig:uc13_uc}
 
 \subsubsection{Biểu đồ hoạt động}
-Hình \ref{fig:uc13_act} trình bày cách xử lý lỗi theo lô khi nhúng tên điều và trình tự ước tính chi phí trước khi chia đoạn.
+Hình \ref{fig:uc13_act} trình bày cách xử lý lỗi theo lô khi nhúng tên điều và cách máy chủ nạp hoặc xây lại chỉ mục BM25 khi khởi động.
 
 \hinh{Hinhve/UC13_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC13 Lập chỉ mục vector và BM25}{fig:uc13_act}
 
 \subsubsection{Biểu đồ tuần tự}
-Hình \ref{fig:uc13_seq} cho thấy luồng dữ liệu từ MySQL qua mô hình nhúng vào hai collection Milvus và việc xây chỉ mục BM25 khi khởi động máy chủ.
+Hình \ref{fig:uc13_seq} cho thấy luồng dữ liệu từ MySQL qua mô hình nhúng vào collection Milvus và việc xây chỉ mục BM25 khi khởi động máy chủ.
 
 \hinh{Hinhve/UC13_SEQ.png}{0.95\linewidth}{Biểu đồ tuần tự UC13 Lập chỉ mục vector và BM25}{fig:uc13_seq}
 
@@ -643,26 +643,29 @@ Bảng \ref{tab:uc14} đặc tả use case UC14.
 \textbf{Tiền điều kiện} & Đã hoàn thành UC12; Neo4j đang chạy \\ \hline
 \textbf{Luồng sự kiện chính} &
 1. Quản trị viên chạy công cụ \texttt{build\_graph.py}. \newline
-2. Công cụ tạo ràng buộc duy nhất, các nút và cạnh phân cấp. \newline
-3. Công cụ tạo cạnh liên quan hai chiều và cạnh tham chiếu. \\ \hline
+2. Công cụ tạo ràng buộc duy nhất, các nút chủ đề, đề mục, chương, điều, khoản và cạnh phân cấp. \newline
+3. Công cụ phân tích chú thích văn bản gốc để tạo nút văn bản và quan hệ sửa đổi. \newline
+4. Công cụ tạo cạnh liên quan hai chiều và phân tích dẫn chiếu trong nội dung điều để tạo cạnh tham chiếu. \\ \hline
 \textbf{Luồng sự kiện phát sinh} &
-2a. Neo4j lỗi tệp nhật ký giao dịch: xoá dữ liệu Neo4j, khởi động lại và chạy lại công cụ; trong thời gian này bộ truy xuất dùng bảng quan hệ MySQL. \\ \hline
-\textbf{Hậu điều kiện} & Công cụ \texttt{graph\_traverse} của tác tử dùng được đồ thị Neo4j \\ \hline
+2a. Neo4j lỗi tệp nhật ký giao dịch: xoá dữ liệu Neo4j, khởi động lại và chạy lại công cụ; trong thời gian này bộ truy xuất dùng bảng quan hệ MySQL. \newline
+4a. Chỉ đổi cách phân tích dẫn chiếu hoặc nhận diện ngoại lệ: chạy \texttt{--refresh-derived} để tính lại cờ ngoại lệ và cạnh tham chiếu mà không ghi lại toàn bộ nút. \newline
+4b. Quản trị viên duyệt văn bản mới (UC18): đồ thị được đồng bộ từng phần cho các điều thay đổi. \\ \hline
+\textbf{Hậu điều kiện} & Tác tử dùng được đồ thị Neo4j cho \texttt{graph\_traverse}, kèm điều được dẫn chiếu và kiểm tra ngoại lệ \\ \hline
 \end{tabular}
 \end{table}
 
 \subsubsection{Biểu đồ use case}
-Hình \ref{fig:uc14_uc} cho thấy các bước xây dựng đồ thị và chức năng dự phòng bằng bảng quan hệ MySQL khi đồ thị chưa sẵn sàng.
+Hình \ref{fig:uc14_uc} cho thấy các bước xây dựng đồ thị, việc đồng bộ từng phần khi duyệt văn bản và chức năng dự phòng bằng bảng quan hệ MySQL khi đồ thị chưa sẵn sàng.
 
 \hinh{Hinhve/UC14_UC.png}{0.8\linewidth}{Biểu đồ use case UC14 Xây dựng đồ thị tri thức}{fig:uc14_uc}
 
 \subsubsection{Biểu đồ hoạt động}
-Hình \ref{fig:uc14_act} trình bày trình tự tạo ràng buộc, nút, cạnh và cách bộ truy xuất chọn nguồn khi mở rộng theo đồ thị.
+Hình \ref{fig:uc14_act} trình bày trình tự tạo ràng buộc, nút, cạnh và cách bộ truy xuất chọn nguồn khi dùng đồ thị.
 
 \hinh{Hinhve/UC14_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC14 Xây dựng đồ thị tri thức}{fig:uc14_act}
 
 \subsubsection{Biểu đồ tuần tự}
-Hình \ref{fig:uc14_seq} cho thấy việc ghi theo lô 500 bản ghi bằng \texttt{UNWIND} và \texttt{MERGE} của Cypher.
+Hình \ref{fig:uc14_seq} cho thấy việc ghi theo lô bằng \texttt{UNWIND} và \texttt{MERGE} của Cypher, cùng các bước phân tích chú thích văn bản gốc, tách khoản và phân tích dẫn chiếu của mô-đun \texttt{legal\_graph}.
 
 \hinh{Hinhve/UC14_SEQ.png}{0.95\linewidth}{Biểu đồ tuần tự UC14 Xây dựng đồ thị tri thức}{fig:uc14_seq}
 
@@ -681,7 +684,7 @@ Bảng \ref{tab:uc15} đặc tả use case UC15.
 \textbf{Tác nhân} & Quản trị viên; hệ thống ngoài: OpenAI, mô hình chấm điểm \\ \hline
 \textbf{Tiền điều kiện} & Kho dữ liệu và máy chủ dịch vụ sẵn sàng; có khoá API \\ \hline
 \textbf{Luồng sự kiện chính} &
-1. Quản trị viên chọn bộ đánh giá: truy xuất, gọi công cụ hoặc bộ nhớ. \newline
+1. Quản trị viên chọn bộ đánh giá: truy xuất, gọi công cụ, bộ nhớ hoặc kiểm tra ngoại lệ. \newline
 2. Quản trị viên chạy với \texttt{--dry-run} để kiểm tra tệp tình huống và ước tính chi phí. \newline
 3. Bộ đánh giá chạy các cấu hình hoặc tình huống, chấm điểm và in bảng tổng hợp. \newline
 4. Kết quả chi tiết được lưu dạng JSON có dấu thời gian trong \texttt{evaluation/results}. \\ \hline
@@ -693,17 +696,17 @@ Bảng \ref{tab:uc15} đặc tả use case UC15.
 \end{table}
 
 \subsubsection{Biểu đồ use case}
-Hình \ref{fig:uc15_uc} cho thấy ba bộ đánh giá cùng các chức năng mở rộng kiểm tra trước, dùng kết quả chấm đã lưu đệm và lưu kết quả.
+Hình \ref{fig:uc15_uc} cho thấy bốn bộ đánh giá cùng các chức năng mở rộng kiểm tra trước, dùng kết quả chấm đã lưu đệm và lưu kết quả.
 
 \hinh{Hinhve/UC15_UC.png}{0.8\linewidth}{Biểu đồ use case UC15 Đánh giá chất lượng hệ thống}{fig:uc15_uc}
 
 \subsubsection{Biểu đồ hoạt động}
-Hình \ref{fig:uc15_act} trình bày việc kiểm tra ngân sách trước khi chạy và ba bộ đánh giá có thể chạy độc lập.
+Hình \ref{fig:uc15_act} trình bày việc kiểm tra ngân sách trước khi chạy và bốn bộ đánh giá có thể chạy độc lập.
 
 \hinh{Hinhve/UC15_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC15 Đánh giá chất lượng hệ thống}{fig:uc15_act}
 
 \subsubsection{Biểu đồ tuần tự}
-Hình \ref{fig:uc15_seq} cho thấy luồng của bộ đánh giá truy xuất, đại diện cho ba bộ đánh giá: truy xuất, gộp, tra bộ đệm, chấm mù rồi tính chỉ số.
+Hình \ref{fig:uc15_seq} cho thấy luồng của bộ đánh giá truy xuất, đại diện cho các bộ đánh giá: truy xuất, gộp, tra bộ đệm, chấm mù rồi tính chỉ số.
 
 \hinh{Hinhve/UC15_SEQ.png}{0.95\linewidth}{Biểu đồ tuần tự UC15 Đánh giá chất lượng hệ thống}{fig:uc15_seq}
 

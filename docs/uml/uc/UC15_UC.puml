@@ -9,6 +9,7 @@ rectangle "UC15. Đánh giá chất lượng hệ thống" {
   usecase "Đánh giá truy xuất" as R
   usecase "Đánh giá gọi công cụ" as T
   usecase "Đánh giá bộ nhớ" as M
+  usecase "Đánh giá kiểm tra ngoại lệ" as X
   usecase "Kiểm tra trước, ước tính chi phí\n(--dry-run)" as D
   usecase "Dùng kết quả chấm đã lưu đệm" as C
   usecase "Lưu kết quả JSON" as S
@@ -16,13 +17,17 @@ rectangle "UC15. Đánh giá chất lượng hệ thống" {
 A --> R
 A --> T
 A --> M
+A --> X
 D .> R : <<extend>>
 D .> T : <<extend>>
 C .> R : <<extend>>
 R ..> S : <<include>>
 T ..> S : <<include>>
 M ..> S : <<include>>
+X ..> S : <<include>>
 R --> J
 T --> AI
 M --> AI
+X --> AI
+X --> J
 @enduml

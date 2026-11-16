@@ -18,6 +18,8 @@ fork again
   :Gọi công cụ: chạy tác tử thật,\nso với kỳ vọng từng tình huống;
 fork again
   :Bộ nhớ: chạy hội thoại giả,\nkiểm tra kỳ vọng, xoá dữ liệu;
+fork again
+  :Kiểm tra ngoại lệ: cặp điều chính /\nđiều ngoại lệ sinh từ đồ thị,\nso sánh bật / tắt;
 end fork
 :Tính chỉ số, in bảng tổng hợp;
 :Lưu JSON có dấu thời gian;
