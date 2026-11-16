@@ -1,0 +1,97 @@
+\documentclass[../DoAn.tex]{subfiles}
+\begin{document}
+Phụ lục này trình bày thiết lập và kết quả chi tiết của ba bộ đánh giá tự động được tóm tắt ở Chương \ref{chapter:SolutionAndContribution}. Mã nguồn các bộ đánh giá nằm trong thư mục \texttt{evaluation} và kết quả gốc dạng JSON nằm trong \texttt{evaluation/results}.
+
+\section{Đánh giá truy xuất}
+\textbf{Thiết lập.} Bộ đánh giá \texttt{eval\_retrieval\_nogt.py} chạy mỗi cấu hình truy xuất trên 50 câu hỏi và lấy 10 kết quả đầu. Kết quả của mọi cấu hình được gộp và khử trùng; mỗi cặp câu hỏi và điều luật được một LLM (Claude Sonnet, mức suy luận thấp) chấm mù theo thang 2 (trả lời trực tiếp câu hỏi), 1 (liên quan hoặc hữu ích một phần), 0 (không liên quan), không biết cặp đến từ cấu hình nào. Kết quả chấm được lưu đệm để chạy lại không tốn thêm chi phí. P@5, P@10 và Top1 tính với mức liên quan từ 1 trở lên; MRR@10 tính với kết quả có mức liên quan bằng 2 đầu tiên; nDCG@10 dùng thứ tự lý tưởng là các điều tốt nhất trong toàn bộ kết quả gộp. Cấu hình được so với cấu hình ban đầu theo từng câu bằng nDCG@10 và kiểm định dấu hai phía.
+
+Bảng \ref{tab:pl_sign} trình bày kết quả so sánh từng câu với cấu hình ban đầu.
+
+\begin{table}[H]
+\centering
+\caption{So sánh từng câu hỏi theo nDCG@10 với cấu hình ban đầu (50 câu)}
+\label{tab:pl_sign}
+\begin{tabular}{|L{6.4cm}|c|c|c|c|}
+\hline
+\textbf{Cấu hình} & \textbf{Thắng} & \textbf{Hoà} & \textbf{Thua} & \textbf{$p$} \\ \hline
+Vector tên điều, xếp hạng mới & 25 & 12 & 13 & 0,073 \\ \hline
+Lai, không xếp hạng lại & 37 & 6 & 7 & $<$0,0001 \\ \hline
+Lai, xếp hạng mới & 37 & 5 & 8 & $<$0,0001 \\ \hline
+Lai ba nguồn, không xếp hạng lại & 39 & 6 & 5 & $<$0,0001 \\ \hline
+Lai ba nguồn, xếp hạng mới & 41 & 5 & 4 & $<$0,0001 \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{Đánh giá theo mục đã biết.} Bộ đánh giá chọn ngẫu nhiên 100 điều luật (hạt giống 7), dùng LLM sinh một câu hỏi đời thường cho mỗi điều và coi chính điều đó là đáp án. Phép đo này hơi thiên vị về các cấu hình đọc nội dung điều vì câu hỏi được sinh từ nội dung, nên được đọc cùng với kết quả chấm bằng LLM. Bảng \ref{tab:pl_known} trình bày kết quả.
+
+\begin{table}[H]
+\centering
+\caption{Kết quả đánh giá theo mục đã biết (100 câu hỏi)}
+\label{tab:pl_known}
+\begin{tabular}{|L{6.4cm}|c|c|c|c|}
+\hline
+\textbf{Cấu hình} & \textbf{Hit@1} & \textbf{Hit@5} & \textbf{Hit@10} & \textbf{MRR@10} \\ \hline
+Vector tên điều, xếp hạng cũ & 0,10 & 0,24 & 0,33 & 0,159 \\ \hline
+Vector tên điều, xếp hạng mới & 0,18 & 0,32 & 0,36 & 0,238 \\ \hline
+Lai, không xếp hạng lại & 0,23 & 0,50 & 0,65 & 0,343 \\ \hline
+Lai, xếp hạng mới & 0,27 & 0,54 & 0,67 & 0,379 \\ \hline
+Lai ba nguồn, không xếp hạng lại & 0,27 & 0,52 & 0,64 & 0,377 \\ \hline
+Lai ba nguồn, xếp hạng mới & 0,30 & 0,53 & 0,63 & 0,404 \\ \hline
+\end{tabular}
+\end{table}
+
+\section{Đánh giá hành vi gọi công cụ}
+Bộ đánh giá \texttt{eval\_tool\_calls.py} chạy vòng lặp tác tử thật trên các tình huống ghi trong \texttt{tool\_call\_cases.json}. Mỗi tình huống khai báo công cụ bắt buộc phải gọi, công cụ nên gọi, công cụ không được gọi, công cụ phải gọi đầu tiên, việc luật buộc web có được kích hoạt hay không, trần số lần gọi và các từ khoá câu trả lời phải chứa. Chỉ số ``mã bịa đặt'' đo tỷ lệ lượt gọi đồ thị hoặc đọc toàn văn với mã điều chưa từng xuất hiện trong kết quả trước đó. Bảng \ref{tab:pl_tool} trình bày kết quả với GPT-4o-mini trên 23 tình huống.
+
+\begin{table}[H]
+\centering
+\caption{Kết quả đánh giá gọi công cụ với GPT-4o-mini (23 tình huống)}
+\label{tab:pl_tool}
+\begin{tabular}{|L{8.6cm}|L{3.0cm}|}
+\hline
+\textbf{Chỉ số} & \textbf{Giá trị} \\ \hline
+Tỷ lệ tình huống đạt mọi kỳ vọng & 82,6\% (19/23) \\ \hline
+Tỷ lệ gọi đủ công cụ bắt buộc & 97,6\% \\ \hline
+Tỷ lệ gọi công cụ nên gọi & 66,7\% \\ \hline
+Tỷ lệ gọi công cụ bị cấm & 0\% \\ \hline
+Công cụ đầu tiên đúng kỳ vọng & 100\% \\ \hline
+Luật buộc web kích hoạt đúng & 100\% \\ \hline
+Tỷ lệ mã điều bịa đặt / thiếu tham số / gọi trùng & 0\% / 0\% / 0\% \\ \hline
+Tỷ lệ chạm trần vòng lặp & 0\% \\ \hline
+Câu trả lời chứa từ khoá kỳ vọng & 87,0\% \\ \hline
+Số lượt gọi công cụ trung bình & 2,04 \\ \hline
+Thời gian trung bình mỗi tình huống & 9,0 giây \\ \hline
+Tổng chi phí & 0,10 USD \\ \hline
+\end{tabular}
+\end{table}
+
+Theo nhóm câu hỏi, số tình huống đạt lần lượt là: định nghĩa 4/5, phạm vi áp dụng 3/5, mức phạt 6/6, ngoài dữ liệu 2/3, quan hệ giữa điều luật 1/1, đọc toàn văn 1/1, trò chuyện 2/2.
+
+\section{Đánh giá bộ nhớ dài hạn}
+Bộ đánh giá \texttt{eval\_memory.py} tạo người dùng giả riêng cho từng kịch bản, chạy chuỗi lượt hội thoại qua mô hình và MongoDB thật, kiểm tra kỳ vọng rồi xoá dữ liệu. Các kỳ vọng gồm: bộ nhớ phải chứa hoặc không được chứa các cụm từ nhất định, thông tin phải thuộc đúng loại, tổng số ký ức tối đa, số ký ức trùng khớp tối đa (phát hiện bản trùng chưa xoá) và truy vấn phải tìm lại được thông tin cần thiết. Bảng \ref{tab:pl_mem} liệt kê 14 kịch bản; tất cả đều đạt.
+
+\begin{table}[H]
+\centering
+\caption{Các kịch bản đánh giá bộ nhớ dài hạn}
+\label{tab:pl_mem}
+\begin{tabular}{|L{4.6cm}|L{2.2cm}|L{6.6cm}|}
+\hline
+\textbf{Kịch bản} & \textbf{Nhóm} & \textbf{Kỳ vọng chính} \\ \hline
+\texttt{profile\_basic} & Trích xuất & Lưu năm sinh, nghề nghiệp, nơi ở \\ \hline
+\texttt{chitchat\_nothing} & Trích xuất & Trò chuyện xã giao, không lưu gì \\ \hline
+\texttt{general\_law\_not\_profile} & Trích xuất & Câu hỏi luật chung không bị coi là thông tin cá nhân \\ \hline
+\texttt{multi\_fact\_turn} & Trích xuất & Một lượt chứa nhiều thông tin, tách đủ \\ \hline
+\texttt{episodic\_wage} & Trích xuất & Sự kiện bị nợ lương lưu đúng loại sự kiện \\ \hline
+\texttt{procedural\_pref} & Trích xuất & Mong muốn cách trả lời lưu đúng loại thói quen \\ \hline
+\texttt{sensitive\_id\_number} & Nhạy cảm & Không lưu số căn cước \\ \hline
+\texttt{sensitive\_bank} & Nhạy cảm & Không lưu số tài khoản ngân hàng \\ \hline
+\texttt{update\_school} & Cập nhật & Đổi trường thì cập nhật, không giữ bản cũ \\ \hline
+\texttt{update\_job} & Cập nhật & Đổi việc thì cập nhật \\ \hline
+\texttt{negation\_delete} & Cập nhật & Người dùng phủ định thông tin cũ thì xoá \\ \hline
+\texttt{paraphrase\_noop} & Cập nhật & Nói lại cùng thông tin thì bỏ qua \\ \hline
+\texttt{retrieve\_age\_for\_marriage} & Truy xuất & Tìm lại năm sinh khi hỏi điều kiện kết hôn \\ \hline
+\texttt{retrieve\_relevant\_situation} & Truy xuất & Tìm lại tình huống liên quan \\ \hline
+\end{tabular}
+\end{table}
+
+\end{document}

@@ -1,0 +1,102 @@
+\documentclass[../DoAn.tex]{subfiles}
+\begin{document}
+
+Chương \ref{chapter:Related_works} đã xác định các yêu cầu của hệ thống, trong đó trọng tâm là hiểu câu hỏi tự nhiên, trích dẫn điều luật kiểm chứng được và lưu ý tình trạng hiệu lực. Chương này trình bày nền tảng lý thuyết và công nghệ dùng để đáp ứng các yêu cầu đó. Phần \ref{section:3.1} trình bày mô hình ngôn ngữ lớn và cơ chế gọi công cụ; phần \ref{section:3.2} trình bày RAG, Graph RAG và tác tử; phần \ref{section:3.3} trình bày các kỹ thuật truy xuất; phần \ref{section:3.4} trình bày bộ nhớ dài hạn và bộ đệm ngữ nghĩa; phần \ref{section:3.5} trình bày các phương pháp đánh giá; phần \ref{section:3.6} phân tích lựa chọn công nghệ xây dựng hệ thống.
+
+\section{Mô hình ngôn ngữ lớn và cơ chế gọi công cụ}
+\label{section:3.1}
+Mô hình ngôn ngữ lớn là mạng nơ-ron dựa trên kiến trúc Transformer \cite{vaswani2017attention}, được huấn luyện trên lượng văn bản rất lớn để dự đoán từ tiếp theo. Khi đủ lớn, các mô hình này có khả năng làm theo chỉ dẫn và giải quyết nhiều tác vụ chỉ từ mô tả hoặc vài ví dụ trong lời nhắc \cite{brown2020gpt3}. Trong đồ án, LLM được dùng cho các tác vụ hiểu và sinh ngôn ngữ: viết lại câu hỏi, phân loại ý định, điều phối tác tử, tổng hợp câu trả lời, trích xuất thông tin người dùng, phân tích hợp đồng và đặt tên hội thoại.
+
+Hạn chế chính của LLM khi dùng trực tiếp cho pháp luật là ảo giác \cite{ji2023hallucination} và kiến thức bị đóng băng tại thời điểm huấn luyện. Mô hình không biết văn bản ban hành sau thời điểm đó, và không có cơ chế tự kiểm chứng số điều mà nó đưa ra. Đây là yêu cầu độ tin cậy ở Chương \ref{chapter:Related_works} mà LLM đơn thuần không đáp ứng được.
+
+Cơ chế gọi công cụ (function calling) \cite{openaifunction} cho phép khai báo cho mô hình một tập hàm kèm mô tả và lược đồ tham số dạng JSON. Thay vì trả lời ngay, mô hình có thể trả về yêu cầu gọi một hoặc nhiều hàm với tham số cụ thể; ứng dụng thực thi hàm, gửi kết quả lại cho mô hình và lặp lại cho tới khi mô hình đưa ra câu trả lời cuối. Nghiên cứu Toolformer \cite{schick2023toolformer} cho thấy mô hình ngôn ngữ có thể học khi nào cần gọi công cụ và gọi với tham số nào. Đồ án dùng cơ chế này để mô hình tự quyết định tìm điều luật, mở rộng đồ thị, đọc toàn văn hay tìm kiếm web. Ngoài ra, chế độ đầu ra JSON được dùng cho các tác vụ cần kết quả có cấu trúc như phân tích hợp đồng.
+
+\section{RAG, Graph RAG và tác tử AI}
+\label{section:3.2}
+
+\subsection{Sinh văn bản tăng cường truy xuất}
+RAG \cite{lewis2020rag} kết hợp một bộ truy xuất với một mô hình sinh: với mỗi câu hỏi, bộ truy xuất tìm các đoạn văn bản liên quan trong kho tri thức, rồi mô hình sinh câu trả lời dựa trên các đoạn đó. Cách làm này giải quyết hai hạn chế nêu trên: câu trả lời dựa trên tài liệu có thể trích dẫn, và kiến thức được cập nhật bằng cách cập nhật kho tài liệu thay vì huấn luyện lại mô hình. Khảo sát của Gao và cộng sự \cite{gao2023ragsurvey} phân chia RAG thành ba giai đoạn phát triển: RAG cơ bản với một bước truy xuất cố định, RAG nâng cao bổ sung các bước trước và sau truy xuất như viết lại câu hỏi và xếp hạng lại, và RAG mô-đun nơi các thành phần được kết hợp linh hoạt. Hệ thống của đồ án thuộc nhóm thứ ba.
+
+Hạn chế của RAG cơ bản đối với câu hỏi pháp luật là chất lượng câu trả lời phụ thuộc hoàn toàn vào một lần truy xuất. Nếu câu hỏi dùng từ đời thường khác thuật ngữ pháp lý, hoặc câu trả lời cần kết hợp nhiều điều luật, một lần tìm kiếm dễ bỏ sót căn cứ quan trọng.
+
+\subsection{Graph RAG}
+Graph RAG bổ sung đồ thị tri thức vào quá trình truy xuất. Edge và cộng sự \cite{edge2024graphrag} xây dựng đồ thị thực thể từ văn bản để trả lời các câu hỏi cần tổng hợp toàn cục. Với Bộ Pháp điển, đồ thị không cần trích xuất bằng mô hình vì dữ liệu đã có sẵn cấu trúc: mỗi điều thuộc một chương, đề mục và chủ đề, và giữa các điều có quan hệ ``liên quan'' do cơ quan pháp điển xác định. Khi tìm được một điều luật phù hợp, việc đi theo các cạnh liên quan giúp lấy được các điều bổ trợ như quy định xử phạt, quy định chi tiết hay ngoại lệ, những điều thường không giống câu hỏi về mặt ngữ nghĩa nên tìm kiếm vector bỏ sót.
+
+\subsection{Tác tử AI theo mô hình ReAct}
+ReAct \cite{yao2023react} là mô hình tác tử trong đó LLM xen kẽ suy luận và hành động: ở mỗi bước, mô hình suy nghĩ về thông tin còn thiếu, chọn hành động (gọi công cụ), quan sát kết quả rồi quyết định bước tiếp theo. So với một bước truy xuất cố định, tác tử có thể điều chỉnh chiến lược theo từng câu hỏi: câu định nghĩa chỉ cần một lần tìm kiếm, câu tình huống cần nhiều lần tìm với các khía cạnh khác nhau, câu về mức phạt cần kiểm tra văn bản mới nhất. Nhược điểm của tác tử là chi phí và độ trễ tăng theo số vòng lặp, và mô hình có thể bỏ qua bước kiểm tra cần thiết khi đã thấy một kết quả ``có vẻ khớp''. Đồ án giới hạn số vòng lặp và bổ sung các luật buộc kiểm tra, được trình bày ở Chương \ref{chapter:SolutionAndContribution}.
+
+\section{Kỹ thuật truy xuất thông tin}
+\label{section:3.3}
+
+\subsection{Nhúng vector và tìm kiếm láng giềng gần}
+Truy xuất dày (dense retrieval) biểu diễn câu hỏi và tài liệu thành vector trong cùng một không gian sao cho văn bản có nghĩa gần nhau thì vector gần nhau \cite{karpukhin2020dpr}. Độ tương đồng thường đo bằng cosine:
+\begin{equation}\label{eq:cosine}
+    \cos(\mathbf{q}, \mathbf{d}) = \frac{\mathbf{q}\cdot\mathbf{d}}{\lVert\mathbf{q}\rVert\,\lVert\mathbf{d}\rVert}
+\end{equation}
+Đồ án dùng mô hình nhúng \texttt{text-embedding-3-small} của OpenAI với vector 1536 chiều, hỗ trợ tiếng Việt tốt và chi phí thấp. Với 66.706 điều luật và 147.641 đoạn văn bản, tìm kiếm vét cạn là không khả thi trong thời gian tương tác, nên cần chỉ mục tìm láng giềng gần đúng. HNSW \cite{malkov2020hnsw} xây dựng đồ thị nhiều tầng, tầng trên thưa giúp di chuyển nhanh tới vùng lân cận, tầng dưới dày giúp tìm chính xác; độ phức tạp tìm kiếm xấp xỉ logarit theo số phần tử. Đồ án cấu hình HNSW với $M=16$ và $efConstruction=200$, khoảng cách cosine.
+
+\subsection{BM25 cho tiếng Việt}
+Truy xuất dày bắt được ngữ nghĩa nhưng dễ bỏ lỡ các thuật ngữ chính xác như ``án treo'', ``thai sản'' hay ``nồng độ cồn''. BM25 \cite{robertson2009bm25} là hàm xếp hạng theo từ khoá, tính điểm của tài liệu $d$ với câu hỏi $q$ như sau:
+\begin{equation}\label{eq:bm25}
+    \mathrm{BM25}(q, d) = \sum_{t \in q} \mathrm{IDF}(t)\cdot\frac{f(t,d)\,(k_1+1)}{f(t,d) + k_1\left(1 - b + b\,\frac{|d|}{\mathrm{avgdl}}\right)}
+\end{equation}
+trong đó $f(t,d)$ là tần suất từ $t$ trong $d$, $|d|$ là độ dài tài liệu, $\mathrm{avgdl}$ là độ dài trung bình, $k_1$ và $b$ là tham số. Tiếng Việt là ngôn ngữ đơn lập: từ được ghép từ nhiều âm tiết cách nhau bởi khoảng trắng, nên tách theo khoảng trắng làm mất nghĩa của từ ghép (``lao'' và ``động'' khác ``lao động''). Đồ án xử lý bằng cách bổ sung cặp âm tiết liền kề (bigram) bên cạnh âm tiết đơn, chi tiết trình bày ở phần \ref{section:5.1}.
+
+\subsection{Hợp nhất thứ hạng}
+Kết hợp nhiều bộ truy xuất cần một cách gộp kết quả. Điểm của các bộ truy xuất khác nhau (cosine, BM25) không cùng thang đo nên không cộng trực tiếp được. Reciprocal Rank Fusion \cite{cormack2009rrf} chỉ dùng thứ hạng:
+\begin{equation}\label{eq:rrf}
+    \mathrm{RRF}(d) = \sum_{s \in S} \frac{w_s}{k + \mathrm{rank}_s(d)}
+\end{equation}
+với $S$ là tập nguồn, $\mathrm{rank}_s(d)$ là thứ hạng của $d$ trong nguồn $s$, $w_s$ là trọng số nguồn và $k$ là hằng số làm mượt (thường bằng 60). RRF đơn giản, không cần huấn luyện và được chứng minh hiệu quả hơn nhiều phương pháp học thứ hạng phức tạp.
+
+\section{Bộ nhớ dài hạn và bộ đệm ngữ nghĩa}
+\label{section:3.4}
+LLM không có trạng thái giữa các phiên: mỗi lời gọi chỉ biết những gì có trong lời nhắc. Để không phải hỏi lại tuổi, nghề nghiệp hay hoàn cảnh của người dùng, cần bộ nhớ dài hạn. Mem0 \cite{chhikara2025mem0} đề xuất kiến trúc hai giai đoạn: giai đoạn trích xuất dùng LLM rút ra các ``sự thật'' bền vững từ mỗi lượt hội thoại; giai đoạn cập nhật tìm các ký ức tương đồng đã có và để LLM quyết định thêm mới (ADD), cập nhật (UPDATE), xoá (DELETE) hay bỏ qua (NOOP). Cách làm này giữ bộ nhớ gọn và nhất quán khi thông tin thay đổi, ví dụ người dùng chuyển công việc. Đồ án áp dụng kiến trúc này và bổ sung phân loại ký ức, độ phai theo thời gian và lọc dữ liệu nhạy cảm (phần \ref{section:5.4}).
+
+Bộ đệm ngữ nghĩa lưu câu trả lời kèm vector của câu hỏi; khi có câu hỏi mới có độ tương đồng cosine vượt ngưỡng với một câu đã lưu, hệ thống trả lại câu trả lời cũ mà không chạy lại toàn bộ luồng RAG. Đồ án đặt ngưỡng 0,97 và thời gian sống 24 giờ, đồng thời không dùng bộ đệm với câu hỏi mang tính cá nhân, vì câu trả lời phụ thuộc vào bộ nhớ của từng người.
+
+Ngoài ra, tầng tiền xử lý dùng phân loại không cần mẫu dựa trên suy luận ngôn ngữ tự nhiên (NLI) \cite{yin2019zeroshot} với mô hình đa ngôn ngữ XLM-RoBERTa \cite{conneau2020xlmr}: mỗi nhãn cảm xúc được viết thành một giả thuyết, mô hình đánh giá mức độ câu của người dùng hàm ý giả thuyết đó. Cách này cho phép nhận diện người dùng bức xúc mà không cần dữ liệu huấn luyện tiếng Việt có gán nhãn.
+
+\section{Phương pháp đánh giá}
+\label{section:3.5}
+Chất lượng truy xuất được đo bằng các chỉ số xếp hạng. Precision@$k$ là tỷ lệ kết quả liên quan trong $k$ kết quả đầu; MRR là trung bình nghịch đảo thứ hạng của kết quả đúng đầu tiên. nDCG \cite{jarvelin2002ndcg} cho phép mức độ liên quan có nhiều bậc và phạt kết quả tốt nằm ở vị trí thấp:
+\begin{equation}\label{eq:ndcg}
+    \mathrm{DCG}@k = \sum_{i=1}^{k} \frac{2^{rel_i}-1}{\log_2(i+1)}, \qquad \mathrm{nDCG}@k = \frac{\mathrm{DCG}@k}{\mathrm{IDCG}@k}
+\end{equation}
+trong đó $rel_i$ là mức liên quan của kết quả thứ $i$ và $\mathrm{IDCG}@k$ là DCG của thứ tự lý tưởng.
+
+Các chỉ số trên cần nhãn liên quan cho từng cặp câu hỏi và điều luật, vốn tốn nhiều công gán nhãn thủ công. Đồ án dùng hai cách thay thế. Cách thứ nhất là dùng LLM làm người chấm \cite{zheng2023judge} kết hợp kỹ thuật gộp kết quả (pooling): kết quả của mọi phương pháp được gộp lại, LLM chấm mù từng cặp theo thang 0, 1, 2 mà không biết cặp đến từ phương pháp nào. Cách thứ hai là đánh giá theo mục đã biết: sinh câu hỏi đời thường từ một điều luật ngẫu nhiên, coi chính điều đó là đáp án và đo tỷ lệ tìm thấy trong $k$ kết quả đầu (Hit@$k$).
+
+\section{Công nghệ sử dụng}
+\label{section:3.6}
+Bảng \ref{tab:congnghe} tổng hợp các công nghệ chính, vấn đề mà mỗi công nghệ giải quyết, các lựa chọn thay thế đã cân nhắc và lý do lựa chọn.
+
+\begin{longtable}{|L{2.3cm}|L{3.1cm}|L{3.0cm}|L{4.9cm}|}
+\caption{Lựa chọn công nghệ}\label{tab:congnghe}\\
+\hline
+\textbf{Công nghệ} & \textbf{Giải quyết yêu cầu} & \textbf{Lựa chọn thay thế} & \textbf{Lý do lựa chọn} \\ \hline
+\endfirsthead
+\hline
+\textbf{Công nghệ} & \textbf{Giải quyết yêu cầu} & \textbf{Lựa chọn thay thế} & \textbf{Lý do lựa chọn} \\ \hline
+\endhead
+OpenAI GPT-4.1, GPT-4o-mini & Điều phối tác tử, sinh câu trả lời, phân tích hợp đồng & Mô hình mã nguồn mở tự triển khai (Llama, Qwen) & Gọi công cụ ổn định, tiếng Việt tốt, không cần máy chủ GPU; mô hình nhỏ dùng cho tác vụ phụ để giảm chi phí \\ \hline
+text-embedding-3-small & Nhúng câu hỏi và điều luật & Mô hình nhúng mã nguồn mở đa ngôn ngữ & 1536 chiều, hỗ trợ tiếng Việt, chi phí thấp, không cần GPU \\ \hline
+Milvus 2.4 & Lưu và tìm kiếm vector & FAISS, Qdrant, pgvector & Hỗ trợ HNSW, lọc theo trường, quản lý nhiều collection; phù hợp quy mô hàng trăm nghìn vector \cite{wang2021milvus} \\ \hline
+bm25s & Tìm kiếm từ khoá BM25 & Elasticsearch, MySQL FULLTEXT & Chạy trong tiến trình, không cần thêm dịch vụ; MySQL FULLTEXT mặc định bỏ từ dưới 3 ký tự nên mất phần lớn âm tiết tiếng Việt \\ \hline
+Neo4j 5 & Đồ thị điều luật và quan hệ liên quan & Bảng quan hệ trong MySQL & Truy vấn nhiều bước bằng Cypher \cite{neo4jdocs} tự nhiên; vẫn giữ bảng MySQL làm phương án dự phòng \\ \hline
+MySQL 8 & Dữ liệu Pháp Điển, sổ cái văn bản, khu chờ duyệt & PostgreSQL & Dữ liệu có cấu trúc chặt, quan hệ khoá ngoại; công cụ thu thập dữ liệu đã dùng MySQL \\ \hline
+MongoDB Atlas & Hội thoại, bộ nhớ, bộ đệm, lịch sử rà soát & Lưu trong MySQL, Firebase Firestore & Tài liệu lồng nhau linh hoạt, chỉ mục TTL cho bộ đệm, GridFS lưu file gốc \\ \hline
+FastAPI & Máy chủ dịch vụ, luồng SSE & Flask, Django & Hỗ trợ bất đồng bộ, kiểm tra dữ liệu bằng Pydantic, tài liệu API tự sinh \cite{fastapidocs} \\ \hline
+Server-Sent Events & Truyền tiến trình và câu trả lời theo thời gian thực & WebSocket, thăm dò định kỳ & Một chiều từ máy chủ, chạy trên HTTP thông thường, đủ cho nhu cầu \cite{whatwgsse} \\ \hline
+Next.js 16, React 19 & Giao diện web và lớp chuyển tiếp API & Vue/Nuxt, React thuần & Kết hợp giao diện và route handler trong một dự án, ẩn địa chỉ máy chủ dịch vụ \cite{nextjsdocs} \\ \hline
+Tailwind CSS 4 & Định dạng giao diện & CSS module, thư viện thành phần & Thống nhất hệ màu qua biến CSS, hỗ trợ chế độ tối \\ \hline
+Three.js, React Three Fiber & Văn phòng luật 3D & Babylon.js & Tích hợp tự nhiên với React \\ \hline
+Firebase Authentication & Đăng nhập email, Google & Tự xây dựng, Auth0 & Miễn phí ở quy mô nhỏ, xác minh token phía máy chủ bằng Firebase Admin \\ \hline
+Tavily & Tìm kiếm web pháp luật & Google Custom Search, Bing & Trả về nội dung trích đoạn sẵn cho LLM, có chế độ tìm kiếm nâng cao \\ \hline
+Whisper, TTS của OpenAI & Hỏi bằng giọng nói, nghe câu trả lời & Web Speech API của trình duyệt & Nhận dạng tiếng Việt chính xác hơn, giọng đọc tự nhiên \\ \hline
+pdfplumber & Trích xuất chữ từ PDF & PyPDF2, OCR & Đọc được cỡ chữ để lọc chú thích cuối trang \\ \hline
+\end{longtable}
+
+Chương này đã trình bày cơ sở lý thuyết của hệ thống: LLM với cơ chế gọi công cụ làm bộ não điều phối, RAG để câu trả lời dựa trên điều luật, đồ thị tri thức để mở rộng sang điều liên quan, tác tử ReAct để thích ứng với từng câu hỏi, kết hợp tìm kiếm vector, BM25 và RRF để truy xuất, cùng bộ nhớ dài hạn và bộ đệm. Chương cũng phân tích lý do lựa chọn từng công nghệ so với các phương án thay thế. Chương tiếp theo trình bày cách các thành phần này được thiết kế và kết hợp thành hệ thống hoàn chỉnh.
+
+\end{document}

@@ -1,0 +1,898 @@
+\documentclass[../DoAn.tex]{subfiles}
+\begin{document}
+
+Chương \ref{chapter:Introduction} đã nêu bài toán hỏi đáp và rà soát văn bản pháp luật cùng định hướng giải pháp dựa trên RAG, đồ thị tri thức và tác tử AI. Trước khi đi vào công nghệ và thiết kế, cần xác định rõ hệ thống phải làm được gì và cho ai. Chương này trình bày kết quả khảo sát các sản phẩm hiện có và nhu cầu người dùng trong phần \ref{section:2.1}, tổng quan chức năng qua các biểu đồ use case và quy trình nghiệp vụ trong phần \ref{section:2.2}, đặc tả chi tiết toàn bộ use case trong phần \ref{section:2.3}, và các yêu cầu phi chức năng trong phần \ref{section:2.4}.
+
+\section{Khảo sát hiện trạng}
+\label{section:2.1}
+Khảo sát được thực hiện từ ba nguồn: các hệ thống tra cứu chính thống, các sản phẩm thương mại và trợ lý AI tương tự, và nhu cầu thực tế thể hiện qua các câu hỏi pháp luật mà người dùng thường đặt ra.
+
+\textbf{Hệ thống tra cứu chính thống.} Bộ Pháp điển điện tử của Bộ Tư pháp \cite{phapdienportal} là kết quả của công tác pháp điển hoá theo Pháp lệnh số 03/2012/UBTVQH13 \cite{plpd2012}. Dữ liệu được tổ chức theo cây chủ đề, đề mục, chương và điều; mỗi điều có chú thích văn bản gốc (ví dụ ``Điều 8 Nghị định số 100/2019/NĐ-CP'') và danh sách điều liên quan. Ưu điểm lớn nhất của nguồn này là tính chính thống và cấu trúc tốt. Hạn chế là người dùng phải biết điều luật thuộc chủ đề nào hoặc gõ đúng thuật ngữ; hệ thống không hiểu câu hỏi đời thường như ``công ty giữ bằng của tôi có được không'' và không tổng hợp câu trả lời.
+
+\textbf{Sản phẩm thương mại.} Các thư viện pháp luật trực tuyến cung cấp kho văn bản lớn, tình trạng hiệu lực, lược đồ văn bản liên quan và chuyên mục hỏi đáp do chuyên gia trả lời. Đây là các công cụ mạnh với người làm nghề luật, nhưng phần lớn tính năng chuyên sâu yêu cầu trả phí, việc tra cứu vẫn dựa trên từ khoá, và câu trả lời của chuyên gia chỉ có cho các câu hỏi đã được đăng.
+
+\textbf{Trợ lý AI đa năng.} Các chatbot dựa trên LLM hiểu ngôn ngữ tự nhiên tốt và trả lời ngay lập tức. Khi thử với các câu hỏi về mức phạt hoặc điều kiện cụ thể, câu trả lời thường nghe hợp lý nhưng không chỉ ra được điều luật có thể kiểm chứng, đôi khi dẫn số điều không tồn tại hoặc áp dụng văn bản đã bị thay thế. Nguyên nhân là mô hình không được gắn với một kho văn bản pháp luật Việt Nam cập nhật và không có cơ chế buộc câu trả lời phải dựa trên nguồn \cite{ji2023hallucination}.
+
+\textbf{Nhu cầu người dùng.} Bộ 50 câu hỏi dùng để đánh giá hệ thống được tổng hợp từ các câu hỏi thực tế, ví dụ ``Công ty nợ lương 3 tháng thì tôi phải làm gì'', ``Thủ tục đăng ký kết hôn cần những giấy tờ gì vậy'' hay ``Có quy định gì về trang phục không?''. Các câu hỏi này có ba đặc điểm: (i) dùng ngôn ngữ đời thường, thường chứa ngôi xưng và hoàn cảnh cá nhân; (ii) nhiều câu cần kết hợp vài điều luật thuộc các văn bản khác nhau; và (iii) một tỷ lệ đáng kể hỏi về mức phạt, mức tiền vốn thay đổi theo văn bản mới. Ngoài hỏi đáp, người dùng có nhu cầu kiểm tra hợp đồng trước khi ký, nhưng không muốn đọc hàng chục điều luật để tự đối chiếu.
+
+Bảng \ref{tab:sosanh} tổng hợp so sánh các nhóm sản phẩm theo những tiêu chí rút ra từ nhu cầu trên. Có thể thấy chưa có sản phẩm nào kết hợp được cả ba yếu tố: hiểu câu hỏi tự nhiên, trích dẫn điều luật có thể kiểm chứng và lưu ý tình trạng hiệu lực.
+
+\begin{table}[H]
+\centering
+\caption{So sánh các nhóm sản phẩm tra cứu pháp luật}
+\label{tab:sosanh}
+\begin{tabular}{|L{3.8cm}|L{2.4cm}|L{2.4cm}|L{2.2cm}|L{1.8cm}|}
+\hline
+\textbf{Tiêu chí} & \textbf{Cổng chính thống} & \textbf{Thư viện thương mại} & \textbf{Trợ lý AI đa năng} & \textbf{Đồ án} \\ \hline
+Hiểu câu hỏi tự nhiên & Không & Hạn chế & Có & Có \\ \hline
+Trích dẫn điều luật kiểm chứng được & Có (thủ công) & Có (thủ công) & Không ổn định & Có \\ \hline
+Lưu ý hiệu lực, văn bản mới & Một phần & Có & Không & Có \\ \hline
+Tổng hợp câu trả lời & Không & Chỉ câu đã đăng & Có & Có \\ \hline
+Rà soát hợp đồng tải lên & Không & Không & Không có căn cứ & Có \\ \hline
+Chi phí cho người dùng & Miễn phí & Phần lớn trả phí & Tuỳ gói & Miễn phí \\ \hline
+\end{tabular}
+\end{table}
+
+Từ kết quả khảo sát, các tính năng quan trọng cần phát triển gồm: hỏi đáp bằng ngôn ngữ tự nhiên có trích dẫn và cho xem toàn văn điều luật; chế độ phân tích tình huống cho các mô tả dài; tự kiểm tra quy định hiện hành với câu hỏi về mức phạt, mức tiền; rà soát văn bản tải lên với cảnh báo có căn cứ; ghi nhớ thông tin người dùng để không hỏi lại; và công cụ để quản trị viên cập nhật văn bản mới cùng tình trạng hiệu lực.
+
+\section{Tổng quan chức năng}
+\label{section:2.2}
+
+\subsection{Biểu đồ use case tổng quát}
+\label{subsection:2.2.1}
+Hình \ref{fig:uc_tongquat} trình bày biểu đồ use case tổng quát của hệ thống. Hệ thống có ba tác nhân người và ba tác nhân hệ thống. \textit{Khách} là người dùng chưa đăng nhập, được hệ thống cấp một mã ẩn danh lưu trong trình duyệt; khách đã có thể sử dụng gần như toàn bộ chức năng hỏi đáp và rà soát. \textit{Người dùng đã đăng nhập} kế thừa mọi chức năng của khách, và dữ liệu của họ (hội thoại, bộ nhớ, lịch sử rà soát) được gắn với tài khoản nên dùng được trên nhiều thiết bị. \textit{Quản trị viên} là người được cấp vai trò quản trị, chịu trách nhiệm xây dựng và cập nhật dữ liệu pháp luật, đánh giá chất lượng hệ thống. Ba tác nhân hệ thống là OpenAI API cung cấp mô hình ngôn ngữ, nhúng vector và xử lý giọng nói; Tavily cung cấp tìm kiếm web; và Firebase cung cấp dịch vụ xác thực.
+
+\hinhlon{Hinhve/UC_TongQuat.png}{\linewidth}{Biểu đồ use case tổng quát}{fig:uc_tongquat}
+
+Các use case chính được chia thành bốn nhóm. Nhóm hỏi đáp gồm UC01 Hỏi đáp pháp luật là chức năng trung tâm, được mở rộng bởi UC02 Phân tích tình huống, UC03 Xem điều luật trích dẫn, UC04 Hỏi bằng giọng nói, UC05 Nghe câu trả lời, cùng UC06 Đánh giá câu trả lời và UC09 Hỏi đáp trong văn phòng luật 3D. Nhóm rà soát văn bản gồm UC16 Rà soát văn bản pháp lý và UC17 Quản lý lịch sử rà soát. Nhóm tài khoản và cá nhân hoá gồm UC07 Quản lý hội thoại, UC08 Quản lý bộ nhớ cá nhân, UC10 Đăng ký/Đăng nhập và UC11 Đăng xuất. Nhóm quản trị gồm UC12 đến UC15 phục vụ xây dựng dữ liệu và đánh giá, cùng UC18 Cập nhật văn bản pháp luật mới và UC19 Quản lý hiệu lực văn bản.
+
+\subsection{Biểu đồ use case phân rã Hỏi đáp pháp luật}
+\label{subsection:2.2.2}
+Hình \ref{fig:uc_hoidap} phân rã UC01 Hỏi đáp pháp luật. Khi người dùng gửi câu hỏi, hệ thống luôn thực hiện phân loại yêu cầu; tuỳ kết quả, hệ thống có thể trả lời nhanh với câu chào hỏi, từ chối nội dung rác hoặc đề xuất chuyển cán bộ khi người dùng có dấu hiệu bức xúc. Với câu hỏi pháp lý, hệ thống chuẩn hoá câu hỏi, tra bộ nhớ cá nhân và bộ đệm ngữ nghĩa, rồi sinh câu trả lời. Trong quá trình sinh, tác tử có thể gọi bốn công cụ: tìm điều luật, mở rộng theo đồ thị, lấy toàn văn điều luật và tìm kiếm web. Sau khi trả lời, hệ thống cập nhật bộ nhớ dài hạn và lưu hội thoại.
+
+\hinh{Hinhve/UC_HoiDap.png}{0.95\linewidth}{Biểu đồ use case phân rã Hỏi đáp pháp luật}{fig:uc_hoidap}
+
+\subsection{Biểu đồ use case phân rã Rà soát văn bản pháp lý}
+\label{subsection:2.2.3}
+Hình \ref{fig:uc_rasoat} phân rã UC16 Rà soát văn bản pháp lý và UC17 Quản lý lịch sử rà soát. Người dùng gửi văn bản theo một trong ba cách: tải file PDF, DOCX hoặc TXT; dán đường dẫn tới trang web, file PDF hoặc tài liệu Google Docs công khai; hoặc dán trực tiếp nội dung. Hệ thống trích xuất nội dung, tóm tắt và nêu ý chính, phát hiện điều khoản rủi ro, tra cứu căn cứ trong Pháp Điển và khi cần thì tra thêm nguồn web tin cậy, cuối cùng đối chiếu để đưa ra kết luận kèm trích dẫn nguyên văn. Người dùng có thể chọn lưu kết quả; các lượt đã lưu có thể được mở lại, tải file gốc hoặc xoá.
+
+\hinh{Hinhve/UC_RaSoat.png}{0.95\linewidth}{Biểu đồ use case phân rã Rà soát văn bản pháp lý}{fig:uc_rasoat}
+
+\subsection{Biểu đồ use case phân rã Tài khoản, hội thoại và bộ nhớ cá nhân}
+\label{subsection:2.2.4}
+Hình \ref{fig:uc_taikhoan} trình bày nhóm chức năng tài khoản và cá nhân hoá. Người dùng có thể đăng ký, đăng nhập bằng email hoặc tài khoản Google; mỗi lần đăng nhập, hệ thống đồng bộ dữ liệu đã tạo khi còn ẩn danh sang tài khoản để không mất các hội thoại trước đó. Hội thoại có thể được tạo mới, mở lại, đổi tên, ghim và xoá. Bộ nhớ cá nhân cho phép người dùng xem những thông tin hệ thống đã ghi nhớ, xoá từng mục hoặc xoá toàn bộ, thể hiện quyền được quên đối với dữ liệu cá nhân.
+
+\hinh{Hinhve/UC_TaiKhoan.png}{0.9\linewidth}{Biểu đồ use case phân rã Tài khoản, hội thoại và bộ nhớ cá nhân}{fig:uc_taikhoan}
+
+\subsection{Biểu đồ use case phân rã Quản trị dữ liệu và đánh giá}
+\label{subsection:2.2.5}
+Hình \ref{fig:uc_quantri} trình bày các chức năng của quản trị viên, chia thành hai phần. Phần xây dựng dữ liệu thực hiện qua dòng lệnh gồm thu thập dữ liệu Pháp Điển vào MySQL, lập chỉ mục vector trong Milvus (có thể tiếp tục khi bị gián đoạn), xây dựng đồ thị tri thức và chạy các bộ đánh giá. Phần quản trị qua giao diện web yêu cầu đăng nhập với vai trò quản trị, gồm UC18 Cập nhật văn bản pháp luật mới (thêm từ đường dẫn hoặc file PDF, kiểm tra cấu trúc đã tách, so sánh với dữ liệu hiện có rồi duyệt hoặc từ chối), UC19 Quản lý hiệu lực văn bản và cập nhật khi có bản Pháp Điển mới.
+
+\hinh{Hinhve/UC_QuanTri.png}{0.95\linewidth}{Biểu đồ use case phân rã Quản trị dữ liệu và đánh giá}{fig:uc_quantri}
+
+\subsection{Quy trình nghiệp vụ}
+\label{subsection:2.2.6}
+Hệ thống có hai quy trình nghiệp vụ chính. Quy trình thứ nhất là xử lý một câu hỏi pháp luật, minh hoạ trong Hình \ref{fig:act_hoidap}. Quy trình bắt đầu khi người dùng gửi câu hỏi; tầng tiền xử lý quyết định trả lời nhanh, từ chối hay tiếp tục. Nếu tiếp tục, câu hỏi được chuẩn hoá và kiểm tra phạm vi, sau đó hệ thống tra bộ nhớ của người dùng và bộ đệm ngữ nghĩa. Khi bộ đệm không có câu trả lời phù hợp, tác tử lặp tối đa sáu vòng gọi công cụ cho tới khi đủ thông tin, rồi tổng hợp câu trả lời và truyền dần về giao diện. Cuối cùng, hệ thống lưu hội thoại và cập nhật bộ nhớ dài hạn ở chế độ nền.
+
+\hinh{Hinhve/ACT_XuLyCauHoi.png}{0.75\linewidth}{Quy trình xử lý một câu hỏi pháp luật}{fig:act_hoidap}
+
+Quy trình thứ hai là rà soát hợp đồng trước khi ký, minh hoạ trong Hình \ref{fig:act_rasoat}. Quy trình này kết hợp nhiều use case: người dùng gửi văn bản (UC16), hệ thống phân tích và tra cứu, người dùng mở căn cứ pháp lý để kiểm tra (UC03), rồi có thể mở lại kết quả về sau (UC17). Điểm đặc biệt của quy trình là bước kiểm chứng: một điều khoản chỉ được đưa vào danh sách cảnh báo khi có căn cứ hợp lệ, các điều khoản còn lại được đưa vào mục ``nên xem lại'' để người dùng tự kiểm tra hoặc hỏi luật sư.
+
+\hinh{Hinhve/ACT_RaSoat.png}{0.8\linewidth}{Quy trình nghiệp vụ rà soát hợp đồng trước khi ký}{fig:act_rasoat}
+
+\section{Đặc tả chức năng}
+\label{section:2.3}
+Phần này đặc tả toàn bộ 19 use case trong Hình \ref{fig:uc_tongquat}, xếp theo số thứ tự. Mỗi use case gồm bảng đặc tả, biểu đồ use case phân rã, biểu đồ hoạt động và biểu đồ tuần tự. Với UC01 và UC16, các biểu đồ đã trình bày ở phần \ref{section:2.2} hoặc Chương \ref{chapter:Experiment} được dẫn chiếu thay vì lặp lại.
+
+\subsection{Use case UC01 Hỏi đáp pháp luật}
+\label{subsection:uc01}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc01} đặc tả use case UC01.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC01 Hỏi đáp pháp luật}
+\label{tab:uc01}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC01. Hỏi đáp pháp luật \\ \hline
+\textbf{Tác nhân} & Khách, Người dùng đã đăng nhập; hệ thống ngoài: OpenAI, Tavily \\ \hline
+\textbf{Tiền điều kiện} & Người dùng mở trang hỏi đáp; máy chủ dịch vụ và kho dữ liệu đang hoạt động \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người dùng chọn chế độ (hỏi đáp hoặc phân tích tình huống), nhập câu hỏi và gửi. \newline
+2. Hệ thống phân loại yêu cầu và xác định là câu hỏi pháp lý. \newline
+3. Hệ thống chuẩn hoá câu hỏi và kiểm tra câu hỏi thuộc phạm vi pháp luật. \newline
+4. Hệ thống tra bộ nhớ cá nhân của người dùng để bổ sung ngữ cảnh. \newline
+5. Hệ thống tra bộ đệm ngữ nghĩa; không có câu trả lời tương đương. \newline
+6. Tác tử gọi các công cụ tìm kiếm để thu thập điều luật, hiển thị tiến trình từng bước. \newline
+7. Hệ thống truyền dần câu trả lời có trích dẫn điều luật, kèm danh sách căn cứ và độ tin cậy. \newline
+8. Hệ thống lưu hội thoại và cập nhật bộ nhớ dài hạn ở chế độ nền. \\ \hline
+\textbf{Luồng sự kiện phát sinh} &
+2a. Câu chào hỏi hoặc hỏi về khả năng của hệ thống: trả lời ngay, kết thúc. \newline
+2b. Nội dung rác hoặc cố tình vượt qua giới hạn của mô hình: từ chối, kết thúc. \newline
+2c. Người dùng có cảm xúc tiêu cực mạnh: đề xuất chuyển cán bộ xử lý. \newline
+3a. Câu hỏi ngoài phạm vi pháp luật: thông báo phạm vi hỗ trợ, kết thúc. \newline
+5a. Bộ đệm có câu trả lời với độ tương đồng từ 0,97 trở lên: trả câu trả lời đã lưu, sang bước 8. \newline
+6a. Câu hỏi về mức phạt, mức tiền hoặc kết quả Pháp Điển yếu: tác tử bị buộc gọi tìm kiếm web trước khi trả lời. \newline
+7a. Độ tin cậy thấp: hiển thị cảnh báo đề nghị đối chiếu văn bản chính thức. \\ \hline
+\textbf{Hậu điều kiện} & Câu trả lời và các điều luật căn cứ được lưu trong hội thoại; bộ nhớ dài hạn có thể được bổ sung hoặc cập nhật \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Biểu đồ use case phân rã của UC01 đã được trình bày ở Hình \ref{fig:uc_hoidap} (mục \ref{subsection:2.2.2}).
+
+\subsubsection{Biểu đồ hoạt động}
+Biểu đồ hoạt động của UC01 đã được trình bày ở Hình \ref{fig:act_hoidap} (mục \ref{subsection:2.2.6}).
+
+\subsubsection{Biểu đồ tuần tự}
+Biểu đồ tuần tự của UC01 được trình bày cùng thiết kế lớp ở Hình \ref{fig:seq_hoidap} (Chương \ref{chapter:Experiment}), kèm chi tiết thực thi công cụ ở Hình \ref{fig:seq_tools}.
+
+
+\subsection{Use case UC02 Phân tích tình huống pháp lý}
+\label{subsection:uc02}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc02} đặc tả use case UC02.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC02}
+\label{tab:uc02}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC02. Phân tích tình huống pháp lý (mở rộng UC01) \\ \hline
+\textbf{Tác nhân} & Khách, Người dùng đã đăng nhập; hệ thống ngoài: OpenAI, Tavily \\ \hline
+\textbf{Tiền điều kiện} & Người dùng ở trang hỏi đáp hoặc văn phòng 3D \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người dùng chọn chế độ ``Phân tích tình huống'' và mô tả tình huống thực tế của mình. \newline
+2. Hệ thống xử lý như UC01, nhưng tác tử nhận lời nhắc hệ thống của chế độ tình huống. \newline
+3. Tác tử tra cứu các căn cứ áp dụng cho từng hành vi trong tình huống. \newline
+4. Câu trả lời chỉ ra các hành vi và căn cứ pháp lý có thể áp dụng, trích dẫn điều luật, tóm tắt rủi ro và gợi ý hướng xử lý kèm lưu ý không thay thế tư vấn của luật sư. \\ \hline
+\textbf{Luồng sự kiện phát sinh} &
+3a. Tình huống thiếu yếu tố quyết định (loại hợp đồng, chủ thể\ldots): câu trả lời kết luận theo từng trường hợp thay vì suy đoán. \newline
+Các luồng phát sinh khác như UC01. \\ \hline
+\textbf{Hậu điều kiện} & Như UC01 \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Hình \ref{fig:uc02_uc} cho thấy UC02 mở rộng UC01 bằng việc chọn chế độ tình huống; luồng hỏi đáp gồm xác định hành vi, căn cứ áp dụng và đánh giá rủi ro, có thể tách trường hợp khi thiếu yếu tố quyết định.
+
+\hinh{Hinhve/UC02_UC.png}{0.8\linewidth}{Biểu đồ use case UC02 Phân tích tình huống pháp lý}{fig:uc02_uc}
+
+\subsubsection{Biểu đồ hoạt động}
+Hình \ref{fig:uc02_act} trình bày tác tử lặp lại việc chọn công cụ cho tới khi đủ căn cứ cho mọi hành vi trong tình huống, sau đó kết luận cụ thể hoặc theo từng trường hợp.
+
+\hinh{Hinhve/UC02_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC02 Phân tích tình huống pháp lý}{fig:uc02_act}
+
+\subsubsection{Biểu đồ tuần tự}
+Hình \ref{fig:uc02_seq} cho thấy yêu cầu được gửi với \texttt{query\_mode} bằng \texttt{situation}, khiến tác tử dùng lời nhắc hệ thống của chế độ tình huống.
+
+\hinh{Hinhve/UC02_SEQ.png}{0.95\linewidth}{Biểu đồ tuần tự UC02 Phân tích tình huống pháp lý}{fig:uc02_seq}
+
+
+\subsection{Use case UC03 Xem điều luật trích dẫn}
+\label{subsection:uc03}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc03} đặc tả use case UC03.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC03}
+\label{tab:uc03}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC03. Xem điều luật trích dẫn \\ \hline
+\textbf{Tác nhân} & Khách, Người dùng đã đăng nhập \\ \hline
+\textbf{Tiền điều kiện} & Có câu trả lời (UC01) hoặc kết quả rà soát (UC16) kèm căn cứ \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người dùng bấm một thẻ căn cứ pháp lý dưới câu trả lời. \newline
+2. Hệ thống mở khung ``Căn cứ pháp lý'' bên phải, cuộn tới và tô viền điều luật được chọn. \newline
+3. Mỗi tài liệu hiển thị nguồn (Pháp Điển hoặc web), điểm liên quan, chủ đề, đề mục, chương, tên điều và một phần nội dung. \newline
+4. Người dùng bấm ``Xem nội dung đầy đủ'' để mở toàn văn điều luật trong hộp thoại. \\ \hline
+\textbf{Luồng sự kiện phát sinh} &
+1a. Người dùng bấm ``Xem N tài liệu đã tra'': khung hiển thị toàn bộ điều luật tác tử đã tra, không chỉ các điều được trích. \newline
+1b. Người dùng bấm số tham chiếu [n] trong lời giải thích của kết quả rà soát: mở đúng căn cứ thứ n. \newline
+3a. Tài liệu là nguồn web: hiển thị đường dẫn tới trang gốc. \newline
+2a. Màn hình nhỏ: khung mở dưới dạng toàn màn hình, có nút đóng. \\ \hline
+\textbf{Hậu điều kiện} & Không thay đổi dữ liệu \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Hình \ref{fig:uc03_uc} cho thấy ba cách mở khung căn cứ pháp lý (thẻ căn cứ, nút xem tất cả tài liệu, số tham chiếu trong kết quả rà soát) và hai chức năng mở rộng là xem toàn văn và mở trang nguồn web.
+
+\hinh{Hinhve/UC03_UC.png}{0.8\linewidth}{Biểu đồ use case UC03 Xem điều luật trích dẫn}{fig:uc03_uc}
+
+\subsubsection{Biểu đồ hoạt động}
+Hình \ref{fig:uc03_act} trình bày giao diện chọn cách hiển thị theo kích thước màn hình, cuộn tới điều được chọn rồi cho phép xem toàn văn hoặc mở nguồn web.
+
+\hinh{Hinhve/UC03_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC03 Xem điều luật trích dẫn}{fig:uc03_act}
+
+\subsubsection{Biểu đồ tuần tự}
+Hình \ref{fig:uc03_seq} cho thấy toàn bộ thao tác diễn ra ở giao diện vì danh sách điều luật đã có sẵn trong tin nhắn, không cần gọi lại máy chủ.
+
+\hinh{Hinhve/UC03_SEQ.png}{0.95\linewidth}{Biểu đồ tuần tự UC03 Xem điều luật trích dẫn}{fig:uc03_seq}
+
+
+\subsection{Use case UC04 Hỏi bằng giọng nói}
+\label{subsection:uc04}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc04} đặc tả use case UC04.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC04}
+\label{tab:uc04}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC04. Hỏi bằng giọng nói (mở rộng UC01) \\ \hline
+\textbf{Tác nhân} & Khách, Người dùng đã đăng nhập; hệ thống ngoài: OpenAI Whisper \\ \hline
+\textbf{Tiền điều kiện} & Trình duyệt có micro \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người dùng bấm nút micro ở ô nhập câu hỏi. \newline
+2. Giao diện ghi âm và hiển thị dạng sóng âm theo thời gian thực. \newline
+3. Người dùng bấm dừng; giao diện gửi file âm thanh tới máy chủ. \newline
+4. Máy chủ chuyển giọng nói thành văn bản bằng mô hình Whisper và trả về nội dung. \newline
+5. Nội dung được gửi như một câu hỏi thông thường (UC01). \\ \hline
+\textbf{Luồng sự kiện phát sinh} &
+1a. Trình duyệt chưa được cấp quyền micro: yêu cầu cấp quyền; nếu người dùng từ chối, hiển thị hướng dẫn cấp quyền và kết thúc. \newline
+4a. Không nhận dạng được nội dung: thông báo để người dùng nói lại. \\ \hline
+\textbf{Hậu điều kiện} & Câu hỏi được gửi đi như UC01 \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Hình \ref{fig:uc04_uc} cho thấy việc ghi âm luôn kèm hiển thị sóng âm và chuyển giọng nói thành văn bản, kết quả được đưa vào UC01; việc cấp quyền micro là chức năng mở rộng.
+
+\hinh{Hinhve/UC04_UC.png}{0.8\linewidth}{Biểu đồ use case UC04 Hỏi bằng giọng nói}{fig:uc04_uc}
+
+\subsubsection{Biểu đồ hoạt động}
+Hình \ref{fig:uc04_act} trình bày các nhánh xử lý quyền micro trước khi ghi âm và luồng chuyển văn bản nhận dạng thành câu hỏi.
+
+\hinh{Hinhve/UC04_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC04 Hỏi bằng giọng nói}{fig:uc04_act}
+
+\subsubsection{Biểu đồ tuần tự}
+Hình \ref{fig:uc04_seq} cho thấy âm thanh được ghi bằng MediaRecorder, gửi qua lớp trung gian tới máy chủ và được chuyển thành văn bản bằng mô hình whisper-1.
+
+\hinh{Hinhve/UC04_SEQ.png}{0.95\linewidth}{Biểu đồ tuần tự UC04 Hỏi bằng giọng nói}{fig:uc04_seq}
+
+
+\subsection{Use case UC05 Nghe câu trả lời}
+\label{subsection:uc05}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc05} đặc tả use case UC05.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC05}
+\label{tab:uc05}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC05. Nghe câu trả lời (mở rộng UC01) \\ \hline
+\textbf{Tác nhân} & Khách, Người dùng đã đăng nhập; hệ thống ngoài: OpenAI TTS, Firebase Storage \\ \hline
+\textbf{Tiền điều kiện} & Hội thoại có ít nhất một câu trả lời \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người dùng bấm ``Đọc'' dưới câu trả lời. \newline
+2. Máy chủ loại định dạng Markdown khỏi câu trả lời. \newline
+3. Máy chủ tổng hợp giọng nói bằng mô hình tts-1. \newline
+4. Giao diện phát âm thanh và lưu đường dẫn âm thanh vào tin nhắn. \\ \hline
+\textbf{Luồng sự kiện phát sinh} &
+1a. Tin nhắn đã có đường dẫn âm thanh: phát lại ngay, không gọi lại mô hình. \newline
+3a. Có cấu hình Firebase Storage: tải file lên và trả đường dẫn công khai; nếu không, trả luồng MP3 trực tiếp. \\ \hline
+\textbf{Hậu điều kiện} & Câu trả lời được phát thành tiếng; đường dẫn âm thanh được lưu để phát lại \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Hình \ref{fig:uc05_uc} cho thấy chức năng đọc câu trả lời gồm làm sạch Markdown và tổng hợp giọng nói; lưu file âm thanh và phát lại từ đường dẫn đã lưu là các chức năng mở rộng.
+
+\hinh{Hinhve/UC05_UC.png}{0.8\linewidth}{Biểu đồ use case UC05 Nghe câu trả lời}{fig:uc05_uc}
+
+\subsubsection{Biểu đồ hoạt động}
+Hình \ref{fig:uc05_act} trình bày hệ thống ưu tiên phát lại âm thanh đã có, chỉ tổng hợp mới khi chưa có, và chọn trả đường dẫn công khai hoặc luồng MP3 tuỳ cấu hình.
+
+\hinh{Hinhve/UC05_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC05 Nghe câu trả lời}{fig:uc05_act}
+
+\subsubsection{Biểu đồ tuần tự}
+Hình \ref{fig:uc05_seq} cho thấy đường dẫn âm thanh được ghi vào tin nhắn sau lần phát đầu tiên để các lần sau không phải gọi lại mô hình.
+
+\hinh{Hinhve/UC05_SEQ.png}{0.95\linewidth}{Biểu đồ tuần tự UC05 Nghe câu trả lời}{fig:uc05_seq}
+
+
+\subsection{Use case UC06 Đánh giá câu trả lời}
+\label{subsection:uc06}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc06} đặc tả use case UC06.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC06}
+\label{tab:uc06}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC06. Đánh giá câu trả lời \\ \hline
+\textbf{Tác nhân} & Khách, Người dùng đã đăng nhập \\ \hline
+\textbf{Tiền điều kiện} & Hội thoại có ít nhất một câu trả lời \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người dùng bấm biểu tượng hữu ích hoặc không hữu ích dưới câu trả lời. \newline
+2. Hệ thống lưu đánh giá gắn với hội thoại và vị trí tin nhắn. \newline
+3. Biểu tượng được tô màu để thể hiện lựa chọn. \\ \hline
+\textbf{Luồng sự kiện phát sinh} & 1a. Người dùng bấm lựa chọn còn lại: đánh giá mới ghi đè đánh giá cũ. \\ \hline
+\textbf{Hậu điều kiện} & Đánh giá được lưu để phục vụ cải thiện hệ thống \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Hình \ref{fig:uc06_uc} cho thấy hai thao tác đánh giá hữu ích và chưa hữu ích, cùng dẫn tới việc lưu đánh giá theo hội thoại và vị trí tin nhắn.
+
+\hinh{Hinhve/UC06_UC.png}{0.8\linewidth}{Biểu đồ use case UC06 Đánh giá câu trả lời}{fig:uc06_uc}
+
+\subsubsection{Biểu đồ hoạt động}
+Hình \ref{fig:uc06_act} trình bày giao diện phản hồi ngay, đánh giá mới ghi đè đánh giá cũ nếu có.
+
+\hinh{Hinhve/UC06_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC06 Đánh giá câu trả lời}{fig:uc06_act}
+
+\subsubsection{Biểu đồ tuần tự}
+Hình \ref{fig:uc06_seq} cho thấy giao diện gửi đánh giá qua lớp trung gian để máy chủ lưu vào kho hội thoại.
+
+\hinh{Hinhve/SEQ_Feedback.png}{0.95\linewidth}{Biểu đồ tuần tự UC06 Đánh giá câu trả lời}{fig:uc06_seq}
+
+
+\subsection{Use case UC07 Quản lý hội thoại}
+\label{subsection:uc07}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc07} đặc tả use case UC07.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC07}
+\label{tab:uc07}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC07. Quản lý hội thoại \\ \hline
+\textbf{Tác nhân} & Khách, Người dùng đã đăng nhập \\ \hline
+\textbf{Tiền điều kiện} & Người dùng đã có mã định danh \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người dùng mở trang hỏi đáp; hệ thống tải danh sách hội thoại, hội thoại được ghim đứng đầu. \newline
+2. Người dùng chọn một hội thoại để mở lại toàn bộ tin nhắn và căn cứ đã trích. \newline
+3. Người dùng mở menu của hội thoại và chọn đổi tên, ghim hoặc xoá. \newline
+4. Hệ thống cập nhật và hiển thị lại danh sách. \\ \hline
+\textbf{Luồng sự kiện phát sinh} &
+1a. Người dùng gõ vào ô tìm kiếm: lọc hội thoại theo tên. \newline
+3a. Hội thoại mới được đặt tên tạm từ câu hỏi đầu; sau câu trả lời đầu tiên, LLM đặt tên ngắn 3 đến 8 từ nêu vấn đề pháp lý, trừ khi người dùng đã tự đổi tên. \\ \hline
+\textbf{Hậu điều kiện} & Danh sách hội thoại được cập nhật trong MongoDB \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Hình \ref{fig:uc07_uc} cho thấy danh sách hội thoại là điểm vào của các chức năng mở, tìm, đổi tên, ghim và xoá; tạo hội thoại mới luôn kèm đặt tên tự động.
+
+\hinh{Hinhve/UC07_UC.png}{0.8\linewidth}{Biểu đồ use case UC07 Quản lý hội thoại}{fig:uc07_uc}
+
+\subsubsection{Biểu đồ hoạt động}
+Hình \ref{fig:uc07_act} trình bày các thao tác trên danh sách hội thoại và cách đặt tên tự động không ghi đè tên do người dùng đặt.
+
+\hinh{Hinhve/UC07_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC07 Quản lý hội thoại}{fig:uc07_act}
+
+\subsubsection{Biểu đồ tuần tự}
+Hình \ref{fig:uc07_seq} cho thấy các thao tác đọc ghi hội thoại do route handler của Next.js thực hiện trực tiếp với MongoDB.
+
+\hinh{Hinhve/SEQ_HoiThoai.png}{0.95\linewidth}{Biểu đồ tuần tự UC07 Quản lý hội thoại}{fig:uc07_seq}
+
+
+\subsection{Use case UC08 Quản lý bộ nhớ cá nhân}
+\label{subsection:uc08}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc08} đặc tả use case UC08.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC08 Quản lý bộ nhớ cá nhân}
+\label{tab:uc08}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC08. Quản lý bộ nhớ cá nhân \\ \hline
+\textbf{Tác nhân} & Khách, Người dùng đã đăng nhập \\ \hline
+\textbf{Tiền điều kiện} & Người dùng đã có mã định danh (ẩn danh hoặc tài khoản) \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người dùng mở bảng ``Bộ nhớ'' trên thanh công cụ. \newline
+2. Hệ thống xác thực người dùng chỉ được xem bộ nhớ của chính mình và hiển thị danh sách các thông tin đã ghi nhớ, phân theo loại. \newline
+3. Người dùng chọn chế độ bộ nhớ: không lưu thông tin nhạy cảm (mặc định), lưu đầy đủ hoặc tắt. \newline
+4. Người dùng xoá một mục; hệ thống xoá và cập nhật danh sách. \\ \hline
+\textbf{Luồng sự kiện phát sinh} &
+2a. Mã người dùng trong yêu cầu không khớp với token đăng nhập: từ chối với mã lỗi 403. \newline
+4a. Người dùng chọn ``Xoá toàn bộ'' và xác nhận: hệ thống xoá mọi bộ nhớ của người dùng. \\ \hline
+\textbf{Hậu điều kiện} & Bộ nhớ và chế độ ghi nhớ được cập nhật; các câu trả lời sau dùng bộ nhớ mới \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Hình \ref{fig:uc08_uc} phân rã UC08: xem bộ nhớ và chọn chế độ ghi nhớ đều kèm kiểm tra quyền sở hữu; xoá một mục và xoá toàn bộ là chức năng mở rộng.
+
+\hinh{Hinhve/UC08_UC.png}{0.8\linewidth}{Biểu đồ use case UC08 Quản lý bộ nhớ cá nhân}{fig:uc08_uc}
+
+\subsubsection{Biểu đồ hoạt động}
+Hình \ref{fig:uc08_act} trình bày luồng hoạt động, trong đó yêu cầu bị từ chối ngay nếu mã người dùng không khớp token.
+
+\hinh{Hinhve/UC08_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC08 Quản lý bộ nhớ cá nhân}{fig:uc08_act}
+
+\subsubsection{Biểu đồ tuần tự}
+Hình \ref{fig:uc08_seq} trình bày luồng xem và xoá bộ nhớ giữa giao diện, lớp trung gian, máy chủ và MongoDB.
+
+\hinh{Hinhve/SEQ_BoNho.png}{0.95\linewidth}{Biểu đồ tuần tự UC08 Quản lý bộ nhớ cá nhân}{fig:uc08_seq}
+
+Ngoài thao tác trực tiếp của người dùng, bộ nhớ còn được cập nhật tự động sau mỗi lượt hỏi đáp. Hình \ref{fig:seq_capnhatbonho} trình bày luồng cập nhật chạy nền này với bốn thao tác thêm, cập nhật, xoá, bỏ qua.
+
+\hinh{Hinhve/SEQ_CapNhatBoNho.png}{0.95\linewidth}{Biểu đồ tuần tự cập nhật bộ nhớ dài hạn}{fig:seq_capnhatbonho}
+
+
+\subsection{Use case UC09 Hỏi đáp trong văn phòng luật 3D}
+\label{subsection:uc09}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc09} đặc tả use case UC09.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC09}
+\label{tab:uc09}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC09. Hỏi đáp trong văn phòng luật 3D \\ \hline
+\textbf{Tác nhân} & Khách, Người dùng đã đăng nhập \\ \hline
+\textbf{Tiền điều kiện} & Trình duyệt hỗ trợ WebGL \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người dùng mở ``Văn phòng 3D'' từ trang hỏi đáp; nếu đang mở một hội thoại, văn phòng tiếp tục hội thoại đó. \newline
+2. Người dùng chọn góc nhìn: toàn cảnh, nhập vai hoặc mắt nhân vật. \newline
+3. Người dùng nhập câu hỏi ở khung bên phải; hệ thống thực hiện UC01. \newline
+4. Theo từng sự kiện trạng thái từ máy chủ, nhân vật tương ứng (lễ tân, thư ký, luật sư, thủ thư, chuyên viên liên kết, trợ lý web, nhân viên lưu trữ, quản lý hồ sơ) hoạt động; thẻ ``Hoạt động'' ghi lại từng bước. \newline
+5. Câu trả lời hiển thị trong khung hội thoại kèm căn cứ. \\ \hline
+\textbf{Luồng sự kiện phát sinh} &
+1a. Mở trực tiếp không kèm hội thoại: mặc định chạy ở chế độ dữ liệu mẫu, không gọi máy chủ; người dùng có thể chuyển sang ``Thật''. \newline
+2a. Người dùng bấm vào một nhân vật trên thanh ``Nói chuyện với'': mở hộp thoại cho biết vai trò, thành phần hệ thống nhân vật phụ trách và việc đang làm; người dùng có thể đặt câu hỏi ngay trong hộp thoại hoặc xem tài liệu nhân vật vừa tra. \\ \hline
+\textbf{Hậu điều kiện} & Ở chế độ thật, câu hỏi và câu trả lời được lưu vào hội thoại như UC01 \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Hình \ref{fig:uc09_uc} cho thấy việc đặt câu hỏi trong văn phòng bao gồm UC01 và việc theo dõi nhân vật làm việc; nói chuyện với một nhân vật và xem nhật ký hoạt động là chức năng mở rộng.
+
+\hinh{Hinhve/UC09_UC.png}{0.8\linewidth}{Biểu đồ use case UC09 Hỏi đáp trong văn phòng luật 3D}{fig:uc09_uc}
+
+\subsubsection{Biểu đồ hoạt động}
+Hình \ref{fig:uc09_act} trình bày văn phòng chọn chế độ dữ liệu mẫu hoặc thật, và ở chế độ thật thì ánh xạ từng sự kiện trạng thái thành hoạt động của nhân vật.
+
+\hinh{Hinhve/UC09_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC09 Hỏi đáp trong văn phòng luật 3D}{fig:uc09_act}
+
+\subsubsection{Biểu đồ tuần tự}
+Hình \ref{fig:uc09_seq} cho thấy mỗi sự kiện trạng thái của luồng SSE được chuyển cho bộ đạo diễn để điều khiển nhân vật trong cảnh Three.js.
+
+\hinh{Hinhve/UC09_SEQ.png}{0.95\linewidth}{Biểu đồ tuần tự UC09 Hỏi đáp trong văn phòng luật 3D}{fig:uc09_seq}
+
+
+\subsection{Use case UC10 Đăng nhập}
+\label{subsection:uc10}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc10} đặc tả use case UC10.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC10 Đăng nhập}
+\label{tab:uc10}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC10. Đăng nhập \\ \hline
+\textbf{Tác nhân} & Khách; hệ thống ngoài: Firebase Authentication \\ \hline
+\textbf{Tiền điều kiện} & Người dùng chưa đăng nhập; có thể đã có dữ liệu dưới mã ẩn danh \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người dùng bấm ``Đăng nhập'' và chọn đăng nhập bằng Google. \newline
+2. Firebase xác thực và trả về token định danh cho trình duyệt. \newline
+3. Trình duyệt gửi token và mã ẩn danh hiện tại tới máy chủ. \newline
+4. Máy chủ xác minh token, chuyển hội thoại, bộ nhớ và lịch sử rà soát từ mã ẩn danh sang tài khoản. \newline
+5. Giao diện hiển thị tên người dùng và tải lại danh sách hội thoại. \\ \hline
+\textbf{Luồng sự kiện phát sinh} &
+1a. Người dùng đăng nhập bằng email và mật khẩu; nếu chưa có tài khoản thì đăng ký. \newline
+2a. Xác thực thất bại: hiển thị lỗi, người dùng vẫn ở trạng thái khách. \newline
+4a. Token không hợp lệ: máy chủ từ chối, không chuyển dữ liệu. \\ \hline
+\textbf{Hậu điều kiện} & Người dùng ở trạng thái đã đăng nhập; mọi dữ liệu trước đó được gắn với tài khoản \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Hình \ref{fig:uc10_uc} phân rã UC10 thành ba cách đăng nhập, cùng bao gồm việc đồng bộ dữ liệu ẩn danh.
+
+\hinh{Hinhve/UC10_UC.png}{0.8\linewidth}{Biểu đồ use case UC10 Đăng ký / Đăng nhập}{fig:uc10_uc}
+
+\subsubsection{Biểu đồ hoạt động}
+Hình \ref{fig:uc10_act} trình bày luồng hoạt động qua ba làn người dùng, Firebase và hệ thống.
+
+\hinh{Hinhve/UC10_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC10 Đăng ký / Đăng nhập}{fig:uc10_act}
+
+\subsubsection{Biểu đồ tuần tự}
+Hình \ref{fig:uc10_seq} trình bày trình tự xác minh token và chuyển dữ liệu ẩn danh sang tài khoản.
+
+\hinh{Hinhve/SEQ_DangNhap.png}{0.95\linewidth}{Biểu đồ tuần tự UC10 Đăng nhập và đồng bộ dữ liệu ẩn danh}{fig:uc10_seq}
+
+
+\subsection{Use case UC11 Đăng xuất}
+\label{subsection:uc11}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc11} đặc tả use case UC11.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC11}
+\label{tab:uc11}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC11. Đăng xuất \\ \hline
+\textbf{Tác nhân} & Người dùng đã đăng nhập; hệ thống ngoài: Firebase Authentication \\ \hline
+\textbf{Tiền điều kiện} & Người dùng đang đăng nhập \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người dùng mở menu tài khoản và chọn ``Đăng xuất''. \newline
+2. Trình duyệt huỷ phiên Firebase và xoá token. \newline
+3. Giao diện trở về trạng thái khách, dùng mã ẩn danh của trình duyệt, tải danh sách hội thoại của mã ẩn danh. \\ \hline
+\textbf{Luồng sự kiện phát sinh} & Không có \\ \hline
+\textbf{Hậu điều kiện} & Dữ liệu của tài khoản vẫn được lưu và xuất hiện lại khi người dùng đăng nhập \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Hình \ref{fig:uc11_uc} cho thấy đăng xuất gồm huỷ phiên đăng nhập và quay về chế độ khách với mã ẩn danh của trình duyệt.
+
+\hinh{Hinhve/UC11_UC.png}{0.8\linewidth}{Biểu đồ use case UC11 Đăng xuất}{fig:uc11_uc}
+
+\subsubsection{Biểu đồ hoạt động}
+Hình \ref{fig:uc11_act} trình bày các bước giao diện thực hiện khi đăng xuất; dữ liệu của tài khoản không bị xoá.
+
+\hinh{Hinhve/UC11_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC11 Đăng xuất}{fig:uc11_act}
+
+\subsubsection{Biểu đồ tuần tự}
+Hình \ref{fig:uc11_seq} cho thấy giao diện huỷ phiên Firebase rồi tải lại hội thoại theo mã ẩn danh.
+
+\hinh{Hinhve/UC11_SEQ.png}{0.95\linewidth}{Biểu đồ tuần tự UC11 Đăng xuất}{fig:uc11_seq}
+
+
+\subsection{Use case UC12 Thu thập dữ liệu Pháp Điển}
+\label{subsection:uc12}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc12} đặc tả use case UC12.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC12}
+\label{tab:uc12}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC12. Thu thập dữ liệu Pháp Điển \\ \hline
+\textbf{Tác nhân} & Quản trị viên; hệ thống ngoài: Cổng Bộ Pháp điển điện tử \\ \hline
+\textbf{Tiền điều kiện} & Đã tải và giải nén bộ dữ liệu Pháp Điển; MySQL đang chạy \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Quản trị viên chạy công cụ \texttt{law-crawler}. \newline
+2. Công cụ nạp chủ đề, đề mục từ tệp JSON. \newline
+3. Công cụ phân tích HTML từng đề mục, ghi chương, điều, bảng biểu, tệp đính kèm. \newline
+4. Công cụ ghi các cặp điều liên quan. \\ \hline
+\textbf{Luồng sự kiện phát sinh} &
+3a. Đề mục không có nút trong cây: ghi cảnh báo và bỏ qua. \newline
+3b. Quá trình bị gián đoạn: chạy lại từ điểm khôi phục là tệp đề mục cuối cùng. \newline
+4a. Cặp liên quan tới điều không tồn tại: bỏ qua và ghi nhật ký. \\ \hline
+\textbf{Hậu điều kiện} & Dữ liệu Pháp Điển có cấu trúc nằm trong MySQL (phần \ref{section:4.data}) \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Hình \ref{fig:uc12_uc} cho thấy các bước thu thập từ nạp chủ đề, đề mục tới phân tích HTML, ghi điều luật và điều liên quan, cùng khả năng chạy tiếp từ điểm khôi phục.
+
+\hinh{Hinhve/UC12_UC.png}{0.8\linewidth}{Biểu đồ use case UC12 Thu thập dữ liệu Pháp Điển}{fig:uc12_uc}
+
+\subsubsection{Biểu đồ hoạt động}
+Hình \ref{fig:uc12_act} trình bày vòng lặp xử lý từng tệp HTML đề mục và cách bỏ qua đề mục không có nút trong cây.
+
+\hinh{Hinhve/UC12_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC12 Thu thập dữ liệu Pháp Điển}{fig:uc12_act}
+
+\subsubsection{Biểu đồ tuần tự}
+Hình \ref{fig:uc12_seq} cho thấy công cụ thu thập dùng BeautifulSoup phân tích HTML và ghi lần lượt vào các bảng MySQL.
+
+\hinh{Hinhve/UC12_SEQ.png}{0.95\linewidth}{Biểu đồ tuần tự UC12 Thu thập dữ liệu Pháp Điển}{fig:uc12_seq}
+
+Hình \ref{fig:seq_dulieu} trình bày tổng quan luồng xây dựng dữ liệu từ thu thập Pháp Điển tới lập chỉ mục vector và đồ thị, nối UC12 với UC13 và UC14.
+
+\hinh{Hinhve/SEQ_DuLieu.png}{0.95\linewidth}{Biểu đồ tuần tự xây dựng dữ liệu}{fig:seq_dulieu}
+
+
+\subsection{Use case UC13 Lập chỉ mục vector và BM25}
+\label{subsection:uc13}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc13} đặc tả use case UC13.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC13}
+\label{tab:uc13}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC13. Lập chỉ mục vector và BM25 \\ \hline
+\textbf{Tác nhân} & Quản trị viên; hệ thống ngoài: OpenAI \\ \hline
+\textbf{Tiền điều kiện} & Đã hoàn thành UC12; Milvus đang chạy \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Quản trị viên chạy công cụ nhúng tên điều; công cụ tạo collection và nhúng theo lô. \newline
+2. Quản trị viên chạy công cụ chia đoạn có ngữ cảnh (tuỳ chọn \texttt{--dry-run} trước để ước tính chi phí). \newline
+3. Chỉ mục BM25 được xây dựng tự động ở lần khởi động đầu tiên của máy chủ dịch vụ. \\ \hline
+\textbf{Luồng sự kiện phát sinh} &
+1a. Một lô nhúng lỗi: nhúng từng bản ghi, ghi bản ghi lỗi vào \texttt{embed\_errors.csv}. \newline
+1b. Một trong hai công cụ bị gián đoạn: chạy lại với \texttt{--resume}, bỏ qua bản ghi đã có. \\ \hline
+\textbf{Hậu điều kiện} & Hai collection vector và chỉ mục BM25 sẵn sàng cho tìm kiếm lai \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Hình \ref{fig:uc13_uc} cho thấy ba chức năng lập chỉ mục (vector tên điều, đoạn có ngữ cảnh, BM25) và các chức năng mở rộng ước tính chi phí, chạy tiếp, ghi bản ghi lỗi.
+
+\hinh{Hinhve/UC13_UC.png}{0.8\linewidth}{Biểu đồ use case UC13 Lập chỉ mục vector và BM25}{fig:uc13_uc}
+
+\subsubsection{Biểu đồ hoạt động}
+Hình \ref{fig:uc13_act} trình bày cách xử lý lỗi theo lô khi nhúng tên điều và trình tự ước tính chi phí trước khi chia đoạn.
+
+\hinh{Hinhve/UC13_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC13 Lập chỉ mục vector và BM25}{fig:uc13_act}
+
+\subsubsection{Biểu đồ tuần tự}
+Hình \ref{fig:uc13_seq} cho thấy luồng dữ liệu từ MySQL qua mô hình nhúng vào hai collection Milvus và việc xây chỉ mục BM25 khi khởi động máy chủ.
+
+\hinh{Hinhve/UC13_SEQ.png}{0.95\linewidth}{Biểu đồ tuần tự UC13 Lập chỉ mục vector và BM25}{fig:uc13_seq}
+
+
+\subsection{Use case UC14 Xây dựng đồ thị tri thức}
+\label{subsection:uc14}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc14} đặc tả use case UC14.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC14}
+\label{tab:uc14}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC14. Xây dựng đồ thị tri thức \\ \hline
+\textbf{Tác nhân} & Quản trị viên \\ \hline
+\textbf{Tiền điều kiện} & Đã hoàn thành UC12; Neo4j đang chạy \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Quản trị viên chạy công cụ \texttt{build\_graph.py}. \newline
+2. Công cụ tạo ràng buộc duy nhất, các nút và cạnh phân cấp. \newline
+3. Công cụ tạo cạnh liên quan hai chiều và cạnh tham chiếu. \\ \hline
+\textbf{Luồng sự kiện phát sinh} &
+2a. Neo4j lỗi tệp nhật ký giao dịch: xoá dữ liệu Neo4j, khởi động lại và chạy lại công cụ; trong thời gian này bộ truy xuất dùng bảng quan hệ MySQL. \\ \hline
+\textbf{Hậu điều kiện} & Công cụ \texttt{graph\_traverse} của tác tử dùng được đồ thị Neo4j \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Hình \ref{fig:uc14_uc} cho thấy các bước xây dựng đồ thị và chức năng dự phòng bằng bảng quan hệ MySQL khi đồ thị chưa sẵn sàng.
+
+\hinh{Hinhve/UC14_UC.png}{0.8\linewidth}{Biểu đồ use case UC14 Xây dựng đồ thị tri thức}{fig:uc14_uc}
+
+\subsubsection{Biểu đồ hoạt động}
+Hình \ref{fig:uc14_act} trình bày trình tự tạo ràng buộc, nút, cạnh và cách bộ truy xuất chọn nguồn khi mở rộng theo đồ thị.
+
+\hinh{Hinhve/UC14_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC14 Xây dựng đồ thị tri thức}{fig:uc14_act}
+
+\subsubsection{Biểu đồ tuần tự}
+Hình \ref{fig:uc14_seq} cho thấy việc ghi theo lô 500 bản ghi bằng \texttt{UNWIND} và \texttt{MERGE} của Cypher.
+
+\hinh{Hinhve/UC14_SEQ.png}{0.95\linewidth}{Biểu đồ tuần tự UC14 Xây dựng đồ thị tri thức}{fig:uc14_seq}
+
+
+\subsection{Use case UC15 Đánh giá chất lượng hệ thống}
+\label{subsection:uc15}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc15} đặc tả use case UC15.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC15}
+\label{tab:uc15}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC15. Đánh giá chất lượng hệ thống \\ \hline
+\textbf{Tác nhân} & Quản trị viên; hệ thống ngoài: OpenAI, mô hình chấm điểm \\ \hline
+\textbf{Tiền điều kiện} & Kho dữ liệu và máy chủ dịch vụ sẵn sàng; có khoá API \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Quản trị viên chọn bộ đánh giá: truy xuất, gọi công cụ hoặc bộ nhớ. \newline
+2. Quản trị viên chạy với \texttt{--dry-run} để kiểm tra tệp tình huống và ước tính chi phí. \newline
+3. Bộ đánh giá chạy các cấu hình hoặc tình huống, chấm điểm và in bảng tổng hợp. \newline
+4. Kết quả chi tiết được lưu dạng JSON có dấu thời gian trong \texttt{evaluation/results}. \\ \hline
+\textbf{Luồng sự kiện phát sinh} &
+3a. Ước tính chi phí chấm điểm vượt ngân sách đặt trước: dừng, không gọi mô hình. \newline
+3b. Cặp câu hỏi và điều luật đã chấm ở lần trước: dùng kết quả lưu đệm. \\ \hline
+\textbf{Hậu điều kiện} & Có số liệu để so sánh các cấu hình (Phụ lục \ref{appendix:A}) \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Hình \ref{fig:uc15_uc} cho thấy ba bộ đánh giá cùng các chức năng mở rộng kiểm tra trước, dùng kết quả chấm đã lưu đệm và lưu kết quả.
+
+\hinh{Hinhve/UC15_UC.png}{0.8\linewidth}{Biểu đồ use case UC15 Đánh giá chất lượng hệ thống}{fig:uc15_uc}
+
+\subsubsection{Biểu đồ hoạt động}
+Hình \ref{fig:uc15_act} trình bày việc kiểm tra ngân sách trước khi chạy và ba bộ đánh giá có thể chạy độc lập.
+
+\hinh{Hinhve/UC15_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC15 Đánh giá chất lượng hệ thống}{fig:uc15_act}
+
+\subsubsection{Biểu đồ tuần tự}
+Hình \ref{fig:uc15_seq} cho thấy luồng của bộ đánh giá truy xuất, đại diện cho ba bộ đánh giá: truy xuất, gộp, tra bộ đệm, chấm mù rồi tính chỉ số.
+
+\hinh{Hinhve/UC15_SEQ.png}{0.95\linewidth}{Biểu đồ tuần tự UC15 Đánh giá chất lượng hệ thống}{fig:uc15_seq}
+
+
+\subsection{Use case UC16 Rà soát văn bản pháp lý}
+\label{subsection:uc16}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc16} đặc tả use case UC16.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC16 Rà soát văn bản pháp lý}
+\label{tab:uc16}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC16. Rà soát văn bản pháp lý \\ \hline
+\textbf{Tác nhân} & Khách, Người dùng đã đăng nhập; hệ thống ngoài: OpenAI, Tavily \\ \hline
+\textbf{Tiền điều kiện} & Người dùng mở trang rà soát văn bản \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người dùng chọn tải file và kéo thả hoặc chọn một file PDF, DOCX hoặc TXT không quá 15MB. \newline
+2. Người dùng giữ lựa chọn lưu vào lịch sử và bấm ``Phân tích văn bản''. \newline
+3. Hệ thống trích xuất nội dung và hiển thị tiến trình bốn bước: đọc văn bản, tóm tắt, tra cứu, đối chiếu. \newline
+4. Hệ thống tóm tắt văn bản, liệt kê các bên, ý chính và các điều khoản có nguy cơ. \newline
+5. Với mỗi điều khoản rủi ro, hệ thống tra Pháp Điển và khi cần thì tra web. \newline
+6. Hệ thống đối chiếu, chỉ giữ cảnh báo có căn cứ hợp lệ kèm đoạn trích nguyên văn đã kiểm chứng. \newline
+7. Hệ thống lưu file gốc và kết quả, hiển thị tóm tắt, cảnh báo, ý chính và nội dung nên bổ sung. \newline
+8. Người dùng bấm vào căn cứ để xem toàn văn điều luật trong khung căn cứ pháp lý. \\ \hline
+\textbf{Luồng sự kiện phát sinh} &
+1a. Người dùng dán đường dẫn: hệ thống tải nội dung, từ chối đường dẫn trỏ tới mạng nội bộ. \newline
+1b. Người dùng dán nội dung: yêu cầu tối thiểu 200 ký tự. \newline
+3a. File \texttt{.doc} cũ, file quá lớn hoặc nội dung quá ngắn (bản quét không có lớp chữ): thông báo lỗi kèm hướng dẫn, kết thúc. \newline
+6a. Điều khoản không tìm được căn cứ hợp lệ: đưa vào mục ``Điều khoản nên xem lại''. \newline
+6b. Kết luận ``trái luật'' chỉ dựa trên nguồn web độ tin cậy trung bình: hạ xuống ``rủi ro''. \newline
+7a. Người dùng bỏ chọn lưu: kết quả chỉ hiển thị một lần. \\ \hline
+\textbf{Hậu điều kiện} & Nếu chọn lưu, lượt rà soát xuất hiện trong lịch sử của người dùng và mở lại được \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Biểu đồ use case phân rã của UC16 đã được trình bày ở Hình \ref{fig:uc_rasoat} (mục \ref{subsection:2.2.3}).
+
+\subsubsection{Biểu đồ hoạt động}
+Biểu đồ hoạt động của UC16 đã được trình bày ở Hình \ref{fig:act_rasoat} (mục \ref{subsection:2.2.6}).
+
+\subsubsection{Biểu đồ tuần tự}
+Biểu đồ tuần tự của UC16 được trình bày ở Hình \ref{fig:seq_rasoat} (Chương \ref{chapter:Experiment}).
+
+
+\subsection{Use case UC17 Quản lý lịch sử rà soát}
+\label{subsection:uc17}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc17} đặc tả use case UC17.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC17}
+\label{tab:uc17}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC17. Quản lý lịch sử rà soát \\ \hline
+\textbf{Tác nhân} & Khách, Người dùng đã đăng nhập \\ \hline
+\textbf{Tiền điều kiện} & Người dùng đã có ít nhất một lượt rà soát được lưu (UC16) \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Người dùng mở trang rà soát; hệ thống hiển thị danh sách lượt rà soát mới nhất trước, mỗi mục có tiêu đề, thời điểm và số điều khoản trái luật hoặc số cảnh báo. \newline
+2. Người dùng chọn một mục; hệ thống tải lại toàn bộ kết quả: tóm tắt, cảnh báo, căn cứ, ý chính. \newline
+3. Người dùng bấm ``Tải file gốc'' để tải file đã gửi, hoặc ``Xem văn bản'' để xem nội dung đã trích xuất. \newline
+4. Người dùng bấm ``Xoá'' và xác nhận; hệ thống xoá kết quả cùng file gốc. \\ \hline
+\textbf{Luồng sự kiện phát sinh} &
+2a. Người dùng mở đường dẫn \texttt{/review?id=\ldots} của lượt rà soát: hệ thống mở thẳng lượt đó nếu người dùng là chủ sở hữu. \newline
+2b. Lượt rà soát không thuộc người dùng: thông báo không tìm thấy. \newline
+3a. Lượt rà soát từ nội dung dán vào hoặc từ trang web: không có file gốc để tải. \\ \hline
+\textbf{Hậu điều kiện} & Danh sách lịch sử được cập nhật nếu có xoá \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Hình \ref{fig:uc17_uc} cho thấy danh sách lượt rà soát là điểm vào của các chức năng mở lại, tải file gốc, xem văn bản và xoá; mọi thao tác đều kiểm tra chủ sở hữu.
+
+\hinh{Hinhve/UC17_UC.png}{0.8\linewidth}{Biểu đồ use case UC17 Quản lý lịch sử rà soát}{fig:uc17_uc}
+
+\subsubsection{Biểu đồ hoạt động}
+Hình \ref{fig:uc17_act} trình bày các nhánh xử lý theo thao tác và trường hợp lượt rà soát không có file gốc.
+
+\hinh{Hinhve/UC17_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC17 Quản lý lịch sử rà soát}{fig:uc17_act}
+
+\subsubsection{Biểu đồ tuần tự}
+Hình \ref{fig:uc17_seq} cho thấy mọi lời gọi đi qua lớp trung gian tới \texttt{ReviewHistory}, luôn lọc theo chủ sở hữu khi đọc ghi MongoDB và GridFS.
+
+\hinh{Hinhve/UC17_SEQ.png}{0.95\linewidth}{Biểu đồ tuần tự UC17 Quản lý lịch sử rà soát}{fig:uc17_seq}
+
+
+\subsection{Use case UC18 Cập nhật văn bản pháp luật mới}
+\label{subsection:uc18}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc18} đặc tả use case UC18.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC18 Cập nhật văn bản pháp luật mới}
+\label{tab:uc18}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC18. Cập nhật văn bản pháp luật mới \\ \hline
+\textbf{Tác nhân} & Quản trị viên \\ \hline
+\textbf{Tiền điều kiện} & Quản trị viên đăng nhập bằng tài khoản có email đã xác minh và được cấp vai trò quản trị \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Quản trị viên mở thẻ ``Thêm văn bản'', dán một hoặc nhiều đường dẫn trang Công báo, đường dẫn PDF, hoặc tải lên file PDF. \newline
+2. Hệ thống tạo các mục trong khu chờ duyệt và xử lý nền: tải file, trích xuất chữ, tách metadata (số hiệu, loại, ngày ban hành, ngày hiệu lực) và cấu trúc phần, chương, mục, điều. \newline
+3. Hệ thống so sánh với dữ liệu hiện có, đánh dấu điều mới, điều thay đổi và điều giữ nguyên, nhận diện các quan hệ sửa đổi, thay thế. \newline
+4. Quản trị viên mở thẻ ``Chờ duyệt'', kiểm tra cấu trúc và phần so sánh, sửa thông tin nếu cần. \newline
+5. Quản trị viên bấm ``Duyệt''; hệ thống ghi văn bản vào kho tra cứu và cập nhật sổ cái hiệu lực. \\ \hline
+\textbf{Luồng sự kiện phát sinh} &
+2a. Đường dẫn không hợp lệ, không phải PDF hoặc bị \texttt{robots.txt} chặn: mục chuyển sang trạng thái lỗi kèm lý do. \newline
+2b. Bản quét không có lớp chữ: ghi cảnh báo để quản trị viên biết. \newline
+4a. Quản trị viên từ chối: mục chuyển sang trạng thái bị từ chối, không ảnh hưởng dữ liệu tra cứu. \newline
+5a. Ghi dữ liệu thất bại: mục chuyển sang trạng thái lỗi ghi, có thể thử lại. \\ \hline
+\textbf{Hậu điều kiện} & Văn bản đã duyệt được tra cứu trong hỏi đáp; tình trạng hiệu lực các văn bản liên quan được cập nhật \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Hình \ref{fig:uc18_uc} phân rã UC18: thêm từ đường dẫn hoặc file đều dẫn tới trích xuất, tách cấu trúc và so sánh; duyệt dẫn tới ghi kho tra cứu và cập nhật chỉ mục.
+
+\hinh{Hinhve/UC18_UC.png}{0.8\linewidth}{Biểu đồ use case UC18 Cập nhật văn bản pháp luật mới}{fig:uc18_uc}
+
+\subsubsection{Biểu đồ hoạt động}
+Hình \ref{fig:uc18_act} trình bày vòng đời của một mục chờ duyệt từ \texttt{queued} tới \texttt{published} hoặc \texttt{rejected}.
+
+\hinh{Hinhve/UC18_ACT.png}{0.75\linewidth}{Biểu đồ hoạt động UC18 Cập nhật văn bản pháp luật mới}{fig:uc18_act}
+
+\subsubsection{Biểu đồ tuần tự}
+Hình \ref{fig:uc18_seq} trình bày trình tự xử lý nền và việc ghi MySQL, nhúng lại vector, xây lại BM25 khi duyệt.
+
+\hinh{Hinhve/UC18_SEQ.png}{\linewidth}{Biểu đồ tuần tự UC18 Cập nhật văn bản pháp luật mới}{fig:uc18_seq}
+
+
+\subsection{Use case UC19 Quản lý hiệu lực văn bản}
+\label{subsection:uc19}
+\subsubsection{Đặc tả use case}
+Bảng \ref{tab:uc19} đặc tả use case UC19.
+\begin{table}[H]
+\centering
+\caption{Đặc tả use case UC19}
+\label{tab:uc19}
+\begin{tabular}{|L{3.0cm}|L{11.0cm}|}
+\hline
+\textbf{Tên use case} & UC19. Quản lý hiệu lực văn bản \\ \hline
+\textbf{Tác nhân} & Quản trị viên \\ \hline
+\textbf{Tiền điều kiện} & Đăng nhập với vai trò quản trị \\ \hline
+\textbf{Luồng sự kiện chính} &
+1. Quản trị viên mở thẻ ``Văn bản'' và tìm văn bản theo số hiệu hoặc trích yếu. \newline
+2. Hệ thống hiển thị sổ cái văn bản cùng trạng thái hiệu lực, kể cả văn bản vốn có trong Pháp Điển. \newline
+3. Quản trị viên chọn trạng thái mới (còn hiệu lực, chưa có hiệu lực, hết hiệu lực một phần, hết hiệu lực), nhập ngày hết hiệu lực và văn bản thay thế nếu có. \newline
+4. Hệ thống lưu vào sổ cái. \\ \hline
+\textbf{Luồng sự kiện phát sinh} &
+3a. Trạng thái hoặc số hiệu không hợp lệ: báo lỗi, không lưu. \\ \hline
+\textbf{Hậu điều kiện} & Từ lượt hỏi đáp tiếp theo, điều luật thuộc văn bản được gắn chú thích hiệu lực; điều thuộc văn bản hết hiệu lực bị hạ điểm và không được dùng làm căn cứ chính \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Biểu đồ use case}
+Hình \ref{fig:uc19_uc} cho thấy cập nhật trạng thái hiệu lực kèm ngày hết hiệu lực và văn bản thay thế, yêu cầu quyền quản trị và tác động tới chú thích hiệu lực khi trả lời.
+
+\hinh{Hinhve/UC19_UC.png}{0.8\linewidth}{Biểu đồ use case UC19 Quản lý hiệu lực văn bản}{fig:uc19_uc}
+
+\subsubsection{Biểu đồ hoạt động}
+Hình \ref{fig:uc19_act} trình bày việc kiểm tra dữ liệu nhập và tác động của trạng thái mới lên các lượt hỏi đáp sau.
+
+\hinh{Hinhve/UC19_ACT.png}{0.8\linewidth}{Biểu đồ hoạt động UC19 Quản lý hiệu lực văn bản}{fig:uc19_act}
+
+\subsubsection{Biểu đồ tuần tự}
+Hình \ref{fig:uc19_seq} cho thấy trạng thái được lưu vào sổ cái và được đọc lại khi tác tử gắn chú thích hiệu lực cho điều luật.
+
+\hinh{Hinhve/UC19_SEQ.png}{0.95\linewidth}{Biểu đồ tuần tự UC19 Quản lý hiệu lực văn bản}{fig:uc19_seq}
+
+
+\section{Yêu cầu phi chức năng}
+\label{section:2.4}
+Ngoài các yêu cầu chức năng, hệ thống phải đáp ứng các yêu cầu phi chức năng sau.
+
+\textbf{Độ tin cậy của câu trả lời.} Đây là yêu cầu quan trọng nhất với một hệ thống pháp lý. Mọi câu trả lời phải trích dẫn điều luật có thật trong kết quả tra cứu, ghi đúng số điều và số hiệu văn bản theo chú thích của Pháp Điển, không được suy ra số điều từ mã sắp xếp nội bộ. Khi không đủ căn cứ, hệ thống phải nói rõ thay vì suy diễn. Điều luật thuộc văn bản đã hết hiệu lực phải được ghi chú và không được dùng làm căn cứ chính.
+
+\textbf{Hiệu năng.} Người dùng phải thấy phản hồi ngay sau khi gửi câu hỏi, thể hiện qua tiến trình xử lý từng bước; câu trả lời đầy đủ nên có trong khoảng 10 đến 20 giây với câu hỏi thông thường. Tác vụ rà soát văn bản dài hơn nhưng phải hiển thị tiến trình và hoàn thành trong vòng một phút với hợp đồng vài trang. Truy vấn lặp lại phải được phục vụ từ bộ đệm.
+
+\textbf{Bảo mật và quyền riêng tư.} Người dùng chỉ được đọc, sửa, xoá dữ liệu của chính mình; định danh dựa trên token đã xác minh, không tin mã người dùng do trình duyệt gửi lên nếu thiếu token. Chức năng quản trị chỉ dành cho tài khoản có email đã xác minh và được cấp vai trò. Bộ nhớ dài hạn mặc định không lưu thông tin nhạy cảm như số giấy tờ, số tài khoản, tình trạng sức khoẻ. Tính năng tải đường dẫn phải chặn truy cập vào mạng nội bộ. Văn bản người dùng đưa vào mô hình phải được coi là dữ liệu, không phải chỉ dẫn.
+
+\textbf{Tính dễ dùng.} Giao diện hỗ trợ tiếng Việt hoàn toàn, chế độ sáng và tối, hiển thị tốt trên màn hình máy tính và điện thoại. Người dùng chưa đăng nhập vẫn sử dụng được các chức năng chính.
+
+\textbf{Tính dễ bảo trì và kiểm thử.} Mã nguồn được chia theo tầng và mô-đun; các thành phần phụ thuộc dịch vụ ngoài (mô hình ngôn ngữ, cơ sở dữ liệu) được thiết kế để có thể thay bằng bản giả khi kiểm thử. Các tham số quan trọng như mô hình sử dụng, ngưỡng bộ đệm, trọng số hợp nhất thứ hạng được cấu hình qua biến môi trường.
+
+\textbf{Yêu cầu kỹ thuật.} Hệ thống sử dụng dữ liệu Bộ Pháp điển làm nguồn chính; dữ liệu có cấu trúc lưu trong cơ sở dữ liệu quan hệ, vector lưu trong cơ sở dữ liệu vector, quan hệ giữa các điều lưu trong cơ sở dữ liệu đồ thị và dữ liệu người dùng lưu trong cơ sở dữ liệu tài liệu. Hệ thống phải tiếp tục hoạt động khi một thành phần phụ trợ gặp sự cố, ví dụ dùng bảng quan hệ trong cơ sở dữ liệu quan hệ khi cơ sở dữ liệu đồ thị chưa sẵn sàng.
+
+Chương này đã xác định các nhóm sản phẩm hiện có và khoảng trống mà đồ án hướng tới: một hệ thống vừa hiểu câu hỏi tự nhiên vừa trích dẫn điều luật có thể kiểm chứng. Từ đó, chương đã mô tả các tác nhân, các nhóm use case, hai quy trình nghiệp vụ chính, đặc tả năm use case quan trọng và các yêu cầu phi chức năng, trong đó độ tin cậy của câu trả lời được đặt lên hàng đầu. Chương tiếp theo trình bày nền tảng lý thuyết và công nghệ được lựa chọn để đáp ứng các yêu cầu này.
+
+\end{document}

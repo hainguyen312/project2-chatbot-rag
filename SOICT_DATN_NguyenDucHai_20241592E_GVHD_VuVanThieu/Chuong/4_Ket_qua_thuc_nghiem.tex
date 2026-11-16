@@ -1,0 +1,372 @@
+\documentclass[../DoAn.tex]{subfiles}
+\begin{document}
+
+Chương \ref{chapter:Methodology} đã trình bày các nền tảng lý thuyết và công nghệ được lựa chọn. Chương này trình bày cách kết hợp chúng thành một hệ thống hoàn chỉnh, theo trình tự từ kiến trúc tổng thể (phần \ref{section:4.1}), thiết kế chi tiết giao diện, lớp và cơ sở dữ liệu (phần \ref{section:4.2}), quy trình xây dựng và xử lý dữ liệu (phần \ref{section:4.data}), kết quả xây dựng ứng dụng (phần \ref{section:4.3}), kiểm thử (phần \ref{section:4.4}) đến mô hình triển khai (phần \ref{section:4.5}).
+
+\section{Thiết kế kiến trúc}
+\label{section:4.1}
+
+\subsection{Lựa chọn kiến trúc phần mềm}
+Hệ thống được thiết kế theo kiến trúc phân tầng kết hợp mô hình khách -- chủ, với một lớp trung gian phục vụ giao diện (Backend for Frontend). Kiến trúc phân tầng chia hệ thống thành các tầng có trách nhiệm riêng, tầng trên chỉ gọi tầng ngay dưới; cách chia này phù hợp vì hệ thống có nhiều thành phần dùng chung tầng truy xuất (hỏi đáp, rà soát văn bản, văn phòng 3D) và nhiều kho lưu trữ khác nhau cần được che giấu sau một giao diện thống nhất. Kiến trúc vi dịch vụ đã được cân nhắc nhưng không chọn, vì quy mô một nhóm phát triển và lưu lượng hiện tại không bù được chi phí vận hành nhiều dịch vụ riêng.
+
+Hình \ref{fig:kientruc} trình bày kiến trúc cụ thể của hệ thống. Tầng trình bày là ứng dụng Next.js chạy ở cổng 3000, gồm các trang hỏi đáp, văn phòng 3D, rà soát văn bản và quản trị. Các route handler của Next.js đóng vai trò lớp trung gian: chúng nhận yêu cầu từ trình duyệt, chuyển tiếp tới máy chủ dịch vụ kèm token xác thực và chuyển nguyên luồng SSE về trình duyệt, nhờ đó địa chỉ máy chủ dịch vụ không lộ ra ngoài và trình duyệt không cần xử lý vấn đề truy cập khác nguồn. Tầng dịch vụ là ứng dụng FastAPI chạy ở cổng 8001, gồm tầng tiền xử lý, tác tử RAG, bộ nhớ dài hạn, bộ đệm ngữ nghĩa, mô-đun rà soát văn bản và mô-đun quản trị dữ liệu văn bản. Tầng truy xuất dữ liệu gồm bộ truy xuất GraphRAG và các công cụ xây dựng dữ liệu chạy ngoại tuyến. Tầng hạ tầng gồm bốn hệ lưu trữ (MySQL, Milvus, Neo4j, MongoDB) và các dịch vụ ngoài (OpenAI, Tavily, Firebase).
+
+\hinh{Hinhve/CMP_KienTruc.png}{\linewidth}{Kiến trúc tổng thể của hệ thống}{fig:kientruc}
+
+So với kiến trúc phân tầng lý thuyết, hệ thống có hai điều chỉnh. Thứ nhất, mỗi loại dữ liệu được lưu ở hệ lưu trữ phù hợp nhất thay vì một cơ sở dữ liệu chung: dữ liệu pháp luật có cấu trúc ở MySQL, vector ở Milvus, quan hệ giữa điều luật ở Neo4j, dữ liệu người dùng ở MongoDB. Thứ hai, tầng truy xuất có cơ chế dự phòng: khi Neo4j chưa có dữ liệu hoặc gặp lỗi, bộ truy xuất dùng bảng quan hệ \texttt{pdmuclienquan} trong MySQL để mở rộng theo điều liên quan, và khi một điều luật chưa có trong Neo4j thì đọc nội dung từ MySQL. Nhờ vậy, hệ thống tiếp tục trả lời được khi một thành phần phụ trợ không sẵn sàng.
+
+\subsection{Thiết kế tổng quan}
+Hình \ref{fig:goi} trình bày biểu đồ gói của hệ thống, sắp xếp theo bốn tầng từ trên xuống. Các phụ thuộc chỉ đi từ tầng trên xuống tầng dưới và không bỏ qua tầng.
+
+\hinh{Hinhve/PKG_TongQuan.png}{0.9\linewidth}{Biểu đồ gói của hệ thống}{fig:goi}
+
+Ở tầng trình bày, gói \texttt{app} chứa các trang (\texttt{page.tsx}) cho từng chức năng; gói \texttt{components} chứa các thành phần giao diện dùng lại như dòng tin nhắn, khung căn cứ pháp lý, bảng bộ nhớ, cảnh văn phòng 3D; gói \texttt{store} và \texttt{hooks} quản lý trạng thái hội thoại, xác thực, giọng nói và chế độ sáng tối; gói \texttt{app/api} chứa 16 route handler chuyển tiếp tới máy chủ dịch vụ hoặc đọc ghi hội thoại trong MongoDB.
+
+Ở tầng dịch vụ, gói \texttt{rag\_api} định nghĩa các điểm cuối HTTP và luồng SSE. Gói \texttt{agents} chứa tầng tiền xử lý với ba tác tử nhỏ: trả lời nhanh, phát hiện nội dung rác và phân tích cảm xúc. Gói \texttt{services} chứa logic nghiệp vụ: \texttt{agentic\_rag} điều phối vòng lặp gọi công cụ; \texttt{doc\_review} và \texttt{review\_history} thực hiện rà soát văn bản và lưu lịch sử; \texttt{memory\_manager} và \texttt{semantic\_cache} quản lý bộ nhớ và bộ đệm; \texttt{lawdata} nhập văn bản mới và quản lý hiệu lực; \texttt{auth\_guard} và \texttt{roles} kiểm tra quyền.
+
+Ở tầng truy xuất dữ liệu, gói \texttt{retrieve} chứa bộ truy xuất GraphRAG, chỉ mục BM25 và tìm kiếm web; gói \texttt{data\_processing} chứa các công cụ nạp dữ liệu vào Milvus. Tầng hạ tầng gồm các kho lưu trữ và dịch vụ ngoài.
+
+\subsection{Thiết kế chi tiết gói}
+Hình \ref{fig:cls_rag} trình bày thiết kế các lớp của nhóm gói truy xuất và tác tử. Lớp \texttt{GraphRAGRetriever} là trung tâm của tầng truy xuất, cung cấp tìm kiếm lai, tìm kiếm vector, mở rộng đồ thị và xếp hạng lại; nó phụ thuộc vào \texttt{BM25Index} cho phần tìm kiếm từ khoá. Mô-đun tác tử (\texttt{agentic\_rag}) định nghĩa bốn công cụ, vòng lặp gọi công cụ và luật buộc kiểm tra web; nó gọi \texttt{GraphRAGRetriever} khi thực thi công cụ. Ở tầng tiền xử lý, \texttt{AgentsManager} kết tập một danh sách tác tử kế thừa lớp trừu tượng \texttt{BaseAgent}; mỗi tác tử cài đặt phương thức \texttt{run} riêng. Thiết kế này cho phép thêm tác tử tiền xử lý mới mà không sửa luồng chính. \texttt{MemoryManager} và \texttt{SemanticCache} độc lập với tầng truy xuất và được gọi trực tiếp từ \texttt{rag\_api}.
+
+\hinh{Hinhve/CLS_RAG.png}{0.95\linewidth}{Thiết kế lớp nhóm truy xuất và tác tử}{fig:cls_rag}
+
+Hình \ref{fig:cls_rasoat} trình bày thiết kế nhóm gói rà soát văn bản. Mô-đun \texttt{doc\_review} tạo ra các đối tượng dữ liệu \texttt{Risk} (điều khoản rủi ro do LLM phát hiện) và \texttt{Finding} (cảnh báo đã kiểm chứng, gắn với một \texttt{Risk}). Kết quả được chuyển cho \texttt{ReviewHistory} qua một hàm móc (\texttt{on\_result}) do tầng API truyền vào, nhờ đó mô-đun phân tích không phụ thuộc vào cách lưu trữ. \texttt{ReviewHistory} kết tập một đối tượng thực thi giao diện \texttt{FileStore}; trong vận hành là \texttt{GridFSStore}, còn khi kiểm thử được thay bằng bản giả lưu trong bộ nhớ.
+
+\hinh{Hinhve/CLS_RaSoat.png}{0.9\linewidth}{Thiết kế lớp nhóm rà soát văn bản}{fig:cls_rasoat}
+
+\section{Thiết kế chi tiết}
+\label{section:4.2}
+
+\subsection{Thiết kế giao diện}
+Giao diện hướng tới trình duyệt trên máy tính với độ phân giải từ $1366\times768$ trở lên, đồng thời hiển thị được trên điện thoại có chiều rộng từ 360 điểm ảnh; các thanh bên thu lại thành ngăn kéo trên màn hình nhỏ. Hệ màu được định nghĩa bằng biến CSS cho hai chế độ sáng và tối, đổi bằng một nút trên thanh công cụ và được ghi nhớ cho mọi trang.
+
+Định hướng thiết kế là ``trang văn bản pháp luật'': nền giấy trắng lạnh, chữ màu mực xanh đen, và chỉ dùng một màu nhấn duy nhất là đỏ son (màu dấu mộc). Màu nhấn được dành riêng cho căn cứ pháp lý và hành động chính như nút gửi câu hỏi hay nút phân tích văn bản, nhờ đó người dùng nhận ra ngay đâu là điều luật được trích dẫn. Cảnh báo dùng màu nâu cam, cố ý khác màu đỏ son để căn cứ không bị đọc nhầm thành lỗi; trạng thái tích cực dùng màu xanh lá. Câu trả lời được trình bày như văn bản, không đóng khung, chiều rộng dòng giới hạn khoảng 46 em để dễ đọc.
+
+Các thống nhất khác gồm: nút chính có nền màu nhấn, nút phụ có viền xám; thông báo lỗi đặt ngay dưới vùng nhập liệu với nền nâu cam nhạt; tiến trình xử lý hiển thị dưới dạng danh sách các bước với biểu tượng đã xong, đang chạy và chưa chạy; mọi điều luật được trích dẫn hiển thị dưới dạng thẻ (chip) có thể bấm để mở khung căn cứ pháp lý ở bên phải màn hình. Hình ảnh giao diện thực tế được trình bày trong phần \ref{subsection:4.3.3}.
+
+\subsection{Thiết kế lớp}
+Phần này trình bày chi tiết ba lớp và mô-đun chủ đạo. Bảng \ref{tab:cls_retriever} mô tả lớp \texttt{GraphRAGRetriever}.
+
+\begin{table}[H]
+\centering
+\caption{Thiết kế lớp GraphRAGRetriever}
+\label{tab:cls_retriever}
+\begin{tabular}{|L{4.6cm}|L{9.4cm}|}
+\hline
+\textbf{Thành phần} & \textbf{Mô tả} \\ \hline
+\texttt{milvus\_collection} & Collection Milvus chứa vector tên điều luật \\ \hline
+\texttt{neo4j\_driver} & Kết nối Neo4j để đọc nội dung và quan hệ điều luật \\ \hline
+\texttt{\_hybrid\_search(query, top\_k, pool, mode)} & Lấy \texttt{pool} kết quả từ mỗi nguồn (vector tên điều, vector đoạn nội dung, BM25 tuỳ chế độ), hợp nhất bằng RRF có trọng số và chuẩn hoá điểm về khoảng $(0, 1]$ \\ \hline
+\texttt{\_vector\_search\_scored(query, top\_k)} & Tìm kiếm HNSW theo cosine trong Milvus, trả về mã điều và điểm \\ \hline
+\texttt{\_graph\_expand(seed, hop)} & Mở rộng theo quan hệ liên quan và tham chiếu 1 hoặc 2 bước; dùng bảng MySQL khi Neo4j rỗng \\ \hline
+\texttt{\_rerank(candidates, query, top\_k)} & Xếp hạng lại theo $0{,}7\times$ điểm truy xuất $+\, 0{,}3\times$ độ phủ từ khoá có nghĩa \\ \hline
+\end{tabular}
+\end{table}
+
+Bảng \ref{tab:cls_agent} mô tả mô-đun tác tử \texttt{agentic\_rag}. Mô-đun được viết dưới dạng các hàm thuần thay vì một lớp có trạng thái, vì mỗi lượt hỏi đáp có trạng thái riêng (danh sách tin nhắn, tập điều luật đã thu thập) và các hàm này cần được dùng lại ở cả luồng đồng bộ lẫn luồng SSE.
+
+\begin{table}[H]
+\centering
+\caption{Thiết kế mô-đun tác tử agentic\_rag}
+\label{tab:cls_agent}
+\begin{tabular}{|L{4.6cm}|L{9.4cm}|}
+\hline
+\textbf{Thành phần} & \textbf{Mô tả} \\ \hline
+\texttt{RAG\_AGENT\_TOOLS} & Khai báo bốn công cụ: \texttt{vector\_search}, \texttt{graph\_traverse}, \texttt{web\_search}, \texttt{get\_full\_article} \\ \hline
+\texttt{agent\_system\_prompt(situation)} & Lời nhắc hệ thống: quy trình, quy tắc trích dẫn theo văn bản gốc, đối chiếu phạm vi áp dụng, ưu tiên Pháp Điển so với web, cá nhân hoá theo bộ nhớ \\ \hline
+\texttt{execute\_agent\_tool(name, args)} & Thực thi công cụ, trả về bản rút gọn cho LLM và bản đầy đủ cho giao diện; gắn chú thích hiệu lực văn bản \\ \hline
+\texttt{web\_verify\_reason(question, bucket)} & Trả về lý do buộc kiểm tra web (không có kết quả Pháp Điển, câu hỏi về mức phạt hoặc mức tiền, điểm liên quan thấp) \\ \hline
+\texttt{run\_agentic\_rag\_sync(...)} & Vòng lặp tối đa 6 lượt: gọi LLM, thực thi công cụ, gộp kết quả, kiểm tra luật web, tổng hợp câu trả lời \\ \hline
+\end{tabular}
+\end{table}
+
+Bảng \ref{tab:cls_review} mô tả mô-đun \texttt{doc\_review} và lớp \texttt{ReviewHistory}.
+
+\begin{table}[H]
+\centering
+\caption{Thiết kế mô-đun doc\_review và lớp ReviewHistory}
+\label{tab:cls_review}
+\begin{tabular}{|L{4.6cm}|L{9.4cm}|}
+\hline
+\textbf{Thành phần} & \textbf{Mô tả} \\ \hline
+\texttt{text\_from\_bytes(data, name, type)} & Nhận dạng định dạng theo chữ ký file rồi trích xuất chữ từ PDF, DOCX, HTML hoặc TXT \\ \hline
+\texttt{fetch\_link(url)} & Tải nội dung đường dẫn, tự theo chuyển hướng và kiểm tra từng chặng không trỏ vào mạng nội bộ \\ \hline
+\texttt{analyze\_document(client, text)} & Gọi LLM ở chế độ JSON, trả về tóm tắt, các bên, ý chính, điều khoản rủi ro và nội dung còn thiếu \\ \hline
+\texttt{search\_for\_risks(risks, search, web)} & Tra cứu song song cho từng điều khoản, hai truy vấn Pháp Điển và tra web khi cần \\ \hline
+\texttt{verify\_risks(client, ...)} & Đối chiếu và kiểm chứng căn cứ, trả về cảnh báo, điều khoản nên xem lại và danh sách điều luật đã tra \\ \hline
+\texttt{review\_events(...)} & Sinh chuỗi sự kiện tiến trình và kết quả cho luồng SSE \\ \hline
+\texttt{ReviewHistory.save / list / get / get\_file / delete / retag} & Lưu, liệt kê, đọc, tải file gốc, xoá lượt rà soát; mọi thao tác lọc theo chủ sở hữu; chuyển lịch sử ẩn danh sang tài khoản \\ \hline
+\end{tabular}
+\end{table}
+
+Luồng truyền thông điệp giữa các đối tượng được minh hoạ qua ba biểu đồ trình tự. Hình \ref{fig:seq_hoidap} trình bày luồng hỏi đáp: giao diện gửi câu hỏi qua route handler tới máy chủ dịch vụ; máy chủ lần lượt chạy tiền xử lý, viết lại câu hỏi, tra bộ nhớ và bộ đệm, rồi chạy vòng lặp tác tử, mỗi bước đều đẩy một sự kiện trạng thái về giao diện; khi có câu trả lời, máy chủ gửi sự kiện chứa danh sách điều luật rồi truyền dần nội dung câu trả lời, và lên lịch cập nhật bộ nhớ ở chế độ nền.
+
+\hinh{Hinhve/SEQ_HoiDap.png}{\linewidth}{Biểu đồ trình tự UC01 Hỏi đáp pháp luật}{fig:seq_hoidap}
+
+Hình \ref{fig:seq_tools} trình bày chi tiết việc thực thi công cụ trong vòng lặp tác tử: công cụ tìm kiếm gọi tìm kiếm lai, đọc nội dung đầy đủ từ Neo4j hoặc MySQL, xếp hạng lại và gắn chú thích hiệu lực; công cụ đồ thị mở rộng từ các mã điều đã có; công cụ web gọi Tavily và lọc theo độ tin cậy nguồn.
+
+\hinh{Hinhve/SEQ_AgentTools.png}{\linewidth}{Biểu đồ trình tự thực thi công cụ của tác tử}{fig:seq_tools}
+
+Hình \ref{fig:seq_rasoat} trình bày luồng rà soát văn bản. Điểm đáng chú ý là bước kiểm chứng căn cứ nằm hoàn toàn trong mã nguồn sau lời gọi LLM thứ hai, và việc lưu lịch sử chỉ xảy ra khi người dùng chọn lưu.
+
+\hinh{Hinhve/SEQ_RaSoat.png}{\linewidth}{Biểu đồ trình tự UC16 Rà soát văn bản pháp lý}{fig:seq_rasoat}
+
+\subsection{Thiết kế cơ sở dữ liệu}
+Dữ liệu của hệ thống được phân bổ trên bốn hệ lưu trữ theo tính chất của từng loại dữ liệu. Hình \ref{fig:er_mysql} trình bày biểu đồ thực thể liên kết của phần dữ liệu pháp luật trong MySQL. Nhóm bảng Pháp Điển phản ánh cây phân cấp chủ đề (\texttt{pdchude}), đề mục (\texttt{pddemuc}), chương (\texttt{pdchuong}) và điều (\texttt{pddieu}); mỗi điều có mã \texttt{mapc}, tên, nội dung, chú thích văn bản gốc (\texttt{vbqppl}) và có thể có file đính kèm (\texttt{pdfile}) hoặc bảng biểu (\texttt{pdtable}). Bảng \texttt{pdmuclienquan} lưu các cặp điều liên quan, là nguồn để xây dựng cạnh trong đồ thị.
+
+\hinh{Hinhve/ER_MySQL.png}{\linewidth}{Biểu đồ thực thể liên kết phần dữ liệu pháp luật (MySQL)}{fig:er_mysql}
+
+Nhóm bảng thứ hai phục vụ quản trị văn bản. Bảng \texttt{vanban} là sổ cái văn bản với số hiệu, loại, ngày ban hành, khoảng hiệu lực, trạng thái và văn bản thay thế. Bảng \texttt{vanban\_quanhe} lưu quan hệ giữa các văn bản như sửa đổi, thay thế, hợp nhất. Bảng \texttt{dieu\_hieuluc} lưu trạng thái hiệu lực ở mức điều khi khác với trạng thái chung của văn bản; bảng \texttt{dieu\_lichsu} lưu nội dung cũ mỗi khi một điều bị cập nhật. Bảng \texttt{law\_staging} là khu chờ duyệt, mỗi dòng là một văn bản đang xử lý với trạng thái đi từ \texttt{queued}, \texttt{processing}, \texttt{ready} tới \texttt{published} hoặc \texttt{rejected}.
+
+Hình \ref{fig:db_mongo} trình bày thiết kế lưu trữ trong MongoDB, Milvus và đồ thị tri thức. MongoDB lưu dữ liệu gắn với người dùng dưới dạng tài liệu: hội thoại kèm danh sách tin nhắn và điều luật đã trích, bộ nhớ dài hạn kèm vector nhúng và lịch sử thay đổi, chế độ ghi nhớ, bộ đệm ngữ nghĩa với chỉ mục TTL tự xoá sau 24 giờ, lịch sử rà soát kèm file gốc trong GridFS, và vai trò người dùng khoá theo email. Milvus có hai collection: \texttt{phapdien\_simple\_tendieu} nhúng tên điều và \texttt{phapdien\_ctx\_chunks} nhúng các đoạn nội dung kèm tiêu đề, cả hai dùng chỉ mục HNSW theo cosine. Đồ thị tri thức có bốn loại nút tương ứng bốn cấp của Pháp Điển và hai loại cạnh giữa các điều là \texttt{LIEN\_QUAN} và \texttt{THAM\_CHIEU}.
+
+\hinh{Hinhve/DB_MongoMilvus.png}{\linewidth}{Thiết kế lưu trữ trong MongoDB, Milvus và đồ thị tri thức}{fig:db_mongo}
+
+Bảng \ref{tab:dulieu} thống kê khối lượng dữ liệu hiện có trong hệ thống.
+
+\begin{table}[H]
+\centering
+\caption{Thống kê dữ liệu}
+\label{tab:dulieu}
+\begin{tabular}{|L{6.2cm}|L{3.0cm}|L{4.2cm}|}
+\hline
+\textbf{Dữ liệu} & \textbf{Số lượng} & \textbf{Nơi lưu} \\ \hline
+Chủ đề / đề mục / chương & 45 / 306 / 1.583 & MySQL \\ \hline
+Điều luật & 66.706 & MySQL \\ \hline
+Cặp điều liên quan & 38.435 & MySQL (nguồn của đồ thị) \\ \hline
+File đính kèm / bảng biểu & 5.774 / 1.871 & MySQL \\ \hline
+Độ dài nội dung điều (trung bình / lớn nhất) & 1.207 / 50.905 ký tự & -- \\ \hline
+Vector tên điều & 66.751 & Milvus \\ \hline
+Vector đoạn nội dung & 147.641 & Milvus \\ \hline
+\end{tabular}
+\end{table}
+
+\section{Xây dựng và xử lý dữ liệu}
+\label{section:4.data}
+Chất lượng câu trả lời của một hệ thống RAG phụ thuộc trước hết vào dữ liệu được truy xuất. Phần này trình bày quy trình đưa dữ liệu Bộ Pháp điển từ dạng tệp tải về thành bốn dạng phục vụ tra cứu: dữ liệu có cấu trúc trong MySQL, hai chỉ mục vector trong Milvus, chỉ mục BM25 và đồ thị tri thức, cùng các bước xử lý dữ liệu diễn ra khi hệ thống trả lời. Hình \ref{fig:act_dulieu} trình bày tổng quan quy trình; các bước sau bước thu thập độc lập với nhau nên có thể chạy song song hoặc chạy lại riêng lẻ.
+
+\hinh{Hinhve/ACT_DuLieu.png}{0.95\linewidth}{Quy trình xây dựng và xử lý dữ liệu}{fig:act_dulieu}
+
+\subsection{Thu thập và làm sạch dữ liệu Pháp Điển}
+Bộ dữ liệu Pháp Điển tải từ cổng Bộ Pháp điển điện tử \cite{phapdienportal} gồm ba tệp JSON mô tả danh mục chủ đề, danh mục đề mục và cây nút (mỗi nút là một chương hoặc một điều, có mã \texttt{MAPC}, tên, chỉ mục và đề mục chứa nó), cùng một thư mục chứa một tệp HTML cho mỗi đề mục. Công cụ thu thập (\texttt{law-crawler}) xử lý theo bốn bước.
+
+Bước thứ nhất nạp toàn bộ chủ đề và đề mục từ tệp JSON vào hai bảng \texttt{pdchude} và \texttt{pddemuc}. Bước thứ hai duyệt từng tệp HTML đề mục, lấy các nút của đề mục đó trong cây nút và nhận diện chương theo tên bắt đầu bằng ``Chương''; số chương viết bằng chữ số La Mã được chuyển thành số để sắp xếp. Với đề mục không chia chương, công cụ tạo một chương ảo để mọi điều đều thuộc một chương, giữ cho cây phân cấp đồng nhất. Mỗi điều được gán vào chương có mã là tiền tố của mã điều.
+
+Bước thứ ba trích xuất nội dung từng điều từ HTML bằng BeautifulSoup: vị trí điều được xác định bằng thẻ neo mang mã điều; dòng ghi chú ngay sau tên điều cho chú thích văn bản gốc (trường \texttt{vbqppl}, ví dụ ``Điều 8 Nghị định số 100/2019/NĐ-CP, có hiệu lực\ldots'') kèm đường dẫn; khối nội dung được ghép từng đoạn, mỗi khoản, điểm trên một dòng. Bảng biểu trong điều được giữ nguyên dạng HTML trong bảng \texttt{pdtable}, tệp đính kèm như biểu mẫu được lưu đường dẫn trong \texttt{pdfile}. Bước thứ tư đọc các liên kết ``điều liên quan'' cuối mỗi điều, trích mã điều đích từ thuộc tính sự kiện của liên kết và ghi các cặp vào \texttt{pdmuclienquan}. Công cụ hỗ trợ điểm khôi phục: khi bị gián đoạn, có thể chạy tiếp từ tệp đề mục đã xử lý cuối cùng.
+
+Kết quả thu được 45 chủ đề, 306 đề mục, 1.583 chương, 66.706 điều, 38.435 cặp điều liên quan, 1.871 bảng biểu và 5.774 tệp đính kèm (Bảng \ref{tab:dulieu}). Nội dung điều có độ dài rất chênh lệch, trung bình 1.207 ký tự nhưng dài nhất tới 50.905 ký tự; đặc điểm này chi phối các quyết định cắt và chia đoạn ở các bước sau.
+
+\subsection{Lập chỉ mục vector theo tên điều}
+Công cụ \texttt{seed\_data\_batch.py} đọc điều luật từ MySQL kèm tên chủ đề, đề mục và chương, rồi nhúng \emph{tên điều} bằng mô hình \texttt{text-embedding-3-small}. Tên điều được chọn làm văn bản nhúng vì nó ngắn, tập trung vào chủ đề của điều và cho vector ít nhiễu; nội dung đầy đủ được lưu trong trường metadata dạng JSON để trả về khi cần. Do Milvus giới hạn độ dài một trường JSON, metadata vượt 64KB được cắt bớt nội dung; nội dung đầy đủ luôn được đọc lại từ Neo4j hoặc MySQL theo mã điều khi trả lời.
+
+Việc nhúng được thực hiện theo lô 200 điều để giảm số lần gọi API. Nếu cả lô thất bại (ví dụ một điều có ký tự bất thường), công cụ chuyển sang nhúng từng điều trong lô và ghi các điều lỗi vào tệp \texttt{embed\_errors.csv} để xử lý lại, thay vì dừng toàn bộ quá trình. Tuỳ chọn \texttt{--resume} cho phép tiếp tục từ vị trí đã nạp khi quá trình bị gián đoạn. Collection được tạo chỉ mục HNSW với khoảng cách cosine, $M = 16$, $efConstruction = 200$.
+
+\subsection{Chia đoạn có ngữ cảnh}
+Vector tên điều không bắt được các thuật ngữ nằm sâu trong nội dung. Công cụ \texttt{seed\_contextual\_chunks.py} bổ sung collection thứ hai, trong đó mỗi điều được chia thành một hoặc nhiều đoạn và mỗi đoạn được nhúng cùng một tiêu đề ngữ cảnh gồm tên chủ đề, đề mục, chương và tên điều (đã bỏ mã sắp xếp). Tiêu đề giúp một đoạn ngắn như ``a) Vào ngày thường, ít nhất bằng 150\%'' vẫn mang đủ ngữ cảnh rằng đây là quy định về tiền lương làm thêm giờ.
+
+Nội dung được chia theo ranh giới đoạn (khoản, điểm) thay vì cắt cứng theo số ký tự: các đoạn được gom vào một khối cho tới khi đạt 400 token; đoạn đơn lẻ dài hơn giới hạn mới bị chia nhỏ. Hai khối liên tiếp gối đầu nhau khoảng 60 token bằng cách giữ lại các đoạn cuối của khối trước, để một quy định nằm ở ranh giới vẫn xuất hiện trọn vẹn trong ít nhất một khối. Các giới hạn kỹ thuật cũng được xử lý tường minh: mỗi đầu vào nhúng dưới 8.191 token, mỗi yêu cầu API gom tối đa 1.000 đầu vào và 200.000 token, văn bản lưu trong Milvus được cắt theo byte UTF-8, mỗi lần ghi 500 bản ghi, và lời gọi API được thử lại khi gặp lỗi tạm thời. Tuỳ chọn \texttt{--dry-run} thống kê số đoạn và ước tính chi phí trước khi chạy thật. Kết quả là 147.641 đoạn, trung bình khoảng 2,2 đoạn mỗi điều.
+
+\subsection{Xây dựng chỉ mục BM25}
+Chỉ mục BM25 được xây dựng trực tiếp từ bảng \texttt{pddieu} bằng bộ tách từ âm tiết và cặp âm tiết đã trình bày ở phần \ref{section:5.1}. Tên điều được lặp ba lần để tăng trọng số, nội dung được cắt ở 6.000 ký tự để các điều rất dài không chiếm ưu thế về tần suất từ. Lần chạy đầu mất khoảng một đến hai phút; chỉ mục sau đó được lưu đệm xuống đĩa và nạp lại trong một luồng nền mỗi khi máy chủ khởi động.
+
+\subsection{Xây dựng đồ thị tri thức}
+Công cụ \texttt{build\_graph.py} chuyển dữ liệu MySQL thành đồ thị Neo4j theo năm bước. Bước đầu tạo ràng buộc duy nhất trên mã của bốn loại nút, vừa chống trùng lặp vừa tạo chỉ mục giúp các lệnh \texttt{MERGE} sau đó chạy nhanh. Các bước tiếp theo lần lượt tạo nút chủ đề, đề mục, chương và điều cùng các cạnh phân cấp \texttt{CO\_DE\_MUC}, \texttt{CO\_CHUONG}, \texttt{CO\_DIEU}; nút điều mang tên, nội dung, chỉ mục và thứ tự; chú thích văn bản gốc tiếp tục được lưu ở MySQL. Mỗi lệnh ghi xử lý một lô 500 bản ghi qua tham số danh sách của Cypher \cite{neo4jdocs}, nhanh hơn nhiều so với ghi từng nút. Bước thứ tư tạo cạnh \texttt{LIEN\_QUAN} theo cả hai chiều từ 38.435 cặp điều liên quan, vì quan hệ liên quan trong Pháp Điển mang tính đối xứng về mặt sử dụng. Bước cuối trích quan hệ \texttt{THAM\_CHIEU} bằng cách tìm mã điều Pháp Điển xuất hiện trong nội dung điều khác và chỉ giữ cạnh tới mã có thật.
+
+Phân tích dữ liệu cho thấy bước cuối tạo được rất ít cạnh: nội dung điều luật hầu như không ghi mã Pháp Điển mà tham chiếu theo dạng ``khoản 2 Điều 5 của Luật này''. Việc phân tích các tham chiếu dạng này về mã điều được ghi nhận là hạn chế và hướng phát triển ở Chương \ref{chapter:conclusion}. Như đã trình bày ở phần \ref{section:4.1}, khi Neo4j chưa có dữ liệu, bộ truy xuất dùng trực tiếp bảng \texttt{pdmuclienquan} để mở rộng theo điều liên quan, với điểm cơ sở giảm dần theo số bước (1,0 cho điều gốc, 0,6 cho bước một, 0,4 cho bước hai).
+
+\subsection{Xử lý dữ liệu khi trả lời}
+Ngoài các bước ngoại tuyến, dữ liệu còn được xử lý ở mỗi lượt hỏi đáp. Ở phía câu hỏi, câu của người dùng được viết lại thành truy vấn pháp lý cụ thể dựa trên các lượt hội thoại gần nhất, giải quyết các câu hỏi phụ thuộc ngữ cảnh như ``thế còn trường hợp xe máy?''; một bước phân loại kiểm tra câu hỏi có thuộc lĩnh vực pháp luật. Tác tử vẫn nhận câu gốc của người dùng để không mất ngôi xưng và hoàn cảnh cá nhân, còn câu đã viết lại được dùng cho tìm kiếm và xếp hạng.
+
+Ở phía điều luật, kết quả tìm kiếm chỉ chứa mã điều; nội dung đầy đủ cùng chương, đề mục và chủ đề được đọc từ Neo4j, hoặc từ MySQL nếu Neo4j thiếu điều đó; chú thích văn bản gốc được đọc từ MySQL. Trước khi đưa cho mô hình, mỗi điều được chuẩn hoá: tách mã sắp xếp ra khỏi tên điều, cắt nội dung ở 4.000 ký tự (giao diện vẫn nhận bản đầy đủ), gắn điểm liên quan và chú thích tình trạng hiệu lực tra từ sổ cái văn bản. Kết quả web chỉ giữ các trang có độ tin cậy cao hoặc trung bình và được cắt ở 1.500 ký tự. Bảng \ref{tab:thamso_dulieu} tổng hợp các tham số xử lý dữ liệu chính.
+
+\begin{table}[H]
+\centering
+\caption{Các tham số xử lý dữ liệu chính}
+\label{tab:thamso_dulieu}
+\begin{tabular}{|L{6.6cm}|L{3.0cm}|L{3.8cm}|}
+\hline
+\textbf{Tham số} & \textbf{Giá trị} & \textbf{Nơi áp dụng} \\ \hline
+Kích thước lô nhúng tên điều & 200 & \texttt{seed\_data\_batch} \\ \hline
+Giới hạn metadata mỗi bản ghi & 64KB & Milvus \\ \hline
+Kích thước đoạn / gối đầu & 400 / 60 token & \texttt{seed\_contextual\_chunks} \\ \hline
+Đầu vào / token tối đa mỗi yêu cầu nhúng & 1.000 / 200.000 & \texttt{seed\_contextual\_chunks} \\ \hline
+Số lần lặp tên điều / độ dài nội dung tối đa & 3 / 6.000 ký tự & Chỉ mục BM25 \\ \hline
+Kích thước lô ghi đồ thị & 500 & \texttt{build\_graph} \\ \hline
+Số kết quả mỗi nguồn khi hợp nhất, hằng số RRF & 50, $k = 60$ & Tìm kiếm lai \\ \hline
+Độ dài nội dung điều / kết quả web đưa cho LLM & 4.000 / 1.500 ký tự & Tác tử \\ \hline
+Hệ số hạ điểm điều đã hết hiệu lực & 0,4 & Chú thích hiệu lực \\ \hline
+\end{tabular}
+\end{table}
+
+Văn bản mới do quản trị viên bổ sung đi theo một nhánh xử lý riêng qua khu chờ duyệt, gồm trích xuất PDF có lọc chú thích cuối trang, phân tích cấu trúc và so sánh với dữ liệu hiện có, được trình bày ở phần \ref{section:5.5}.
+
+\section{Xây dựng ứng dụng}
+\label{section:4.3}
+
+\subsection{Thư viện và công cụ sử dụng}
+Bảng \ref{tab:congcu} liệt kê các ngôn ngữ, thư viện, công cụ và dịch vụ được sử dụng cùng phiên bản.
+
+\begin{longtable}{|L{4.0cm}|L{4.8cm}|L{4.6cm}|}
+\caption{Danh sách thư viện và công cụ sử dụng}\label{tab:congcu}\\
+\hline
+\textbf{Mục đích} & \textbf{Công cụ (phiên bản)} & \textbf{Địa chỉ} \\ \hline
+\endfirsthead
+\hline
+\textbf{Mục đích} & \textbf{Công cụ (phiên bản)} & \textbf{Địa chỉ} \\ \hline
+\endhead
+Ngôn ngữ máy chủ & Python 3.12.0 & \url{https://www.python.org} \\ \hline
+Khung máy chủ & FastAPI 0.162.5, Uvicorn 0.54.0, Pydantic 2.14.3 & \url{https://fastapi.tiangolo.com} \\ \hline
+Gọi mô hình & OpenAI Python SDK 3.49.0 & \url{https://platform.openai.com} \\ \hline
+Mô hình ngôn ngữ & GPT-4.1 (tác tử, rà soát), GPT-4o-mini (viết lại câu hỏi, bộ nhớ, đặt tên) & \url{https://platform.openai.com} \\ \hline
+Nhúng, giọng nói & text-embedding-3-small, whisper-1, tts-1 & \url{https://platform.openai.com} \\ \hline
+Phân tích cảm xúc & joeddav/xlm-roberta-large-xnli, Transformers 5.22.2, PyTorch 2.15.0 & \url{https://huggingface.co} \\ \hline
+Cơ sở dữ liệu vector & Milvus 2.4.14, pymilvus 2.4.15 & \url{https://milvus.io} \\ \hline
+Cơ sở dữ liệu đồ thị & Neo4j 5, neo4j driver 6.4.1 & \url{https://neo4j.com} \\ \hline
+Cơ sở dữ liệu quan hệ & MySQL 8.0, PyMySQL 1.2.4 & \url{https://www.mysql.com} \\ \hline
+Cơ sở dữ liệu tài liệu & MongoDB Atlas, pymongo 4.19.0 & \url{https://www.mongodb.com} \\ \hline
+Tìm kiếm từ khoá & bm25s 0.3.16 & \url{https://github.com/xhluca/bm25s} \\ \hline
+Tìm kiếm web & tavily-python 0.8.5 & \url{https://tavily.com} \\ \hline
+Trích xuất PDF & pdfplumber 0.11.10 & \url{https://github.com/jsvine/pdfplumber} \\ \hline
+Ngôn ngữ, khung giao diện & TypeScript 5, Node.js 20.19.4, Next.js 16.2.3, React 19.2.4 & \url{https://nextjs.org} \\ \hline
+Định dạng giao diện & Tailwind CSS 4, lucide-react & \url{https://tailwindcss.com} \\ \hline
+Đồ hoạ 3D & Three.js 0.170, React Three Fiber 9 & \url{https://threejs.org} \\ \hline
+Xác thực & Firebase Authentication, Firebase Admin & \url{https://firebase.google.com} \\ \hline
+Kiểm thử & pytest 9.2.0 & \url{https://pytest.org} \\ \hline
+Container & Docker, Docker Compose & \url{https://www.docker.com} \\ \hline
+Vẽ biểu đồ UML & PlantUML & \url{https://plantuml.com} \\ \hline
+\end{longtable}
+
+\subsection{Kết quả đạt được}
+Sản phẩm của đồ án gồm ba thành phần đóng gói. Thứ nhất là ứng dụng web Next.js với bốn trang: hỏi đáp (\texttt{/}), văn phòng luật 3D (\texttt{/office}), rà soát văn bản (\texttt{/review}) và quản trị dữ liệu (\texttt{/admin}). Thứ hai là máy chủ dịch vụ FastAPI cung cấp 32 điểm cuối, gồm 21 điểm cuối cho hỏi đáp, giọng nói, bộ nhớ, xác thực, rà soát và lịch sử, cùng 11 điểm cuối quản trị dữ liệu văn bản. Thứ ba là bộ công cụ ngoại tuyến gồm công cụ thu thập dữ liệu Pháp Điển, công cụ nạp vector, công cụ xây dựng đồ thị và ba bộ đánh giá tự động cho truy xuất, gọi công cụ và bộ nhớ. Bảng \ref{tab:thongke} thống kê mã nguồn.
+
+\begin{table}[H]
+\centering
+\caption{Thống kê mã nguồn}
+\label{tab:thongke}
+\begin{tabular}{|L{6.4cm}|L{2.6cm}|L{2.6cm}|}
+\hline
+\textbf{Thành phần} & \textbf{Số file} & \textbf{Số dòng} \\ \hline
+Máy chủ dịch vụ (Python) & 44 & 11.690 \\ \hline
+Giao diện (TypeScript, TSX) & 55 & 10.081 \\ \hline
+Kiểm thử đơn vị (Python) & 14 & 2.486 \\ \hline
+Bộ đánh giá (Python) & -- & 2.772 \\ \hline
+Công cụ thu thập dữ liệu (Python) & -- & 344 \\ \hline
+Biểu đồ UML (PlantUML) & 25 & -- \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Minh họa các chức năng chính}
+\label{subsection:4.3.3}
+Hình \ref{fig:gd_trangchu} là màn hình hỏi đáp khi chưa có hội thoại. Thanh bên trái chứa danh sách hội thoại và ô tìm kiếm; thanh công cụ phía trên dẫn tới trang rà soát văn bản, văn phòng 3D, bảng bộ nhớ, nút đổi chế độ sáng tối và nút đăng nhập. Giữa màn hình là bốn câu hỏi mẫu thuộc các lĩnh vực người dân hay hỏi; phía dưới là ô nhập với hai chế độ ``Hỏi đáp'' và ``Phân tích tình huống'', nút ghi âm và lưu ý rằng thông tin chỉ để tham khảo.
+
+\hinhgd{Hinhve/giaodien/01_trang_chu.png}{\linewidth}{Màn hình hỏi đáp ban đầu}{fig:gd_trangchu}
+
+Hình \ref{fig:gd_hoidap} minh hoạ câu trả lời cho câu hỏi ``Lao động nữ đang mang thai có bị sa thải không?''. Câu trả lời kết luận rõ ràng, nêu căn cứ là Điều 137 Bộ luật Lao động số 45/2019/QH14 và Điều 28 Nghị định số 12/2022/NĐ-CP về mức xử phạt. Dưới câu trả lời là các thẻ căn cứ pháp lý màu đỏ son, nút xem toàn bộ 19 tài liệu đã tra, nút đọc câu trả lời, nút đánh giá và độ tin cậy 76\%. Khung bên phải là khung căn cứ pháp lý: mỗi tài liệu hiển thị chủ đề, đề mục, chương, tên điều, nội dung và điểm liên quan, có thể mở toàn văn.
+
+\hinhgd{Hinhve/giaodien/03_can_cu_phap_ly.png}{\linewidth}{Câu trả lời kèm thẻ căn cứ và khung căn cứ pháp lý}{fig:gd_hoidap}
+
+Hình \ref{fig:gd_ravsoat_form} là trang rà soát văn bản. Thanh bên trái là lịch sử rà soát; vùng chính có ba thẻ chọn nguồn văn bản (tải file, dán đường dẫn, dán nội dung), vùng kéo thả file, lựa chọn lưu vào lịch sử và dòng giải thích lịch sử gắn với trình duyệt hay với tài khoản.
+
+\hinhgd{Hinhve/giaodien/05_ra_soat_form.png}{\linewidth}{Trang rà soát văn bản}{fig:gd_ravsoat_form}
+
+Hình \ref{fig:gd_rasoat_canhbao} minh hoạ kết quả rà soát một hợp đồng lao động mẫu. Mỗi cảnh báo có nhãn mức độ, ô đối chiếu giữa đoạn trích hợp đồng và đoạn trích nguyên văn của quy định, lời giải thích có các số tham chiếu [1], [2] bấm được, khuyến nghị sửa và các thẻ căn cứ. Ví dụ, điều khoản làm thêm giờ được đối chiếu với điểm a khoản 1 Điều 98 Bộ luật Lao động (``Vào ngày thường, ít nhất bằng 150\%'') và Điều 6 Thông tư 18/2021/TT-BLĐTBXH (``Tổng số giờ làm thêm trong một tháng không quá 40 giờ''). Thanh bên trái cho thấy lượt rà soát đã được lưu cùng số điều khoản trái luật.
+
+\hinhgd{Hinhve/giaodien/07_ra_soat_canh_bao.png}{\linewidth}{Kết quả rà soát: cảnh báo kèm đối chiếu nguyên văn}{fig:gd_rasoat_canhbao}
+
+Hình \ref{fig:gd_rasoat_panel} cho thấy khi người dùng bấm vào một căn cứ, khung căn cứ pháp lý của trang hỏi đáp được dùng lại, cuộn tới đúng điều luật (Điều 25 Bộ luật Lao động về thời gian thử việc) và tô viền để người dùng đọc toàn văn.
+
+\hinhgd{Hinhve/giaodien/08_ra_soat_panel_can_cu.png}{\linewidth}{Khung căn cứ pháp lý trong trang rà soát}{fig:gd_rasoat_panel}
+
+Hình \ref{fig:gd_vanphong} là văn phòng luật 3D. Mỗi thành phần của hệ thống được thể hiện bằng một nhân vật: lễ tân là tầng tiền xử lý, thư ký chuẩn hoá câu hỏi, luật sư chính là tác tử, thủ thư điều luật thực hiện tìm kiếm vector, chuyên viên liên kết đi theo đồ thị, trợ lý nghiên cứu tìm kiếm web, nhân viên lưu trữ đọc toàn văn điều luật, người quản lý hồ sơ khách hàng là bộ nhớ dài hạn và ``sổ tay đã trả lời'' là bộ đệm ngữ nghĩa. Khi người dùng đặt câu hỏi, các nhân vật di chuyển và làm việc theo đúng các sự kiện trạng thái mà máy chủ gửi về, giúp người dùng hiểu hệ thống đang làm gì thay vì chỉ chờ.
+
+\hinhgd{Hinhve/giaodien/04_van_phong_3d.png}{\linewidth}{Văn phòng luật 3D}{fig:gd_vanphong}
+
+Trang quản trị chỉ hiển thị nội dung sau khi người dùng đăng nhập bằng tài khoản có vai trò quản trị; khi chưa đăng nhập, trang hiển thị yêu cầu đăng nhập như Hình \ref{fig:gd_admin}. Sau khi đăng nhập, trang có bốn thẻ: thêm văn bản, chờ duyệt, sổ cái văn bản và cập nhật Pháp Điển.
+
+\hinhgd{Hinhve/giaodien/09_admin_gate.png}{0.85\linewidth}{Trang quản trị khi chưa đăng nhập}{fig:gd_admin}
+
+\section{Kiểm thử}
+\label{section:4.4}
+Hệ thống được kiểm thử ở hai mức. Mức kiểm thử đơn vị dùng pytest với nguyên tắc không gọi dịch vụ thật: mô hình ngôn ngữ được thay bằng một máy khách giả trả lần lượt các phản hồi đã soạn sẵn và ghi lại mọi yêu cầu, các cơ sở dữ liệu được thay bằng bản giả trong bộ nhớ. Nhờ vậy toàn bộ kiểm thử chạy ngoại tuyến trong khoảng một giây và cho kết quả lặp lại được. Các kỹ thuật kiểm thử hộp đen được sử dụng gồm phân lớp tương đương (ví dụ các định dạng file, các mức độ tin cậy nguồn web), phân tích giá trị biên (nội dung dưới và trên 200 ký tự, đoạn trích ngắn hơn 15 ký tự) và kiểm thử theo bảng quyết định cho các luật kết luận. Mức thứ hai là đánh giá hệ thống với dịch vụ thật, trình bày ở Chương \ref{chapter:SolutionAndContribution} và Phụ lục \ref{appendix:A}.
+
+Bảng \ref{tab:tc_rasoat} trình bày các trường hợp kiểm thử cho chức năng kiểm chứng căn cứ trong rà soát văn bản, là chức năng ảnh hưởng trực tiếp tới độ tin cậy của cảnh báo.
+
+\begin{longtable}{|L{0.7cm}|L{5.6cm}|L{5.6cm}|L{1.3cm}|}
+\caption{Trường hợp kiểm thử kiểm chứng căn cứ trong rà soát văn bản}\label{tab:tc_rasoat}\\
+\hline
+\textbf{STT} & \textbf{Đầu vào} & \textbf{Kết quả mong đợi} & \textbf{Kết quả} \\ \hline
+\endfirsthead
+\hline
+\textbf{STT} & \textbf{Đầu vào} & \textbf{Kết quả mong đợi} & \textbf{Kết quả} \\ \hline
+\endhead
+1 & LLM dẫn một căn cứ có thật và một căn cứ không có trong kết quả tra cứu & Chỉ giữ căn cứ có thật; số tham chiếu trong giải thích được đánh lại & Đạt \\ \hline
+2 & Đoạn trích căn cứ không có trong nội dung điều luật & Giữ căn cứ, bỏ đoạn trích & Đạt \\ \hline
+3 & Kết luận ``trái luật'' nhưng không có căn cứ hợp lệ & Chuyển sang mục ``nên xem lại'' & Đạt \\ \hline
+4 & Kết luận ``trái luật'' chỉ dựa trên nguồn web độ tin cậy trung bình & Hạ xuống ``rủi ro'' & Đạt \\ \hline
+5 & Kết luận ``trái luật'' dựa trên nguồn web độ tin cậy cao & Giữ ``trái luật'' & Đạt \\ \hline
+6 & Nguồn web nêu ``Điều 301'' trong khi Pháp Điển có Điều 301 & Tự chèn điều Pháp Điển lên trước nguồn web & Đạt \\ \hline
+7 & Giải thích nhắc ``Điều 98 Bộ luật Lao động'' không nằm trong căn cứ & Đánh dấu là chưa kiểm chứng & Đạt \\ \hline
+8 & LLM chọn căn cứ bằng mã ngắn viết thường (``n1'') & Ánh xạ đúng về mã điều luật & Đạt \\ \hline
+9 & Đoạn trích có khác biệt hoa thường, dấu ngoặc, khoảng trắng, có dấu \ldots{} bỏ đoạn & Được chấp nhận là khớp & Đạt \\ \hline
+10 & Câu hỏi về mức phạt; Pháp Điển có kết quả & Tra web theo đúng luật của chat & Đạt \\ \hline
+11 & Đường dẫn \texttt{http://127.0.0.1:8001/admin}, \texttt{file:///etc/passwd} & Từ chối vì trỏ vào mạng nội bộ hoặc không phải http & Đạt \\ \hline
+12 & Nội dung LLM trả về không phải JSON & Thông báo lỗi thân thiện, không lộ chi tiết & Đạt \\ \hline
+\end{longtable}
+
+Bảng \ref{tab:tc_quyen} trình bày các trường hợp kiểm thử cho kiểm soát quyền truy cập dữ liệu người dùng.
+
+\begin{table}[H]
+\centering
+\caption{Trường hợp kiểm thử kiểm soát quyền truy cập}
+\label{tab:tc_quyen}
+\begin{tabular}{|L{0.7cm}|L{5.6cm}|L{5.6cm}|L{1.3cm}|}
+\hline
+\textbf{STT} & \textbf{Đầu vào} & \textbf{Kết quả mong đợi} & \textbf{Kết quả} \\ \hline
+1 & Người dùng B đọc, tải file, xoá lượt rà soát của người dùng A & Không tìm thấy, dữ liệu của A không đổi & Đạt \\ \hline
+2 & Gọi lịch sử với mã người dùng không phải ẩn danh và không có token & Từ chối với mã 401 & Đạt \\ \hline
+3 & Token hợp lệ nhưng thao tác bộ nhớ của người khác & Từ chối với mã 403 & Đạt \\ \hline
+4 & Truy cập quản trị với email chưa xác minh & Từ chối với mã 403 & Đạt \\ \hline
+5 & Lưu lịch sử khi MongoDB lỗi & Không để lại file mồ côi; kết quả phân tích vẫn trả về & Đạt \\ \hline
+6 & Bộ nhớ ở chế độ mặc định nhận số căn cước, số tài khoản & Không lưu thông tin nhạy cảm & Đạt \\ \hline
+\end{tabular}
+\end{table}
+
+Bảng \ref{tab:tong_kiemthu} tổng kết số lượng kiểm thử đơn vị theo mô-đun. Toàn bộ 299 trường hợp đều đạt.
+
+\begin{table}[H]
+\centering
+\caption{Tổng kết kiểm thử đơn vị}
+\label{tab:tong_kiemthu}
+\begin{tabular}{|L{6.4cm}|L{5.2cm}|L{1.6cm}|}
+\hline
+\textbf{Tệp kiểm thử} & \textbf{Phạm vi} & \textbf{Số ca} \\ \hline
+\texttt{test\_agent\_tools.py} & Thực thi công cụ, trích dẫn & 42 \\ \hline
+\texttt{test\_doc\_review.py} & Rà soát văn bản, kiểm chứng căn cứ & 36 \\ \hline
+\texttt{test\_retriever.py} & Tìm kiếm lai, xếp hạng lại & 30 \\ \hline
+\texttt{test\_memory\_privacy.py} & Quyền riêng tư bộ nhớ & 29 \\ \hline
+\texttt{test\_memory\_update.py} & Cập nhật bộ nhớ & 25 \\ \hline
+\texttt{test\_agent\_loop.py} & Vòng lặp tác tử, luật buộc web & 25 \\ \hline
+\texttt{test\_memory\_retrieve.py} & Truy xuất bộ nhớ, độ phai & 23 \\ \hline
+\texttt{test\_eval\_tool\_calls.py} & Bộ đánh giá gọi công cụ & 19 \\ \hline
+\texttt{test\_lexical\_bm25.py} & Tách từ, BM25 & 18 \\ \hline
+\texttt{test\_chat\_title.py} & Đặt tên hội thoại & 14 \\ \hline
+\texttt{test\_eval\_memory.py} & Bộ đánh giá bộ nhớ & 12 \\ \hline
+\texttt{test\_roles.py} & Vai trò quản trị & 9 \\ \hline
+\texttt{test\_review\_history.py} & Lịch sử rà soát, quyền sở hữu & 9 \\ \hline
+\texttt{test\_lawdata.py} & Nhập văn bản, tách cấu trúc & 8 \\ \hline
+\textbf{Tổng} & & \textbf{299} \\ \hline
+\end{tabular}
+\end{table}
+
+\section{Triển khai}
+\label{section:4.5}
+Hình \ref{fig:trienkhai} trình bày mô hình triển khai thử nghiệm. Ứng dụng Next.js và máy chủ FastAPI chạy trực tiếp trên máy chủ ứng dụng; MySQL, Milvus (kèm etcd và MinIO) và Neo4j chạy trong Docker; MongoDB dùng dịch vụ MongoDB Atlas; mô hình ngôn ngữ, tìm kiếm web và xác thực dùng dịch vụ đám mây. Chỉ mục BM25 được xây dựng từ MySQL ở lần chạy đầu, lưu đệm xuống đĩa và nạp vào bộ nhớ trong một luồng nền khi máy chủ khởi động, để yêu cầu đầu tiên không phải chờ.
+
+\hinh{Hinhve/DEP_TrienKhai.png}{0.95\linewidth}{Mô hình triển khai}{fig:trienkhai}
+
+Thử nghiệm được thực hiện trên máy tính cá nhân chạy macOS. Thời gian phản hồi đo được như sau: một lượt hỏi đáp qua tác tử mất trung bình khoảng 9 giây (đo trên 23 câu hỏi của bộ đánh giá gọi công cụ), trong đó tiến trình xử lý được hiển thị ngay từ giây đầu; câu hỏi trùng với bộ đệm được trả lời gần như tức thì; rà soát hợp đồng mua bán bảy điều mất khoảng 20 đến 30 giây, hợp đồng lao động mười hai điều mất khoảng 25 đến 55 giây tuỳ số lần tra web; cập nhật bộ nhớ dài hạn mất trung bình 3,8 giây và chạy nền nên không ảnh hưởng thời gian phản hồi. Chi phí gọi mô hình cho 23 câu hỏi với GPT-4o-mini làm tác tử là khoảng 0,10 USD.
+
+Chương này đã trình bày kiến trúc phân tầng với lớp trung gian Next.js và máy chủ dịch vụ FastAPI, thiết kế gói và lớp cho hai nhóm chức năng chính, thiết kế giao diện lấy căn cứ pháp lý làm điểm nhấn, thiết kế dữ liệu trên bốn hệ lưu trữ cùng quy trình thu thập, lập chỉ mục và xây dựng đồ thị từ 66.706 điều luật, kết quả xây dựng với khoảng 22 nghìn dòng mã nguồn, 299 kiểm thử đơn vị đều đạt và mô hình triển khai thử nghiệm. Các giải pháp kỹ thuật nổi bật được nhắc tới trong chương, như tìm kiếm lai, luật buộc kiểm tra web, kiểm chứng căn cứ và bộ nhớ bảo vệ quyền riêng tư, được trình bày chi tiết cùng kết quả đánh giá trong chương tiếp theo.
+
+\end{document}

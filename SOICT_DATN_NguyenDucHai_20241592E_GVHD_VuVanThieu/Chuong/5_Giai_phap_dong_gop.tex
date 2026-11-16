@@ -1,0 +1,140 @@
+\documentclass[../DoAn.tex]{subfiles}
+\begin{document}
+
+Chương \ref{chapter:Experiment} đã trình bày thiết kế và kết quả xây dựng hệ thống, trong đó một số giải pháp kỹ thuật chỉ được nhắc tới ngắn gọn. Chương này trình bày chi tiết sáu giải pháp mà đồ án đóng góp, mỗi giải pháp gồm vấn đề đặt ra, cách giải quyết và kết quả đo được: tìm kiếm lai cho văn bản pháp lý tiếng Việt (phần \ref{section:5.1}), tác tử tự kiểm tra quy định hiện hành (phần \ref{section:5.2}), kiểm chứng căn cứ trong rà soát văn bản (phần \ref{section:5.3}), bộ nhớ dài hạn bảo vệ quyền riêng tư (phần \ref{section:5.4}), quy trình cập nhật văn bản và theo dõi hiệu lực (phần \ref{section:5.5}) và trực quan hoá hoạt động của tác tử (phần \ref{section:5.6}).
+
+\section{Tìm kiếm lai cho văn bản pháp lý tiếng Việt}
+\label{section:5.1}
+
+\subsection{Vấn đề}
+Phiên bản đầu tiên của hệ thống chỉ dùng tìm kiếm vector trên tên điều luật: lấy 30 điều có tên gần nhất với câu hỏi, gán cùng một điểm cơ sở 0,8 cho mọi kết quả, rồi cộng thêm 0,05 điểm cho mỗi từ của câu hỏi xuất hiện trong điều luật. Cách làm này có ba nhược điểm. Thứ nhất, tên điều luật rất ngắn và mang tính khái quát (``Quyền và nghĩa vụ của người lao động''), nên câu hỏi chứa thuật ngữ nằm trong nội dung như ``thai sản'', ``án treo'', ``nồng độ cồn'' dễ bị bỏ lỡ. Thứ hai, việc gán cùng một điểm cơ sở làm mất thông tin thứ hạng của Milvus, thứ tự cuối cùng chỉ còn phụ thuộc vào việc đếm từ. Thứ ba, phép đếm từ tính cả các hư từ như ``của'', ``là'', ``được'', khiến điều luật dài và nhiều hư từ được ưu tiên.
+
+Không thể giải quyết vấn đề bằng chức năng tìm kiếm toàn văn sẵn có của MySQL, vì chức năng này mặc định bỏ qua các từ dưới ba ký tự, tức là bỏ phần lớn âm tiết tiếng Việt như ``án'', ``tù'', ``xe''. Milvus phiên bản 2.4 cũng chưa có BM25 tích hợp.
+
+\subsection{Giải pháp}
+Đồ án xây dựng một bộ tìm kiếm lai gồm ba bước.
+
+\textbf{Bước 1: BM25 với bộ tách từ cho tiếng Việt.} Bộ tách từ chuyển văn bản về chữ thường, chuẩn hoá Unicode dạng NFC rồi tách theo âm tiết. Các âm tiết được chia thành hai nhóm từ dừng. Nhóm hư từ (``và'', ``của'', ``là'', ``tôi'', ``mình'', ``không''\ldots) bị loại khỏi cả âm tiết đơn lẫn cặp âm tiết. Nhóm từ dừng mềm (``điều'', ``khoản'', ``luật'', ``quy'', ``làm''\ldots) bị loại khi đứng một mình nhưng được giữ trong cặp âm tiết, vì chúng mang nghĩa trong từ ghép như ``điều\_kiện'', ``quy\_định'', ``làm\_việc''. Bên cạnh âm tiết đơn, bộ tách từ sinh thêm mọi cặp âm tiết liền kề không chứa hư từ; do phần lớn từ ghép tiếng Việt có hai âm tiết, cách này nắm được ``thai\_sản'', ``lao\_động'' mà không cần bộ tách từ dựa trên từ điển. Tên điều được lặp ba lần để tăng trọng số, nội dung được cắt ở 6.000 ký tự để các điều rất dài không làm loãng chỉ mục. Chỉ mục 66.706 điều được xây dựng một lần, lưu đệm xuống đĩa và nạp vào bộ nhớ khi khởi động.
+
+\textbf{Bước 2: Hợp nhất thứ hạng.} Kết quả của tìm kiếm vector và BM25 (mỗi nguồn 50 kết quả) được hợp nhất bằng RRF theo công thức \eqref{eq:rrf} với $k = 60$, trọng số mỗi nguồn mặc định bằng 1. Điểm RRF được chuẩn hoá về khoảng $(0, 1]$ bằng cách chia cho điểm lớn nhất có thể đạt được (khi một điều đứng đầu ở mọi nguồn có kết quả), để các bước sau có một điểm cơ sở có ý nghĩa.
+
+\textbf{Bước 3: Xếp hạng lại theo độ phủ từ có nghĩa.} Điểm cuối cùng của mỗi điều được tính như sau:
+\begin{equation}\label{eq:rerank}
+    s(d) = (1-\lambda)\cdot s_{\mathrm{base}}(d) + \lambda\cdot \frac{\sum_{t \in T_q} c(t, d)}{2\,|T_q|}
+\end{equation}
+trong đó $s_{\mathrm{base}}$ là điểm RRF đã chuẩn hoá, $T_q$ là tập âm tiết và cặp âm tiết có nghĩa của câu hỏi, $c(t,d)$ bằng 2 nếu $t$ có trong tên điều, bằng 1 nếu chỉ có trong nội dung và bằng 0 nếu không có, và $\lambda = 0{,}3$. Khác với cách đếm cũ, độ phủ bị chặn trong khoảng $[0, 1]$ và không tính hư từ, nên không thể lấn át điểm truy xuất.
+
+Ngoài cấu hình mặc định, đồ án thử nghiệm thêm cấu hình ba nguồn, bổ sung một collection Milvus nhúng các đoạn nội dung kèm tiêu đề (147.641 đoạn).
+
+\subsection{Kết quả đạt được}
+Các cấu hình được đánh giá trên 50 câu hỏi theo phương pháp gộp kết quả và chấm mù bằng LLM (Claude Sonnet) với thang 0, 1, 2 như mô tả ở phần \ref{section:3.5}. Bảng \ref{tab:kq_truyxuat} trình bày kết quả.
+
+\begin{table}[H]
+\centering
+\caption{Kết quả đánh giá truy xuất trên 50 câu hỏi (chấm mù bằng LLM)}
+\label{tab:kq_truyxuat}
+\begin{tabular}{|L{5.0cm}|c|c|c|c|c|}
+\hline
+\textbf{Cấu hình} & \textbf{P@5} & \textbf{P@10} & \textbf{nDCG@10} & \textbf{MRR@10} & \textbf{Top1} \\ \hline
+Vector tên điều, xếp hạng cũ (ban đầu) & 0,448 & 0,364 & 0,417 & 0,300 & 0,54 \\ \hline
+Vector tên điều, xếp hạng mới & 0,452 & 0,378 & 0,483 & 0,409 & 0,64 \\ \hline
+Lai (vector + BM25), không xếp hạng lại & 0,552 & 0,498 & 0,605 & 0,457 & 0,68 \\ \hline
+\textbf{Lai (vector + BM25), xếp hạng mới} & \textbf{0,596} & \textbf{0,522} & \textbf{0,632} & 0,463 & \textbf{0,70} \\ \hline
+Lai ba nguồn, không xếp hạng lại & 0,544 & 0,472 & 0,605 & 0,477 & 0,70 \\ \hline
+Lai ba nguồn, xếp hạng mới & 0,556 & 0,482 & 0,607 & \textbf{0,481} & 0,64 \\ \hline
+\end{tabular}
+\end{table}
+
+Cấu hình lai hai nguồn có xếp hạng lại đạt kết quả tốt nhất ở bốn trên năm chỉ số, nâng nDCG@10 từ 0,417 lên 0,632 (tăng 52\% tương đối) và tỷ lệ kết quả đầu tiên liên quan từ 54\% lên 70\%. So sánh từng câu hỏi theo nDCG@10, cấu hình này tốt hơn cấu hình ban đầu ở 37 câu, bằng ở 5 câu và kém ở 8 câu; kiểm định dấu hai phía cho $p < 0{,}0001$. Riêng việc sửa cách xếp hạng (giữ nguyên vector) chỉ thắng 25, hoà 12, thua 13 với $p = 0{,}073$, cho thấy phần lớn cải thiện đến từ BM25.
+
+Đánh giá theo mục đã biết trên 100 câu hỏi sinh tự động cho kết quả cùng xu hướng: Hit@10 tăng từ 0,33 lên 0,67 và MRR@10 tăng từ 0,159 lên 0,379. Cấu hình ba nguồn sửa được một số câu hỏi văn nói nhưng kéo thêm nhiễu ngữ nghĩa (ví dụ ``mũ bảo hiểm'' kéo về các điều về bảo hiểm y tế), và hoà với cấu hình hai nguồn khi so trực tiếp (24 thắng, 24 thua), nên chưa được bật mặc định. Kết quả chi tiết được trình bày ở Phụ lục \ref{appendix:A}.
+
+\section{Tác tử tự kiểm tra quy định hiện hành}
+\label{section:5.2}
+
+\subsection{Vấn đề}
+Bộ Pháp điển là nguồn chính thống nhưng được cập nhật theo chu kỳ, nên có thể chưa phản ánh văn bản mới ban hành. Ví dụ, các mức phạt vi phạm giao thông trong Nghị định 100/2019/NĐ-CP đã được thay thế bởi Nghị định 168/2024/NĐ-CP. Trong thiết kế ban đầu, tác tử tự quyết định có gọi công cụ tìm kiếm web hay không. Thực tế cho thấy khi đã thấy một điều luật trong Pháp Điển có vẻ khớp với câu hỏi, mô hình hiếm khi gọi thêm tìm kiếm web, dẫn tới trả lời theo mức phạt cũ một cách tự tin.
+
+Vấn đề thứ hai là cách trích dẫn. Mỗi điều trong Pháp Điển có mã sắp xếp dạng ``39.13.NĐ.75.8''; mô hình thường đọc nhầm phần ``NĐ.75'' thành ``Nghị định 75'' hoặc ``39.13'' thành ``Điều 39.13'', tạo ra trích dẫn không tồn tại.
+
+\subsection{Giải pháp}
+Đồ án bổ sung một luật buộc kiểm tra web nằm ngoài quyết định của mô hình. Khi mô hình chuẩn bị đưa ra câu trả lời cuối mà chưa gọi tìm kiếm web, hệ thống kiểm tra ba điều kiện: (i) tác tử đã tra Pháp Điển nhưng không có kết quả; (ii) câu hỏi chứa các dấu hiệu dễ thay đổi theo văn bản mới như ``phạt'', ``bao nhiêu tiền'', ``lệ phí'', ``thuế'', ``mức lương'', ``trợ cấp'', ``hiện nay'', ``năm 2025''; hoặc (iii) điểm liên quan cao nhất của kết quả Pháp Điển dưới 0,5. Nếu một điều kiện thoả mãn, hệ thống chèn một chỉ dẫn nêu lý do và buộc lượt tiếp theo phải gọi \texttt{web\_search} đúng một lần. Kết quả web được lọc theo độ tin cậy tên miền: các trang chính thống và thư viện pháp luật lớn được xếp mức cao, các trang blog, mạng xã hội, chia sẻ tài liệu bị loại. Lời nhắc hệ thống quy định: Pháp Điển là nguồn chính về nội dung, nhưng nếu nguồn web tin cậy cao cho thấy văn bản đã bị thay thế hoặc mức tiền đã đổi thì phải nêu quy định hiện hành kèm nguồn và ghi chú quy định cũ.
+
+Để giải quyết vấn đề trích dẫn, khi đưa điều luật cho mô hình, hệ thống tách mã sắp xếp khỏi tên điều thành trường riêng \texttt{ma\_phap\_dien}, và lời nhắc yêu cầu số điều cùng số hiệu văn bản phải lấy nguyên văn từ trường \texttt{vbqppl} (ví dụ ``Điều 8 Nghị định số 100/2019/NĐ-CP''). Ngoài ra, mỗi điều luật được gắn chú thích hiệu lực tra từ sổ cái văn bản (phần \ref{section:5.5}); điều thuộc văn bản đã hết hiệu lực bị nhân điểm với hệ số 0,4 và được ghi chú để mô hình không dùng làm căn cứ chính.
+
+\subsection{Kết quả đạt được}
+Hành vi gọi công cụ được đánh giá trên 23 tình huống có kỳ vọng ghi sẵn, chia thành bảy nhóm: định nghĩa, phạm vi áp dụng, mức phạt, câu hỏi ngoài dữ liệu, quan hệ giữa điều luật, đọc toàn văn và trò chuyện. Với GPT-4o-mini làm tác tử, tỷ lệ gọi đủ các công cụ bắt buộc đạt 97,6\%, công cụ đầu tiên đúng kỳ vọng ở 100\% trường hợp, luật buộc web kích hoạt đúng ở 100\% trường hợp, và không có trường hợp nào gọi công cụ bị cấm, truyền mã điều luật bịa đặt, gọi trùng lặp hay chạm trần vòng lặp. Trung bình mỗi câu hỏi dùng 2,04 lượt gọi công cụ. Nhóm câu hỏi mức phạt đạt cả 6 trên 6 tình huống. Bốn tình huống chưa đạt gồm ba trường hợp câu trả lời thiếu từ khoá kỳ vọng (thuộc nhóm định nghĩa và phạm vi áp dụng) và một trường hợp câu hỏi ngoài dữ liệu mà tác tử không gọi tìm kiếm web, cho thấy chất lượng lập luận của mô hình nhỏ là giới hạn chính; chạy thử với GPT-4.1 trên ba tình huống đều đạt.
+
+\section{Kiểm chứng căn cứ trong rà soát văn bản}
+\label{section:5.3}
+
+\subsection{Vấn đề}
+Rà soát hợp đồng là tác vụ có rủi ro cao hơn hỏi đáp: hệ thống phải tự tìm ra điều khoản có vấn đề trong một văn bản dài và đưa ra kết luận ``trái luật'', vốn có thể ảnh hưởng tới quyết định ký kết của người dùng. Nếu để LLM tự kết luận và tự nêu căn cứ, mô hình có thể nêu một điều luật đúng về nội dung nhưng sai số điều, hoặc nêu điều luật hoàn toàn không tồn tại. Trong quá trình phát triển, đồ án ghi nhận ba lỗi cụ thể: (i) phần giải thích dẫn ``Điều 98 Bộ luật Lao động'' trong khi căn cứ được chọn lại là Điều 91 về lương tối thiểu; (ii) mô hình nhỏ chép sai một chữ số trong mã điều luật dài 60 đến 80 chữ số, khiến hệ thống không khớp được căn cứ và bỏ toàn bộ cảnh báo; (iii) khi có cả nguồn web và Pháp Điển cùng nói về một điều luật, mô hình chỉ dẫn bài báo trên web.
+
+\subsection{Giải pháp}
+Đồ án thiết kế luồng rà soát gồm hai lần gọi LLM tách bạch, xen giữa là bước tra cứu do mã nguồn kiểm soát, và một bước kiểm chứng hoàn toàn bằng mã nguồn sau lần gọi thứ hai.
+
+Lần gọi thứ nhất yêu cầu mô hình đọc văn bản (được bọc trong thẻ riêng và được chỉ dẫn là dữ liệu, bỏ qua mọi câu lệnh bên trong để chống chèn lệnh) và trả về JSON gồm tóm tắt, các bên, ý chính, các điều khoản rủi ro. Mỗi điều khoản rủi ro kèm hai truy vấn tra cứu: một cụm từ pháp lý và tiêu đề điều luật dự kiến điều chỉnh. Mã nguồn chạy cả hai truy vấn trên tìm kiếm lai (phần \ref{section:5.1}), gộp theo mã điều, và tra thêm web theo đúng luật của tác tử hỏi đáp (phần \ref{section:5.2}). Việc tra hai truy vấn giúp tìm được điều luật mà một cụm từ duy nhất bỏ sót; trong thử nghiệm, Điều 98 Bộ luật Lao động về tiền lương làm thêm giờ chỉ được tìm thấy nhờ truy vấn theo tiêu đề điều.
+
+Lần gọi thứ hai đưa cho mô hình từng điều khoản cùng danh sách nguồn ứng viên của riêng điều khoản đó. Mỗi nguồn được gán mã ngắn \texttt{N1}, \texttt{N2}\ldots{} thay cho mã điều luật dài, khắc phục lỗi (ii). Mô hình phải trả về kết luận, các căn cứ theo mã ngắn kèm đoạn trích nguyên văn, và lời giải thích dẫn căn cứ bằng số thứ tự trong ngoặc vuông, không được viết số điều trong lời giải thích.
+
+Bước kiểm chứng sau đó áp dụng sáu quy tắc. Thứ nhất, căn cứ chỉ được chấp nhận nếu mã của nó thuộc danh sách ứng viên của chính điều khoản đó. Thứ hai, đoạn trích phải có thật trong nội dung nguồn; phép so khớp chuẩn hoá chữ hoa thường, dấu ngoặc và khoảng trắng, cho phép dấu ``\ldots'' bỏ đoạn, và yêu cầu mỗi đoạn dài từ 15 ký tự trở lên khớp liên tục ít nhất 85\% độ dài; đoạn trích không khớp bị bỏ nhưng căn cứ vẫn được giữ. Thứ ba, nếu nguồn web nêu một số điều mà Pháp Điển có trong danh sách ứng viên, điều Pháp Điển đó được tự động chèn lên trước nguồn web và các số tham chiếu được đánh lại, khắc phục lỗi (iii). Thứ tư, kết luận ``trái luật'' phải có ít nhất một căn cứ Pháp Điển hoặc nguồn web độ tin cậy cao, nếu không bị hạ xuống ``rủi ro''. Thứ năm, điều luật được nhắc trong lời giải thích mà không nằm trong căn cứ được liệt kê riêng để giao diện ghi chú ``chưa được kiểm chứng'', khắc phục lỗi (i). Thứ sáu, điều khoản không còn căn cứ hợp lệ nào không được hiển thị như cảnh báo mà được chuyển sang mục ``Điều khoản nên xem lại''.
+
+Trên giao diện, các điều luật đã tra được trả về theo đúng định dạng của tính năng hỏi đáp, nên khung căn cứ pháp lý được dùng lại; số tham chiếu trong lời giải thích và thẻ căn cứ đều mở đúng điều luật. Toàn bộ quy tắc trên được bao phủ bởi 36 kiểm thử đơn vị (Bảng \ref{tab:tc_rasoat}).
+
+\subsection{Kết quả đạt được}
+Đồ án thử nghiệm với hai hợp đồng mẫu do người thực hiện soạn, có cài sẵn các điều khoản trái luật phổ biến. Với hợp đồng lao động mười hai điều, hệ thống đưa ra tám cảnh báo, tất cả đều có căn cứ là điều luật thật kèm đoạn trích nguyên văn đã kiểm chứng, gồm: thời gian thử việc 90 ngày đối chiếu Điều 25 Bộ luật Lao động; tiền làm thêm giờ 100\% đối chiếu Điều 98 Bộ luật Lao động và Điều 55 Nghị định 145/2020/NĐ-CP; giữ giấy tờ gốc và đặt cọc đối chiếu Điều 17 và Điều 165; thoả thuận không đóng bảo hiểm đối chiếu Điều 168; cam kết không kết hôn, không mang thai đối chiếu Điều 15 và Điều 49 Bộ luật Lao động cùng Điều 39 Bộ luật Dân sự về quyền nhân thân; thời hạn báo trước 90 ngày đối chiếu Điều 35; trừ lương khi đi muộn đối chiếu Điều 124 về hình thức kỷ luật; và quy định giám đốc quyết định tranh chấp đối chiếu Điều 180 và 187. Với hợp đồng mua bán, điều khoản phạt vi phạm 20\% được đối chiếu với Điều 301 Luật Thương mại 2005 (mức phạt không quá 8\%) kèm một nguồn web tin cậy cao đứng sau.
+
+Thử nghiệm cũng cho thấy hai giới hạn. Kết quả có độ dao động giữa các lần chạy vì cụm từ tra cứu do mô hình tự đặt; khi một lần chạy không tìm được căn cứ, hệ thống chuyển điều khoản sang mục ``nên xem lại'' thay vì bịa căn cứ, đổi lại có thể bỏ sót cảnh báo đúng. Ngoài ra, hệ thống bảo đảm căn cứ là điều luật có thật và đoạn trích là nguyên văn, nhưng không bảo đảm việc áp dụng điều luật vào tình huống luôn đúng về mặt pháp lý, ví dụ áp dụng trần lãi suất của Bộ luật Dân sự cho lãi chậm trả trong hợp đồng thương mại là vấn đề còn nhiều ý kiến. Vì vậy mọi kết quả đều kèm lưu ý không thay thế ý kiến của luật sư.
+
+\section{Bộ nhớ dài hạn bảo vệ quyền riêng tư}
+\label{section:5.4}
+
+\subsection{Vấn đề}
+Câu trả lời pháp lý thường phụ thuộc vào hoàn cảnh cá nhân như tuổi, nghề nghiệp, loại hợp đồng. Nếu hệ thống không nhớ, người dùng phải nhắc lại thông tin ở mỗi cuộc hội thoại; nếu nhớ không kiểm soát, hệ thống có thể lưu những thông tin rất nhạy cảm như số căn cước, số tài khoản, tiền án, tình trạng sức khoẻ, vốn hay xuất hiện trong câu hỏi pháp luật. Ngoài ra, thông tin thay đổi theo thời gian: người dùng chuyển trường, đổi việc, nên bộ nhớ phải cập nhật thay vì tích luỹ các phiên bản mâu thuẫn.
+
+\subsection{Giải pháp}
+Đồ án áp dụng kiến trúc hai giai đoạn của Mem0 \cite{chhikara2025mem0}: sau mỗi lượt hội thoại, một mô hình nhỏ trích xuất các thông tin bền vững; với mỗi thông tin, hệ thống tìm tối đa năm ký ức tương đồng của người dùng và để mô hình quyết định thêm, cập nhật, xoá hay bỏ qua. Toàn bộ quá trình chạy nền sau khi đã trả lời. Đồ án bổ sung bốn điểm so với kiến trúc gốc.
+
+Thứ nhất, ký ức được phân thành bốn loại với độ phai khác nhau khi truy xuất: thông tin cốt lõi (năm sinh, nghề nghiệp) và thói quen trình bày không phai; sự kiện (bị nợ lương tháng này) có chu kỳ bán rã 30 ngày; kiến thức về người dùng có chu kỳ bán rã 120 ngày. Điểm truy xuất được tính bằng
+\begin{equation}\label{eq:memscore}
+    \mathrm{score} = \mathrm{sim}\cdot\left((1-w) + w\cdot 0{,}5^{\,\Delta t / T_{1/2}}\right)
+\end{equation}
+với $\mathrm{sim}$ là độ tương đồng cosine, $\Delta t$ là tuổi của ký ức tính theo ngày, $T_{1/2}$ là chu kỳ bán rã theo loại và $w = 0{,}4$.
+
+Thứ hai, quyền riêng tư được bảo vệ ở hai lớp. Mô hình trích xuất gắn cờ nhạy cảm cho từng thông tin; một lớp biểu thức chính quy làm lưới dự phòng, loại các dãy số dạng số căn cước, số điện thoại, số tài khoản, số thẻ và nhận diện các chủ đề nhạy cảm như tố tụng hình sự, sức khoẻ, xu hướng tính dục, tôn giáo, chính trị. Người dùng chọn một trong ba chế độ: không lưu thông tin nhạy cảm (mặc định), lưu đầy đủ, hoặc tắt bộ nhớ. Người dùng xem được mọi ký ức, xoá từng mục hoặc xoá toàn bộ.
+
+Thứ ba, mọi thao tác trên bộ nhớ đều kiểm tra quyền: người dùng đã đăng nhập chỉ thao tác được bộ nhớ của chính mình, mã người dùng gửi lên mà không có token hợp lệ không được tin, trừ mã ẩn danh do chính trình duyệt sinh ra. Thứ tư, bộ nhớ và vector của nó được lưu cùng một tài liệu MongoDB thay vì tách ra Milvus như thiết kế ban đầu; việc tách hai kho đã gây lệch dữ liệu khi Milvus được khởi tạo lại.
+
+\subsection{Kết quả đạt được}
+Bộ nhớ được đánh giá với mô hình, MongoDB thật trên 14 kịch bản hội thoại gồm bốn nhóm: trích xuất (6 kịch bản, như thông tin cơ bản, trò chuyện không có gì để lưu, câu hỏi pháp luật chung không phải thông tin cá nhân), cập nhật (4 kịch bản, như đổi trường, đổi việc, phủ định cần xoá, diễn đạt lại cần bỏ qua), nhạy cảm (2 kịch bản với số căn cước và số tài khoản) và truy xuất (2 kịch bản). Cả 14 kịch bản đều đạt, không có lần lộ dữ liệu nhạy cảm nào và không có ký ức trùng lặp hay lỗi thời. Phân bố thao tác gồm 17 lần thêm, 1 lần cập nhật, 2 lần xoá và 1 lần bỏ qua, đúng với kỳ vọng của từng kịch bản; thời gian xử lý trung bình 3,8 giây mỗi lượt.
+
+\section{Cập nhật văn bản pháp luật và theo dõi hiệu lực}
+\label{section:5.5}
+
+\subsection{Vấn đề}
+Dữ liệu Pháp Điển chỉ được tải một lần lúc xây dựng hệ thống, trong khi văn bản pháp luật mới được ban hành liên tục. Nếu không có cách cập nhật, hệ thống sẽ ngày càng lạc hậu; nếu cập nhật tự động không qua kiểm tra, dữ liệu sai do lỗi trích xuất PDF sẽ đi thẳng vào câu trả lời. Ngoài ra, hệ thống cần biết văn bản nào đã hết hiệu lực, đã bị sửa đổi hay thay thế để cảnh báo người dùng.
+
+\subsection{Giải pháp}
+Đồ án xây dựng mô-đun quản trị dữ liệu văn bản với quy trình qua khu chờ duyệt. Quản trị viên thêm tối đa 30 văn bản mỗi lần từ trang văn bản trên Công báo, đường dẫn PDF hoặc file PDF. Việc tải từ đường dẫn tuân thủ \texttt{robots.txt}, giãn cách giữa các lần tải và chặn địa chỉ nội bộ. Bộ trích xuất PDF lọc chữ có cỡ nhỏ hơn 80\% cỡ chữ nội dung để loại chú thích cuối trang, tránh lỗi số chú thích ``1'' dính vào ``Điều 5'' thành ``Điều 51'' trong văn bản hợp nhất. Bộ phân tích cấu trúc nhận diện số hiệu, loại văn bản, ngày ban hành, ngày hiệu lực và các cấp phần, chương, mục, điều theo đúng văn bản đó; nội dung nằm trong ngoặc kép, tức là phần văn bản sửa đổi trích lại điều cũ, không bị coi là cấu trúc của văn bản đang đọc. Bộ phân tích cũng nhận diện các câu nêu quan hệ sửa đổi, thay thế với văn bản khác.
+
+Mỗi văn bản được so sánh với dữ liệu hiện có để đánh dấu điều mới, điều thay đổi và điều giữ nguyên, rồi chờ quản trị viên kiểm tra, sửa và duyệt. Dữ liệu chỉ được ghi vào kho tra cứu sau khi duyệt; khu chờ duyệt không ảnh hưởng tới câu trả lời. Khi ghi, nội dung cũ của điều bị thay đổi được lưu vào bảng lịch sử; điều thuộc văn bản ngoài Pháp Điển được gán mã tạm và khi Pháp Điển cập nhật điều tương ứng, mã tạm được ánh xạ sang mã chính thức để các trích dẫn cũ vẫn mở được. Sổ cái văn bản lưu trạng thái hiệu lực ở mức văn bản và mức điều; khi truy xuất, mỗi điều luật được gắn chú thích hiệu lực và điều thuộc văn bản hết hiệu lực bị hạ điểm như mô tả ở phần \ref{section:5.2}.
+
+\subsection{Kết quả đạt được}
+Quy trình cập nhật đã hoạt động đầy đủ trên giao diện quản trị gồm bốn thẻ: thêm văn bản, chờ duyệt, sổ cái văn bản và cập nhật Pháp Điển. Chức năng quản trị chỉ mở cho tài khoản có email đã xác minh và được cấp vai trò trong MongoDB. Mô hình hiện tại lưu một trạng thái hiệu lực cho mỗi điều; việc lưu nội dung điều theo nhiều phiên bản gắn với khoảng thời gian hiệu lực, để xử lý trọn vẹn các trường hợp sửa đổi, thay thế và hợp nhất, được trình bày như hướng phát triển ở Chương \ref{chapter:conclusion}.
+
+\section{Trực quan hoá hoạt động của tác tử}
+\label{section:5.6}
+
+\subsection{Vấn đề}
+Một lượt trả lời của tác tử mất từ vài giây tới hơn mười giây. Trong khoảng thời gian đó, giao diện chat thông thường chỉ hiển thị biểu tượng chờ, người dùng không biết hệ thống đang làm gì và dễ nghĩ hệ thống bị treo. Đồng thời, kiến trúc nhiều thành phần (tiền xử lý, bộ đệm, bộ nhớ, bốn công cụ) khó giải thích cho người không chuyên.
+
+\subsection{Giải pháp}
+Máy chủ phát các sự kiện trạng thái có cấu trúc trong luồng SSE, mỗi sự kiện có trường \texttt{stage} cho biết bước hiện tại (tiếp nhận, chuẩn hoá, bộ nhớ, bộ đệm, gọi công cụ, tổng hợp) và tên công cụ, số vòng lặp. Trang hỏi đáp hiển thị các sự kiện này dưới dạng dòng tiến trình. Trang văn phòng luật 3D ánh xạ mỗi thành phần thành một nhân vật như mô tả ở phần \ref{subsection:4.3.3}: khi máy chủ báo đang gọi \texttt{vector\_search}, nhân vật thủ thư điều luật làm việc tại thư viện Pháp Điển; khi gọi \texttt{graph\_traverse}, chuyên viên liên kết làm việc tại bảng liên kết; khi bộ đệm trúng, ``sổ tay đã trả lời'' được sử dụng thay cho cả quy trình tra cứu. Trang hỗ trợ ba góc nhìn (toàn cảnh, nhập vai, mắt nhân vật) và một chế độ dữ liệu mẫu chạy không cần máy chủ để trình diễn.
+
+\subsection{Kết quả đạt được}
+Cùng một luồng sự kiện phục vụ cả giao diện chat và văn phòng 3D mà không cần điểm cuối riêng, vì các sự kiện vẫn giữ trường \texttt{text} cho giao diện cũ. Văn phòng 3D biến luồng xử lý trừu tượng của tác tử thành hình ảnh trực quan, giúp người dùng và người đánh giá thấy được tác tử đang tra Pháp Điển, đi theo đồ thị hay tìm kiếm web ở từng thời điểm.
+
+Chương này đã trình bày sáu giải pháp chính của đồ án. Tìm kiếm lai với bộ tách từ cặp âm tiết, RRF và xếp hạng lại theo độ phủ từ có nghĩa nâng nDCG@10 từ 0,417 lên 0,632. Luật buộc kiểm tra web và cách tách mã sắp xếp khỏi trích dẫn giúp tác tử gọi đúng công cụ ở 97,6\% trường hợp bắt buộc. Cơ chế kiểm chứng căn cứ bảo đảm mọi cảnh báo trong rà soát văn bản dựa trên điều luật thật và đoạn trích nguyên văn. Bộ nhớ dài hạn đạt toàn bộ kịch bản kiểm thử mà không lộ dữ liệu nhạy cảm. Quy trình qua khu chờ duyệt cho phép cập nhật văn bản mới một cách có kiểm soát, và văn phòng 3D trực quan hoá hoạt động của tác tử. Chương tiếp theo tổng kết đồ án và đề xuất hướng phát triển.
+
+\end{document}
