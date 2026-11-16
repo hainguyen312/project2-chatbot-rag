@@ -52,9 +52,11 @@ export function useOfficeChat(mock: boolean, initialChatId: string | null = null
   const abortRef = useRef<AbortController | null>(null);
   const busyRef = useRef(false);
 
+  // Lịch sử chat chỉ cho người đã đăng nhập (server lấy uid từ ID token).
+  const chatOwner = user?.uid ?? null;
   useEffect(() => {
-    if (userId) void chatActions.setUserId(userId);
-  }, [userId]);
+    void chatActions.setUserId(chatOwner);
+  }, [chatOwner]);
 
   // Mở đúng hội thoại truyền qua ?chat=<id> sau khi danh sách đã tải.
   const appliedInitial = useRef(false);
@@ -120,7 +122,12 @@ export function useOfficeChat(mock: boolean, initialChatId: string | null = null
               chat_id: chatId,
             }),
           });
-          if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
+          if (!res.ok || !res.body) {
+            const data = (await res.json().catch(() => ({}))) as { error?: string };
+            if (res.status === 401) throw new Error("Vui lòng đăng nhập để đặt câu hỏi.");
+            if (res.status === 429 && data.error) throw new Error(data.error);
+            throw new Error(`HTTP ${res.status}`);
+          }
 
           const reader = res.body.getReader();
           const decoder = new TextDecoder();

@@ -1,9 +1,31 @@
 from typing import Any, Dict, List, Optional
+import os
 import re
 from .base_agent import BaseAgent
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch
 import torch.nn.functional as F
+
+
+def select_device(preference: Optional[str] = None) -> str:
+    """Chọn device cho model sentiment: "cuda" nếu có GPU, ngược lại "cpu".
+
+    preference (mặc định lấy env SENTIMENT_DEVICE): "auto" | "cuda" | "cpu".
+    "cuda" khi không có GPU → fallback "cpu" kèm cảnh báo; giá trị lạ → coi như "auto".
+    """
+    pref = (preference if preference is not None else os.getenv("SENTIMENT_DEVICE", "auto"))
+    pref = (pref or "auto").strip().lower()
+    if pref not in ("auto", "cuda", "cpu"):
+        print(f"[Sentiment] SENTIMENT_DEVICE={pref!r} không hợp lệ, dùng auto", flush=True)
+        pref = "auto"
+    if pref == "cpu":
+        return "cpu"
+    if torch.cuda.is_available():
+        return "cuda"
+    if pref == "cuda":
+        print("[Sentiment] Yêu cầu cuda nhưng không có GPU, fallback cpu", flush=True)
+    return "cpu"
+
 
 class SentimentAgent(BaseAgent):
     """Phát hiện cảm xúc tiêu cực bằng rule heuristic."""
@@ -24,8 +46,11 @@ class SentimentAgent(BaseAgent):
             "hostile_abusive": "Người dùng đang thù hằn hoặc thô tục."
             }
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
+        self.device = select_device()
+        self.model = AutoModelForSequenceClassification.from_pretrained(model_name).to(self.device)
         self.model.eval()
+        gpu = f" ({torch.cuda.get_device_name(0)})" if self.device == "cuda" else ""
+        print(f"[Sentiment] device: {self.device}{gpu}", flush=True)
         
         # self.negative_keywords = [
         #     "thật tệ", "không hài lòng", "bực mình", "vô nghĩa",
@@ -41,7 +66,7 @@ class SentimentAgent(BaseAgent):
     def _zero_shot_sentiment_vi(self, text: str, tau=0.2, k=2) -> Dict[str, Any]:
         hyp = list(self.labels.values())
         premise = [text] * len(hyp)
-        enc = self.tokenizer(premise, hyp, padding=True, truncation=True, return_tensors="pt")
+        enc = self.tokenizer(premise, hyp, padding=True, truncation=True, return_tensors="pt").to(self.device)
         with torch.no_grad():
             logits = self.model(**enc).logits  # (n,3): [contradiction, neutral, entailment]
         probs = F.softmax(logits, dim=-1)[:, 2]  # entailment, shape: (n,)

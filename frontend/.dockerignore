@@ -1,0 +1,21 @@
+# Build context frontend (frontend/Dockerfile).
+node_modules
+.next
+out
+build
+coverage
+.git
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+.DS_Store
+# Bí mật: biến NEXT_PUBLIC_* truyền bằng build-arg, biến runtime bằng env của compose.
+.env*
+*.pem
+firebase-credentials.json
+Dockerfile
+.dockerignore
+# Test (vitest) không cần trong image
+tests
+vitest.config.mts

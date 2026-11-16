@@ -98,8 +98,18 @@ class TestAuthGuard:
     def test_valid_token_wins_over_body(self):
         assert G.resolve_user_id("u2firebase", "Bearer good-u1", verify) == "u1firebase"
 
-    def test_anonymous_id_without_token_ok(self):
-        assert G.resolve_user_id("demo_ab12cd34", None, verify) == "demo_ab12cd34"
+    def test_anonymous_id_without_token_rejected(self):
+        # Khách vãng lai bị chặn (SURVEY bước 5): id demo_… không còn được tin
+        assert G.resolve_user_id("demo_ab12cd34", None, verify) is None
+
+    def test_require_uid(self):
+        assert G.require_uid("Bearer good-u1", verify) == "u1firebase"
+
+    @pytest.mark.parametrize("auth", [None, "", "Bearer bad", "Basic xyz", "demo_ab12cd34"])
+    def test_require_uid_rejects_without_valid_token(self, auth):
+        with pytest.raises(G.AuthError) as e:
+            G.require_uid(auth, verify)
+        assert e.value.status == 401
 
     @pytest.mark.parametrize("auth", [None, "Bearer bad", "Basic xyz"])
     def test_firebase_uid_without_valid_token_rejected(self, auth):
@@ -120,5 +130,7 @@ class TestAuthGuard:
             G.enforce_user_match("u1firebase", auth, verify)
         assert e.value.status == 401
 
-    def test_enforce_anonymous_ok(self):
-        assert G.enforce_user_match("demo_ab12cd34", None, verify) == "demo_ab12cd34"
+    def test_enforce_anonymous_rejected(self):
+        with pytest.raises(G.AuthError) as e:
+            G.enforce_user_match("demo_ab12cd34", None, verify)
+        assert e.value.status == 401

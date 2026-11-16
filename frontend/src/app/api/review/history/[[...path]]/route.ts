@@ -1,17 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND = process.env.RAG_BACKEND_URL ?? "http://localhost:8001";
+import { BACKEND_URL as BACKEND, backendHeaders } from "@/lib/backend";
 
 /**
  * Proxy /api/review/history[/…] → backend /review/history[/…]. Quyền sở hữu do BACKEND
- * kiểm tra (token Firebase hoặc id ẩn danh demo_…). File gốc trả nguyên bytes + header tải về.
+ * kiểm tra (token Firebase). File gốc trả nguyên bytes + header tải về.
  */
 async function forward(req: NextRequest, path: string[] | undefined, method: "GET" | "DELETE") {
   const sub = (path ?? []).map(encodeURIComponent).join("/");
   const url = `${BACKEND}/review/history${sub ? `/${sub}` : ""}${req.nextUrl.search}`;
-  const headers: Record<string, string> = {};
-  const auth = req.headers.get("authorization");
-  if (auth) headers["Authorization"] = auth;
+  const headers = backendHeaders(req);
   let res: Response;
   try {
     res = await fetch(url, { method, headers, cache: "no-store" });

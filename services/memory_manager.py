@@ -17,13 +17,14 @@ Storage (một nguồn dữ liệu duy nhất):
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import logging
 import os
 import re
 import threading
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 import uuid
 
@@ -42,6 +43,25 @@ if not logger.handlers:
     _h.setFormatter(logging.Formatter("[Memory] %(asctime)s %(levelname)s %(message)s"))
     logger.addHandler(_h)
 logger.setLevel(logging.INFO)
+
+# Log KHÔNG chứa dữ liệu cá nhân: uid → mã băm ngắn, nội dung fact → chỉ độ dài.
+# Debug trên máy dev: MEMORY_LOG_CONTENT=1 để ghi nội dung (KHÔNG bật ở production).
+_LOG_CONTENT = os.getenv("MEMORY_LOG_CONTENT", "0").strip().lower() in ("1", "true", "yes")
+
+
+def _uid(user_id: Optional[str]) -> str:
+    """Mã băm ổn định của uid để lần theo log mà không lộ uid thật."""
+    if not user_id:
+        return "u:-"
+    return "u:" + hashlib.sha256(str(user_id).encode("utf-8")).hexdigest()[:10]
+
+
+def _txt(text: Optional[str], limit: int = 80) -> str:
+    """Nội dung fact cho log: mặc định chỉ độ dài."""
+    text = text or ""
+    if _LOG_CONTENT:
+        return text[:limit]
+    return f"({len(text)} ký tự)"
 
 
 MEMORY_MONGO_COLLECTION = os.getenv("MEMORY_MONGO_COLLECTION", "memories")
@@ -428,7 +448,7 @@ class MemoryManager:
         if col is None:
             raise RuntimeError("Chưa kết nối MongoDB")
         col.update_one({"user_id": user_id}, {"$set": {"mode": mode, "updated_at": _now_iso()}}, upsert=True)
-        logger.info("Memory mode user=%s → %s", user_id, mode)
+        logger.info("Memory mode user=%s → %s", _uid(user_id), mode)
         return mode
 
     def _ready(self) -> bool:
@@ -488,7 +508,7 @@ class MemoryManager:
             if _FORCE_CORE_RE.search(fact):
                 mtype = "core"
             if _is_sensitive(fact):
-                logger.info("Bỏ qua fact nhạy cảm: %s…", fact[:50])
+                logger.info("Bỏ qua fact nhạy cảm %s", _txt(fact, 50))
                 continue
             if len(fact) > 1800:
                 fact = fact[:1800]
@@ -524,7 +544,7 @@ class MemoryManager:
         try:
             return list(self.mongo_col.find({"user_id": user_id, "deleted": {"$ne": True}}, proj))
         except Exception as e:
-            logger.warning("Mongo find fail user=%s: %s", user_id, e)
+            logger.warning("Mongo find fail user=%s: %s", _uid(user_id), e)
             return []
 
     @staticmethod
@@ -614,7 +634,7 @@ class MemoryManager:
         except Exception as e:
             logger.warning("Mongo insert fail: %s", e)
             return "SKIP"
-        logger.info("ADD user=%s [%s] %s", user_id, cand["type"], cand["fact"][:80])
+        logger.info("ADD user=%s [%s] %s", _uid(user_id), cand["type"], _txt(cand["fact"]))
         return "ADD"
 
     def _do_update(self, user_id: str, cand: dict, target_id: str, merged: str, reason: Any, now: str) -> str:
@@ -637,7 +657,7 @@ class MemoryManager:
         except Exception as e:
             logger.warning("Mongo update fail: %s", e)
             return "SKIP"
-        logger.info("UPDATE user=%s id=%s: %s", user_id, target_id, merged[:80])
+        logger.info("UPDATE user=%s id=%s %s", _uid(user_id), target_id, _txt(merged))
         return "UPDATE"
 
     def _do_delete(self, user_id: str, cand: dict, target_id: str, reason: Any, now: str) -> str:
@@ -651,7 +671,7 @@ class MemoryManager:
         except Exception as e:
             logger.warning("Mongo soft-delete fail: %s", e)
             return "SKIP"
-        logger.info("DELETE user=%s id=%s (negated by: %s)", user_id, target_id, cand["fact"][:60])
+        logger.info("DELETE user=%s id=%s (phủ định bởi fact %s)", _uid(user_id), target_id, _txt(cand["fact"], 60))
         return "DELETE"
 
     # ── UPDATE (gộp) ────────────────────────────────────────────────────────
@@ -706,7 +726,7 @@ class MemoryManager:
                 touched.add(target)
                 results[i] = self._do_delete(user_id, cand, target, d.get("reason"), now)
             else:
-                logger.info("NOOP user=%s candidate=%s", user_id, cand["fact"][:60])
+                logger.info("NOOP user=%s candidate %s", _uid(user_id), _txt(cand["fact"], 60))
                 results[i] = "NOOP"
         return results
 
@@ -778,7 +798,7 @@ class MemoryManager:
                 for score, sim, d in ranked[:top_k]:
                     add(d, score, sim)
             except Exception as e:
-                logger.warning("retrieve_memories semantic fail user=%s: %s", user_id, e)
+                logger.warning("retrieve_memories semantic fail user=%s: %s", _uid(user_id), e)
 
         for d in docs:
             if d.get("mem_type") == "core" or _PROFILE_FACT_RE.search(d.get("fact") or ""):
@@ -879,7 +899,7 @@ class MemoryManager:
             return False
         try:
             res = self.mongo_col.delete_one({"user_id": user_id, "mem_id": str(mem_id)})
-            logger.info("Manual DELETE user=%s id=%s", user_id, mem_id)
+            logger.info("Manual DELETE user=%s id=%s", _uid(user_id), mem_id)
             return res.deleted_count > 0
         except Exception as e:
             logger.warning("delete_memory fail: %s", e)
@@ -891,7 +911,7 @@ class MemoryManager:
             return 0
         try:
             res = self.mongo_col.delete_many({"user_id": user_id})
-            logger.info("Right-to-be-forgotten user=%s deleted=%d", user_id, res.deleted_count)
+            logger.info("Right-to-be-forgotten user=%s deleted=%d", _uid(user_id), res.deleted_count)
             return res.deleted_count
         except Exception as e:
             logger.warning("delete_all_for_user fail: %s", e)

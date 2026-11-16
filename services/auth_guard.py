@@ -3,9 +3,13 @@ Xác định người dùng ĐÃ XÁC THỰC cho các thao tác chạm tới b�
 
 Quy tắc:
 - Có Firebase ID token hợp lệ → dùng uid trong token.
-- Không có token → chỉ chấp nhận id ẩn danh (demo_…) do trình duyệt tự sinh.
+- Không có token → KHÔNG xác định được người dùng. Khách vãng lai bị chặn (SURVEY bước 5):
+  id ẩn danh demo_… do trình duyệt tự sinh không còn được chấp nhận (8 ký tự hex — đoán được,
+  và để khách gọi LLM tốn tiền không giới hạn).
 - uid Firebase mà không kèm token → KHÔNG tin (trước đây ai biết uid người khác là đọc/xoá
   được memory của họ).
+
+ANON_PREFIX còn dùng cho /auth/claim_anonymous: gắn dữ liệu ẩn danh cũ sang uid khi đăng nhập.
 """
 from __future__ import annotations
 
@@ -31,13 +35,20 @@ def token_uid(authorization: Optional[str], verify: Callable[[str], dict]) -> Op
     return None
 
 
+def require_uid(authorization: Optional[str], verify: Callable[[str], dict]) -> str:
+    """uid từ token hợp lệ; không có → AuthError 401. Dùng cho mọi endpoint gọi LLM."""
+    uid = token_uid(authorization, verify)
+    if not uid:
+        raise AuthError(401, "Cần đăng nhập")
+    return uid
+
+
 def resolve_user_id(body_user_id: Optional[str], authorization: Optional[str],
                     verify: Callable[[str], dict]) -> Optional[str]:
+    """uid từ token; body_user_id (kể cả demo_…) không bao giờ được tin."""
     uid = token_uid(authorization, verify)
     if uid:
         return uid
-    if body_user_id and body_user_id.startswith(ANON_PREFIX):
-        return body_user_id
     if body_user_id:
         print(f"[Auth] Bỏ user_id chưa xác thực (không có token hợp lệ): {body_user_id[:6]}…")
     return None
@@ -51,8 +62,6 @@ def enforce_user_match(path_user_id: str, authorization: Optional[str],
         if uid != path_user_id:
             raise AuthError(403, "Không được phép thao tác memory của người dùng khác")
         return uid
-    if path_user_id.startswith(ANON_PREFIX):
-        return path_user_id
     raise AuthError(401, "Cần đăng nhập để xem bộ nhớ của tài khoản này")
 
 

@@ -6,6 +6,7 @@ from pymilvus import (
 from openai import OpenAI
 import argparse
 import json
+import os
 import pandas as pd  # vẫn dùng cho error_rows -> csv
 import pymysql
 
@@ -109,12 +110,13 @@ def setup_collection(*, resume: bool) -> tuple[Collection, int]:
 # ----------------- DATA: đọc từ JSON -----------------
 
 def load_data_from_mysql():
+    # Docker compose: MYSQL_HOST=mysql … (mặc định giữ như máy dev cũ)
     conn = pymysql.connect(
-        host="localhost",
-        port=3306,
-        user="root",
-        password="123456789",
-        database="law",
+        host=os.getenv("MYSQL_HOST", "localhost"),
+        port=int(os.getenv("MYSQL_PORT", "3306")),
+        user=os.getenv("MYSQL_USER", "root"),
+        password=os.getenv("MYSQL_PASSWORD", "123456789"),
+        database=os.getenv("MYSQL_DATABASE", "law"),
         charset="utf8mb4"
     )
     cursor = conn.cursor(pymysql.cursors.DictCursor)
@@ -289,6 +291,7 @@ def main():
 collection = None  # gán trong main()
 
 if __name__ == "__main__":
-    connections.connect("default", host="localhost", port="19530")
-    print("Connected to Milvus")
+    host, port = os.getenv("MILVUS_HOST", "localhost"), os.getenv("MILVUS_PORT", "19530")
+    connections.connect("default", host=host, port=port)
+    print(f"Connected to Milvus {host}:{port}")
     main()

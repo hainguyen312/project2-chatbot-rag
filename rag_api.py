@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Literal, Optional
 
 import firebase_admin
 from dotenv import load_dotenv
-from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException
+from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException, Request, Response
 from fastapi.responses import StreamingResponse
 from fastapi import FastAPI, UploadFile, File
 from firebase_admin import auth as fb_auth, credentials, storage as fb_storage
@@ -56,12 +56,85 @@ from services.utils import (
     rewrite_query_v2,
 )
 from services.semantic_cache import semantic_cache
+from services import health as health_checks
+from services import usage_cap
+from services import rate_limit
+from services.sse import with_heartbeat
 from services import auth_guard
 from services.chat_title import generate_title as generate_chat_title
 from services.memory_manager import MemoryManager
 from services.roles import RoleStore
 
 app = FastAPI(title="RAG Backend API", version="1.0.0")
+
+# Chỉ Next.js (biết BACKEND_SHARED_SECRET) gọi được backend — services/internal_secret.py
+from services.internal_secret import InternalSecretMiddleware  # noqa: E402
+
+app.add_middleware(InternalSecretMiddleware, secret=os.getenv("BACKEND_SHARED_SECRET", ""))
+
+
+# ── Xác thực ─────────────────────────────────────────────────────────────────
+def require_login(authorization: Optional[str] = Header(default=None)) -> str:
+    """Dependency cho MỌI endpoint gọi LLM: bắt buộc Firebase ID token, trả uid (khách bị chặn).
+    Đặt trước khi định nghĩa endpoint — xem tests/test_llm_auth_wiring.py."""
+    try:
+        return auth_guard.require_uid(authorization, fb_auth.verify_id_token)
+    except auth_guard.AuthError as e:
+        raise HTTPException(status_code=e.status, detail=e.detail)
+
+
+# Trần chung số câu hỏi/ngày cho cả hệ thống (DAILY_QUESTION_CAP, mặc định 300; 0 = tạm dừng).
+daily_cap = usage_cap.DailyCap(lambda: _mysql_connect(), usage_cap.cap_from_env())
+print(f"[UsageCap] Trần câu hỏi/ngày: {daily_cap.cap}")
+
+# Rate limit theo user + IP (RATE_LIMIT_<LOẠI>_USER/IP) — services/rate_limit.py
+rate_limiter = rate_limit.RateLimiter(rate_limit.rules_from_env())
+
+
+def client_ip(request: Request) -> str:
+    """IP người dùng: Next.js gửi X-Client-IP (lấy từ CF-Connecting-IP do Cloudflare đặt).
+    Backend chỉ nhận request từ frontend trong mạng nội bộ (bước 5e: kèm shared secret)."""
+    ip = (request.headers.get("x-client-ip") or "").strip()
+    if ip:
+        return ip[:64]
+    return request.client.host if request.client else ""
+
+
+def _rate_check(kind: str, uid: str, request: Request) -> None:
+    wait = rate_limiter.check(kind, uid, client_ip(request))
+    if wait:
+        raise HTTPException(status_code=429, detail=rate_limit.MESSAGE.format(seconds=wait),
+                            headers={"Retry-After": str(wait)})
+
+
+def tts_access(request: Request, uid: str = Depends(require_login)) -> str:
+    _rate_check("tts", uid, request)
+    return uid
+
+
+def stt_access(request: Request, uid: str = Depends(require_login)) -> str:
+    _rate_check("stt", uid, request)
+    return uid
+
+
+def title_access(request: Request, uid: str = Depends(require_login)) -> str:
+    _rate_check("title", uid, request)
+    return uid
+
+
+def question_quota(request: Request, uid: str = Depends(require_login)) -> str:
+    """Dependency cho endpoint ĐẶT CÂU HỎI (chat, stream, rà soát): đăng nhập → rate limit
+    (user + IP) → trần chung/ngày. Rate limit trước để spam không tiêu trần chung.
+    Vượt → 429 kèm thông điệp, không gọi LLM; không đếm được (MySQL lỗi) → 503."""
+    _rate_check("question", uid, request)
+    try:
+        daily_cap.consume()
+    except usage_cap.CapExceeded:
+        raise HTTPException(status_code=429, detail=usage_cap.CAP_MESSAGE)
+    except usage_cap.CapUnavailable:
+        raise HTTPException(status_code=503, detail=usage_cap.UNAVAILABLE_MESSAGE)
+    return uid
+
 
 # ── Memory Manager (long-term memory cho user) ────────────────────────────────
 MEMORY_ENABLED = os.getenv("MEMORY_ENABLED", "1").strip() in ("1", "true", "True", "yes")
@@ -365,9 +438,44 @@ def _strip_markdown(text: str) -> str:
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
+SSE_HEARTBEAT_S = float(os.getenv("SSE_HEARTBEAT_SECONDS", "15"))
+HEALTH_TIMEOUT_S = float(os.getenv("HEALTH_TIMEOUT_SECONDS", "3"))
+
+
+def _mysql_connect():
+    import pymysql
+    from services.agentic_rag import _MYSQL_CFG
+    return pymysql.connect(**_MYSQL_CFG, connect_timeout=2, read_timeout=2)
+
+
+def _milvus_version() -> str:
+    from pymilvus import utility
+    return utility.get_server_version()
+
+
+def _bm25_state():
+    from retrieve import lexical_bm25
+    return lexical_bm25._INDEX is not None, bool(lexical_bm25._FAILED)
+
+
 @app.get("/health")
-def health() -> Dict[str, bool]:
-    return {"ok": True}
+def health(response: Response) -> Dict[str, Any]:
+    """Kiểm thật MySQL, Milvus, Neo4j (critical → 503 nếu lỗi); MongoDB, BM25 chỉ báo."""
+    mongo = getattr(memory_manager, "_mongo_client", None) if memory_manager else None
+    ok, checks = health_checks.run_checks(
+        {
+            "mysql": (lambda: health_checks.check_mysql(_mysql_connect), True),
+            "milvus": (lambda: health_checks.check_milvus(collection, _milvus_version), True),
+            "neo4j": (lambda: health_checks.check_neo4j(neo4j_driver), True),
+            "mongodb": (lambda: health_checks.check_mongo(mongo), False),
+            "bm25": (lambda: health_checks.check_bm25(_bm25_state), False),
+            "daily_cap": (lambda: f"{daily_cap.used_today()}/{daily_cap.cap} câu hỏi hôm nay", False),
+        },
+        timeout=HEALTH_TIMEOUT_S,
+    )
+    if not ok:
+        response.status_code = 503
+    return {"ok": ok, "checks": checks}
 
 
 @app.post("/rag/feedback")
@@ -379,8 +487,8 @@ def post_feedback(req: FeedbackRequest) -> Dict[str, bool]:
 
 
 @app.post("/rag/chat", response_model=RagChatResponse)
-def rag_chat(req: RagChatRequest, authorization: Optional[str] = Header(default=None)) -> RagChatResponse:
-    req.user_id = resolve_user_id(req.user_id, authorization)
+def rag_chat(req: RagChatRequest, uid: str = Depends(question_quota)) -> RagChatResponse:
+    req.user_id = uid  # luôn từ token, bỏ user_id client gửi
     prompt = req.prompt.strip()
     history_for_processing = [m.model_dump() for m in req.history]
     decision = run_pre_retrieve(prompt, history_for_processing)
@@ -531,8 +639,8 @@ def _sse_stage(stage: str, text: str, **extra: Any) -> str:
 
 
 @app.post("/rag/stream")
-def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(default=None)):
-    req.user_id = resolve_user_id(req.user_id, authorization)
+def rag_stream(req: RagChatRequest, uid: str = Depends(question_quota)):
+    req.user_id = uid  # luôn từ token, bỏ user_id client gửi
     """
     Server-Sent Events stream.
       data: {"type":"status", "text":"...", "stage"?: "...", "tool"?: "...", "iteration"?: n, "max"?: m}
@@ -692,7 +800,7 @@ def rag_stream(req: RagChatRequest, authorization: Optional[str] = Header(defaul
         _schedule_memory_update(req.user_id, prompt, stream_full_answer, req.chat_id)
 
     return StreamingResponse(
-        event_stream(),
+        with_heartbeat(event_stream(), SSE_HEARTBEAT_S),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
@@ -723,8 +831,9 @@ def _verify_firebase_token(id_token: str) -> Dict[str, Any]:
 
 
 def resolve_user_id(body_user_id: Optional[str], authorization: Optional[str]) -> Optional[str]:
-    """uid đã xác thực (token) hoặc id ẩn danh demo_… — xem services/auth_guard.py."""
+    """uid đã xác thực (token) hoặc None — xem services/auth_guard.py."""
     return auth_guard.resolve_user_id(body_user_id, authorization, fb_auth.verify_id_token)
+
 
 
 @app.post("/auth/verify")
@@ -883,7 +992,7 @@ class ChatTitleRequest(BaseModel):
 
 
 @app.post("/chat/title")
-def chat_title(req: ChatTitleRequest) -> Dict[str, str]:
+def chat_title(req: ChatTitleRequest, uid: str = Depends(title_access)) -> Dict[str, str]:
     """Tên ngắn (3–8 từ) cho đoạn chat từ câu hỏi đầu + câu trả lời — xem services/chat_title.py."""
     return {"title": generate_chat_title(oai_client, req.question, req.answer)}
 
@@ -919,7 +1028,7 @@ def _get_review_history() -> Optional[ReviewHistory]:
 
 
 def _review_owner(user_id: Optional[str], authorization: Optional[str]) -> str:
-    """uid đã xác thực hoặc id ẩn danh demo_…; không có → 401."""
+    """uid đã xác thực (token); không có → 401."""
     uid = resolve_user_id(user_id, authorization)
     if not uid:
         raise HTTPException(status_code=401, detail="Không xác định được người dùng")
@@ -949,7 +1058,7 @@ async def review_analyze(
     text: str = Form(default=""),
     user_id: str = Form(default=""),
     save: bool = Form(default=True),
-    authorization: Optional[str] = Header(default=None),
+    uid: str = Depends(question_quota),
 ):
     """
     Tóm tắt + cảnh báo rủi ro pháp lý cho văn bản (file PDF/DOCX/TXT, link, hoặc chữ dán vào).
@@ -962,7 +1071,7 @@ async def review_analyze(
         data = await file.read(doc_review.MAX_UPLOAD_BYTES + 1)
         filename, content_type = file.filename, file.content_type or ""
     url, text = url.strip(), text.strip()
-    owner = resolve_user_id(user_id or None, authorization) if save else None
+    owner = uid if save else None  # user_id trong form bị bỏ qua — chỉ tin token
 
     def event_stream():
         def sse(ev: Dict[str, Any]) -> str:
@@ -1008,7 +1117,8 @@ async def review_analyze(
                                            web_search=_review_web_search):
             yield sse(ev)
 
-    return StreamingResponse(event_stream(), media_type="text/event-stream",
+    return StreamingResponse(with_heartbeat(event_stream(), SSE_HEARTBEAT_S),
+                             media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
@@ -1086,7 +1196,7 @@ def put_memory_settings(user_id: str, req: MemorySettingsRequest,
 
 
 @app.post("/tts")
-async def text_to_speech(req: dict):
+async def text_to_speech(req: dict, uid: str = Depends(tts_access)):
     from services.history import save_tts_url
 
     text    = (req.get("text") or "").strip()
@@ -1153,7 +1263,7 @@ async def text_to_speech(req: dict):
     )
 
 @app.post("/stt")
-async def speech_to_text(file: UploadFile = File(...)):
+async def speech_to_text(file: UploadFile = File(...), uid: str = Depends(stt_access)):
     from fastapi import UploadFile, File
     
     audio_bytes = await file.read()

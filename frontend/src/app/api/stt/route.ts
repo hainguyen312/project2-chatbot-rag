@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { BACKEND_URL, backendHeaders } from "@/lib/backend";
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
@@ -8,13 +9,12 @@ export async function POST(req: NextRequest) {
   const backendForm = new FormData();
   backendForm.append("file", file, "audio.webm");
 
-  const backendUrl = process.env.RAG_BACKEND_URL ?? "http://localhost:8001";
-
-  const res = await fetch(`${backendUrl}/stt`, {
+  const res = await fetch(`${BACKEND_URL}/stt`, {
     method: "POST",
+    headers: backendHeaders(req),
     body: backendForm,
   });
 
-  const data = await res.json();
-  return NextResponse.json(data);
+  const data = await res.json().catch(() => ({}));
+  return NextResponse.json(data, { status: res.status });
 }

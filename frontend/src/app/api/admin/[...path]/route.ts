@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND = process.env.RAG_BACKEND_URL ?? "http://localhost:8001";
+import { BACKEND_URL as BACKEND, backendHeaders } from "@/lib/backend";
 
 /**
  * Proxy /api/admin/* → backend /admin/*. Quyền admin do BACKEND kiểm tra (token Firebase +
@@ -8,11 +8,9 @@ const BACKEND = process.env.RAG_BACKEND_URL ?? "http://localhost:8001";
  */
 async function forward(req: NextRequest, path: string[], method: string) {
   const url = `${BACKEND}/admin/${path.map(encodeURIComponent).join("/")}${req.nextUrl.search}`;
-  const headers: Record<string, string> = {};
-  const auth = req.headers.get("authorization");
-  if (auth) headers["Authorization"] = auth;
   const ct = req.headers.get("content-type");
-  if (ct) headers["Content-Type"] = ct; // giữ boundary của multipart khi upload PDF
+  // giữ boundary của multipart khi upload PDF
+  const headers = backendHeaders(req, ct ? { "Content-Type": ct } : {});
   const body = method === "GET" || method === "DELETE" ? undefined : await req.arrayBuffer();
   const res = await fetch(url, { method, headers, body, cache: "no-store" });
   const data = await res.json().catch(() => ({ detail: `Backend trả ${res.status}` }));

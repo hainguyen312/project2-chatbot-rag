@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { authHeader } from "@/lib/client-auth";
 
 export type Passage = {
   mapc: string;
@@ -158,11 +159,9 @@ function getState() {
 }
 
 async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
-  const uid = getState().userId;
-  const userHeader: HeadersInit = uid ? { "x-user-id": uid } : {};
   const merged: RequestInit = {
     ...init,
-    headers: { ...userHeader, ...(init?.headers ?? {}) },
+    headers: { ...(await authHeader()), ...(init?.headers ?? {}) },
   };
   const res = await fetch(input, merged);
   const data = (await res.json().catch(() => ({}))) as T & { error?: string; detail?: string };
@@ -251,7 +250,7 @@ export const chatActions = {
     try {
       const res = await fetch("/api/chats/title", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await authHeader()) },
         body: JSON.stringify({ question, answer }),
       });
       const data = (await res.json().catch(() => ({}))) as { title?: string };
