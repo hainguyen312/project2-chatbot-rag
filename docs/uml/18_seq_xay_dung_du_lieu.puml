@@ -37,8 +37,10 @@ Seed --> A : hoàn tất
 
 == UC14: Xây dựng đồ thị ==
 A -> Build : python retrieve/build_graph.py
-Build -> MySQL : đọc điều luật + tham chiếu
-Build -> Neo4j : MERGE node Dieu (mapc, nội dung)
-Build -> Neo4j : MERGE quan hệ LIEN_QUAN, THAM_CHIEU
+Build -> MySQL : đọc pddieu, pdmuclienquan
+Build -> Neo4j : MERGE Dieu (mapc, nội dung, vbqppl), Khoan
+Build -> Neo4j : MERGE VanBan, THUOC, DUOC_SUA_DOI_BOI
+Build -> Build : phân tích dẫn chiếu trong nội dung
+Build -> Neo4j : MERGE LIEN_QUAN, THAM_CHIEU
 Build --> A : hoàn tất
 @enduml

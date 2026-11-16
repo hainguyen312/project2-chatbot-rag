@@ -24,20 +24,23 @@ else (proceed)
       :Lấy câu trả lời từ cache;
     else (không)
       repeat
-        :LLM quyết định gọi tool;
-        if (Cần thêm thông tin?) then (có)
+        if (Đã có vòng tool, chưa tra web và\ncâu hỏi về mức phạt / hiện hành\nhoặc kết quả Pháp Điển yếu?) then (có)
+          :Buộc lượt này gọi web_search;
+        endif
+        :LLM gọi tool hoặc viết câu trả lời;
+        if (Gọi tool?) then (có)
           :Thực thi tool
           (vector / graph / full article / web);
           :Gom điều luật vào bucket;
         endif
       repeat while (Còn tool_calls và < 6 vòng?) is (có)
       ->không;
-      :Rerank, loại trùng, tính độ tin cậy;
-      :Sinh câu trả lời có trích dẫn;
+      :Stream câu trả lời có trích dẫn
+      (token gửi ngay khi sinh);
       :Lưu vào semantic cache;
     endif
     fork
-      :Stream câu trả lời về giao diện;
+      :Hiển thị căn cứ pháp lý (passages);
     fork again
       :Cập nhật bộ nhớ dài hạn (nền);
     end fork

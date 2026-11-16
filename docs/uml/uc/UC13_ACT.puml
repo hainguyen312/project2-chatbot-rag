@@ -12,15 +12,12 @@ repeat :Lấy lô 200 điều;
     :Nhúng từng điều,\nghi điều lỗi vào embed_errors.csv;
   endif
 repeat while (Còn điều?) is (còn) not (hết)
-|Quản trị viên|
-:Chạy seed_contextual_chunks.py --dry-run;
-:Xem số đoạn, chi phí ước tính;
-:Chạy thật;
-|seed_contextual_chunks|
-:Tạo tiêu đề ngữ cảnh, chia đoạn 400 token;
-:Nhúng theo ngân sách token, thử lại khi lỗi;
-:Ghi Milvus theo lô 500;
 |Máy chủ dịch vụ|
-:Khởi động: xây hoặc nạp chỉ mục BM25;
+:Khởi động: nạp chỉ mục BM25 từ đĩa;
+if (Có bộ đệm đúng phiên bản?) then (có)
+  :Dùng chỉ mục đã lưu;
+else (không)
+  :Tách từ, tách điều dài theo nhóm khoản,\nxây BM25, lưu đĩa;
+endif
 stop
 @enduml

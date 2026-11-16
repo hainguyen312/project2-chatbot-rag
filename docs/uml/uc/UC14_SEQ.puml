@@ -4,21 +4,22 @@ title Biểu đồ tuần tự UC14 — Xây dựng đồ thị tri thức
 autonumber
 actor "Quản trị viên" as A
 participant "build_graph" as G
+participant "legal_graph" as P
 database "MySQL" as DB
 database "Neo4j" as N
-A -> G : python retrieve/build_graph.py
-G -> N : CREATE CONSTRAINT (ChuDe, DeMuc, Chuong, Dieu)
+A -> G : python -m retrieve.build_graph
+G -> N : CREATE CONSTRAINT / INDEX
 G -> DB : đọc pdchude, pddemuc, pdchuong
 G -> N : MERGE nút + CO_DE_MUC, CO_CHUONG
 G -> DB : đọc pddieu
-loop mỗi lô 500
-  G -> N : UNWIND MERGE Dieu + CO_DIEU
+G -> P : parse_vbqppl, split_khoan
+loop mỗi lô
+  G -> N : MERGE Dieu + CO_DIEU, Khoan + CO_KHOAN
 end
+G -> N : MERGE VanBan, THUOC, DUOC_SUA_DOI_BOI
 G -> DB : đọc pdmuclienquan
-loop mỗi lô 500
-  G -> N : MERGE LIEN_QUAN (hai chiều)
-end
-G -> G : regex mã điều trong nội dung
-G -> N : MERGE THAM_CHIEU
+G -> N : MERGE LIEN_QUAN (hai chiều)
+G -> P : extract_references, resolve_reference
+G -> N : MERGE THAM_CHIEU (khoản, điểm, ngữ cảnh ngoại lệ)
 G --> A : hoàn tất
 @enduml

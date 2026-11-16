@@ -3,9 +3,10 @@
 title Biểu đồ tuần tự — Thực thi tool của agent (truy xuất điều luật)
 autonumber
 
-participant "rag_api" as API
+participant "agent_events" as API
 participant "execute_agent_tool" as Exec
 participant "GraphRAGRetriever" as Ret
+participant "BM25Index" as BM25
 participant "OpenAI\nEmbedding" as Emb
 database "Milvus" as Milvus
 database "Neo4j" as Neo4j
@@ -15,29 +16,45 @@ participant "Tavily" as Tavily
 API -> Exec : execute_agent_tool(name, args, rerank_query)
 activate Exec
 alt name = vector_search
-  Exec -> Ret : _vector_search(query, pool_k)
+  Exec -> Ret : _hybrid_search(query, pool_k)
   Ret -> Emb : embed(query)
   Emb --> Ret : vector
-  Ret -> Milvus : search(phapdien_simple_tendieu)
-  Milvus --> Ret : danh sách mapc
-  Ret --> Exec : mapcs
+  Ret -> Milvus : search(phapdien_simple_tendieu, 50)
+  Milvus --> Ret : (mapc, cosine)
+  Ret -> BM25 : search(query, 50)
+  BM25 --> Ret : (mapc, điểm BM25)
+  Ret -> Ret : RRF (BM25 1,0; vector 0,5; k = 60)\nchuẩn hoá về (0, 1]
+  Ret --> Exec : [(mapc, score)]
   Exec -> Neo4j : fetch_dieu_records(mapcs)
-  Neo4j --> Exec : toàn văn điều luật
+  Neo4j --> Exec : toàn văn điều luật + vbqppl
   opt Neo4j thiếu node
-    Exec -> MySQL : truy vấn pddieu (fallback)
+    Exec -> MySQL : truy vấn pddieu (dự phòng)
     MySQL --> Exec : nội dung điều
   end
-  Exec -> Exec : rerank_phapdien_hits()\n(từ khoá / LLM nếu bật)
+  Exec -> Exec : rerank_phapdien_hits()\n0,7 × RRF + 0,3 × độ phủ từ khoá
+  Exec -> Exec : annotate_hits()\nhiệu lực (sổ cái, ghi chú vbqppl)
+  Exec -> Ret : _exception_check(top 5)
+  Ret -> Neo4j : khoản cấm / ngoại lệ nối với top 5
+  Neo4j --> Exec : tối đa 3 điều (ngoai_le_cua)
+  Exec -> Ret : _reference_closure(top 3)
+  Ret -> Neo4j : điều / khoản được dẫn chiếu (THAM_CHIEU)
+  Neo4j --> Exec : tối đa 4 điều (duoc_dan_chieu_tu)
+  Exec -> Exec : rút gọn điều dài theo khoản\nliên quan (≤ 4.000 ký tự)
 else name = graph_traverse
-  Exec -> Neo4j : MATCH (d)-[:LIEN_QUAN|THAM_CHIEU]-(x)
-  Neo4j --> Exec : điều luật liên quan
-  Exec -> Exec : rerank
+  Exec -> Ret : _graph_expand(mapcs, hop)
+  Ret -> Neo4j : THAM_CHIEU ra (0,8), vào (0,65),\nLIEN_QUAN (0,5), dẫn chiếu 2 bước (0,4)
+  opt Neo4j rỗng
+    Ret -> MySQL : pdmuclienquan (dự phòng)
+  end
+  Neo4j --> Exec : điều luật kèm quan_he
+  Exec -> Exec : bỏ điều gốc, rerank
 else name = get_full_article
-  Exec -> Neo4j : lấy điều theo mapc
+  Exec -> Neo4j : lấy điều theo mapc (MySQL dự phòng)
   Neo4j --> Exec : toàn văn điều
 else name = web_search
   Exec -> Tavily : search(query)
-  Tavily --> Exec : kết quả web (url, nội dung)
+  Tavily --> Exec : kết quả web
+  Exec -> Exec : lọc theo độ tin cậy tên miền
 end
 Exec --> API : (JSON rút gọn cho LLM, full_hits cho UI)
 deactivate Exec

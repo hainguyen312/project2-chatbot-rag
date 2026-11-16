@@ -6,19 +6,15 @@ actor "Quản trị viên" as A
 actor "OpenAI Embedding" as E <<hệ thống>>
 rectangle "UC13. Lập chỉ mục vector và BM25" {
   usecase "Nhúng tên điều" as T
-  usecase "Chia đoạn có ngữ cảnh\nvà nhúng" as C
-  usecase "Ước tính chi phí\n(--dry-run)" as DR
   usecase "Tiếp tục khi gián đoạn\n(--resume)" as R
   usecase "Ghi bản ghi lỗi" as ERR
   usecase "Xây chỉ mục BM25" as B
+  usecase "Tách điều dài\ntheo nhóm khoản" as K
 }
 A --> T
-A --> C
 A --> B
-DR .> C : <<extend>>
 R .> T : <<extend>>
-R .> C : <<extend>>
 ERR .> T : <<extend>>
+B ..> K : <<include>>
 T --> E
-C --> E
 @enduml

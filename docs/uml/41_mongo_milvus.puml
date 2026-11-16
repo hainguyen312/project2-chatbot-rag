@@ -30,7 +30,7 @@ package "MongoDB (chatbot_rag)" {
     embedding : float[1536]
     answer : string
     meta : {passages, sources}
-    expire_at (TTL 24h)
+    expire_at : TTL 24 giờ
   }
   class doc_reviews {
     _id : string
@@ -52,15 +52,8 @@ package "MongoDB (chatbot_rag)" {
 package "Milvus" {
   class phapdien_simple_tendieu {
     id : int64
-    metadata : json (mapc, ten, noidung)
-    embedding : float[1536] (HNSW, COSINE)
-  }
-  class phapdien_ctx_chunks {
-    id : int64
-    mapc : varchar
-    chunk_idx, n_chunks
-    text : varchar
-    embedding : float[1536] (HNSW, COSINE)
+    metadata : json {mapc, ten, noidung}
+    embedding : float[1536], HNSW, COSINE
   }
 }
 
@@ -69,12 +62,24 @@ package "Đồ thị tri thức (Neo4j)" {
   class DeMuc
   class Chuong
   class Dieu {
-    mapc, ten, noidung, chimuc, stt
+    mapc, ten, noidung, vbqppl
+    so_hieu, so_dieu, ngoai_le
+  }
+  class Khoan {
+    id, so, noidung, ngoai_le
+  }
+  class VanBan {
+    so_hieu, loai
+    hieu_luc_tu, trang_thai
   }
   ChuDe --> DeMuc : CO_DE_MUC
   DeMuc --> Chuong : CO_CHUONG
   Chuong --> Dieu : CO_DIEU
+  Dieu --> Khoan : CO_KHOAN
   Dieu --> Dieu : LIEN_QUAN
-  Dieu --> Dieu : THAM_CHIEU
+  Dieu --> Dieu : THAM_CHIEU\n{khoan, diem, ngoai_le}
+  Dieu --> VanBan : THUOC
+  Dieu --> VanBan : DUOC_SUA_DOI_BOI
+  VanBan --> VanBan : SUA_DOI_BO_SUNG,\nTHAY_THE, BAI_BO
 }
 @enduml

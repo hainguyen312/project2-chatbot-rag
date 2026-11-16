@@ -7,22 +7,34 @@ class GraphRAGRetriever {
   - milvus_collection
   - neo4j_driver
   - openai_client
-  + _hybrid_search(query, top_k, pool, mode) : list
+  + _hybrid_search(query, top_k, pool) : list
   + _vector_search_scored(query, top_k) : list
   + _graph_expand(seed_mapcs, hop) : list
   + _rerank(candidates, query, top_k) : list
+  + _reference_closure(seeds, exclude, limit) : list
+  + _exception_check(seeds, exclude, limit) : list
+  + _newest_versions(so_hieus) : dict
   - _embed(text) : list<float>
 }
 
 class BM25Index {
-  - docs : list<mapc>
+  - mapcs : list<mapc>
   - retriever : bm25s.BM25
   + search(query, top_k) : list<(mapc, score)>
   + {static} tokenize(text, bigrams) : list<str>
 }
 
+class LegalGraph <<module legal_graph>> {
+  + parse_vbqppl(vbqppl) : dict
+  + extract_references(text) : list
+  + split_khoan(text) : list
+  + select_relevant_text(text, query, max_chars) : str
+  + sync_mapcs(driver, conn, mapcs)
+}
+
 class AgentLoop <<module agentic_rag>> {
   + RAG_AGENT_TOOLS : list<tool>
+  + agent_events(prompt, history, stream, ...) : iterator
   + run_agentic_rag_sync(prompt, history, ...) : dict
   + execute_agent_tool(name, args, retriever) : (json, hits)
   + web_verify_reason(question, bucket, used) : str
@@ -59,7 +71,9 @@ class SpamAgent
 class SentimentAgent
 
 GraphRAGRetriever ..> BM25Index : dùng
+GraphRAGRetriever ..> LegalGraph : dùng
 AgentLoop ..> GraphRAGRetriever : gọi công cụ
+AgentLoop ..> LegalGraph : rút gọn khoản, vbqppl
 AgentsManager o-- "1..*" BaseAgent
 BaseAgent <|-- QuickAgent
 BaseAgent <|-- SpamAgent

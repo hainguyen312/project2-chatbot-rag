@@ -5,15 +5,16 @@ title Biểu đồ hoạt động UC14 — Xây dựng đồ thị tri thức
 start
 :Chạy build_graph.py;
 |build_graph|
-:Tạo ràng buộc duy nhất 4 loại nút;
-:MERGE ChuDe, DeMuc (+CO_DE_MUC);
-:MERGE Chuong (+CO_CHUONG);
-:MERGE Dieu theo lô 500 (+CO_DIEU);
-:Tạo LIEN_QUAN hai chiều từ 38.435 cặp;
-:Tìm mã điều trong nội dung,\ntạo THAM_CHIEU tới mã có thật;
+:Tạo ràng buộc duy nhất và chỉ mục;
+:MERGE ChuDe, DeMuc, Chuong;
+:MERGE Dieu (vbqppl, số hiệu, cờ ngoại lệ) + CO_DIEU;
+:Tách khoản → Khoan (cờ ngoại lệ) + CO_KHOAN;
+:Phân tích vbqppl → VanBan, THUOC,\nDUOC_SUA_DOI_BOI, SUA_DOI_BO_SUNG;
+:Tạo LIEN_QUAN hai chiều từ pdmuclienquan;
+:Phân tích dẫn chiếu "khoản … Điều … của Luật này",\n"Điều … Nghị định số …" → THAM_CHIEU;
 |Bộ truy xuất|
 if (Neo4j có dữ liệu?) then (có)
-  :graph_traverse dùng Neo4j;
+  :graph_traverse, kiểm tra ngoại lệ,\nkèm điều được dẫn chiếu dùng Neo4j;
 else (không)
   :Dùng bảng pdmuclienquan (MySQL);
 endif
