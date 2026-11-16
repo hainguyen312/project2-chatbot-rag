@@ -451,41 +451,6 @@ class GraphRAGRetriever:
                 break
         return out
 
-    def _graph_degrees(self, mapcs: list[str]) -> dict[str, int]:
-        """Số điều KHÁC trong cùng danh sách ứng viên mà mỗi điều nối tới (THAM_CHIEU / LIEN_QUAN)."""
-        if not mapcs or self.driver is None:
-            return {}
-        try:
-            with self.driver.session() as session:
-                res = session.run("""
-                    UNWIND $mapcs AS m
-                    MATCH (a:Dieu {mapc: m})-[:THAM_CHIEU|LIEN_QUAN]-(b:Dieu)
-                    WHERE b.mapc IN $mapcs AND b.mapc <> m
-                    RETURN m AS mapc, count(DISTINCT b) AS deg
-                """, mapcs=list(mapcs))
-                return {r["mapc"]: int(r["deg"]) for r in res}
-        except Exception as e:
-            print(f"[GraphRAG] graph degree lỗi: {e}")
-            return {}
-
-    def _graph_boost(self, ranked: list[dict], beta: float, head: int = 30) -> list[dict]:
-        """
-        Cộng điểm cho ứng viên có liên kết với các ứng viên khác trong top `head`
-        (score += beta · min(bậc, 3) / 3): điều nằm giữa một cụm điều cùng được truy hồi thường đúng
-        trọng tâm hơn điều đứng lẻ. beta = 0 → giữ nguyên.
-        """
-        if beta <= 0 or not ranked:
-            return ranked
-        deg = self._graph_degrees([c.get("mapc") for c in ranked[:head] if c.get("mapc")])
-        if not deg:
-            return ranked
-        for c in ranked[:head]:
-            d = deg.get(c.get("mapc"), 0)
-            c["graph_degree"] = d
-            c["score"] = min(1.0, float(c.get("score", 0.0)) + beta * min(d, 3) / 3)
-        ranked[:head] = sorted(ranked[:head], key=lambda x: -float(x.get("score", 0.0)))
-        return ranked
-
     def _newest_versions(self, so_hieus: list[str]) -> dict[str, dict]:
         """
         Văn bản đã bị THAY THẾ / BÃI BỎ (sổ cái admin) → văn bản mới nhất theo chuỗi thay thế

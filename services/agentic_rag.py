@@ -24,8 +24,6 @@ AGENT_REF_CLOSURE_CHARS = int(os.getenv("AGENT_REF_CLOSURE_CHARS", "1500"))
 AGENT_EXCEPTION_CHECK = os.getenv("AGENT_EXCEPTION_CHECK", "1").strip().lower() in ("1", "true", "yes")
 AGENT_EXCEPTION_SEEDS = int(os.getenv("AGENT_EXCEPTION_SEEDS", "5"))
 AGENT_EXCEPTION_MAX = int(os.getenv("AGENT_EXCEPTION_MAX", "3"))
-# Cộng điểm cho ứng viên liên kết với ứng viên khác (THAM_CHIEU / LIEN_QUAN); 0 = tắt
-GRAPH_BOOST_BETA = float(os.getenv("GRAPH_BOOST_BETA", "0"))
 
 from retrieve.legal_graph import parse_vbqppl, select_relevant_text
 from services.lawdata.status import annotate_hits, resolve_aliases
@@ -390,8 +388,6 @@ def rerank_phapdien_hits(
 
     pool = max(top_k, min(len(candidates), 40))
     ranked = retriever._rerank(candidates, q, top_k=pool)
-    if GRAPH_BOOST_BETA > 0 and hasattr(retriever, "_graph_boost"):
-        ranked = retriever._graph_boost(ranked, GRAPH_BOOST_BETA)
     if RAG_AGENT_LLM_RERANK and ranked:
         ranked = _apply_llm_rerank_head(retriever, q, ranked, head_n=12)
 

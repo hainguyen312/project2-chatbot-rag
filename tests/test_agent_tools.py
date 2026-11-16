@@ -292,21 +292,6 @@ class TestQueryAwareTruncation:
         assert "6. Không đội mũ bảo hiểm" in items[0]["noidung"] and items[0]["noidung_truncated"] is True
 
 
-class TestGraphBoost:
-    def test_connected_candidate_promoted(self, fake_retriever, fake_mysql, monkeypatch):
-        monkeypatch.setattr(A, "GRAPH_BOOST_BETA", 0.3)
-        fake_retriever._graph_degrees = lambda mapcs: {"M_THAISAN": 3}
-        fake_retriever.fused = [{"mapc": "M_KETHON", "score": 0.6}, {"mapc": "M_THAISAN", "score": 0.5}]
-        _, hits = run("vector_search", {"query": "zzz"}, fake_retriever)
-        assert hits[0]["mapc"] == "M_THAISAN" and hits[0]["score"] <= 1.0
-
-    def test_off_by_default(self, fake_retriever, fake_mysql, monkeypatch):
-        monkeypatch.setattr(A, "GRAPH_BOOST_BETA", 0.0)
-        fake_retriever._graph_degrees = lambda mapcs: pytest.fail("không được truy vấn đồ thị khi beta = 0")
-        fake_retriever.fused = [{"mapc": "M_KETHON", "score": 0.6}]
-        run("vector_search", {"query": "kết hôn"}, fake_retriever)
-
-
 class TestNewerVersions:
     def test_replaced_document_flagged(self, fake_retriever, fake_mysql):
         fake_retriever._newest_versions = lambda docs: (
