@@ -157,6 +157,14 @@ services:
       # Tuỳ chọn — khoá không giá trị: chỉ truyền khi có trong .env.prod, nếu không thì
       # code dùng mặc định (không ghi đè bằng chuỗi rỗng, vd int("") sẽ lỗi).
       DAILY_QUESTION_CAP:
+      RATE_LIMIT_QUESTION_USER:
+      RATE_LIMIT_QUESTION_IP:
+      RATE_LIMIT_TTS_USER:
+      RATE_LIMIT_TTS_IP:
+      RATE_LIMIT_STT_USER:
+      RATE_LIMIT_STT_IP:
+      RATE_LIMIT_TITLE_USER:
+      RATE_LIMIT_TITLE_IP:
       SENTIMENT_DEVICE:
       SSE_HEARTBEAT_SECONDS:
       HEALTH_TIMEOUT_SECONDS:

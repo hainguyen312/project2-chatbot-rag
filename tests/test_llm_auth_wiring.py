@@ -1,7 +1,8 @@
 """
-Mọi endpoint gọi LLM trong rag_api.py phải có tham số `= Depends(<guard>)`, guard ∈
-{require_login, question_quota}; endpoint ĐẶT CÂU HỎI (chat, stream, rà soát) phải dùng
-question_quota (trần chung/ngày), và question_quota phải tự phụ thuộc require_login.
+Mọi endpoint gọi LLM trong rag_api.py phải có tham số `= Depends(<guard>)` đúng loại:
+- đặt câu hỏi (chat, stream, rà soát) → question_quota (rate limit + trần chung/ngày)
+- /tts → tts_access, /stt → stt_access, /chat/title → title_access (rate limit)
+Mọi guard phải tự phụ thuộc require_login (Firebase ID token bắt buộc).
 
 Kiểm bằng AST (không import rag_api — import sẽ kết nối DB, tải model). Thêm endpoint gọi LLM
 mới → thêm vào LLM_ENDPOINTS; test cũng báo nếu một endpoint có gọi client OpenAI mà quên gắn.
@@ -26,9 +27,17 @@ LLM_ENDPOINTS = {
     ("post", "/stt"),
 }
 
-# Endpoint tính vào trần câu hỏi/ngày
-QUESTION_ENDPOINTS = {("post", "/rag/chat"), ("post", "/rag/stream"), ("post", "/review/analyze")}
-GUARDS = {"require_login", "question_quota"}
+# Endpoint → guard bắt buộc
+EXPECTED_GUARD = {
+    ("post", "/rag/chat"): "question_quota",
+    ("post", "/rag/stream"): "question_quota",
+    ("post", "/review/analyze"): "question_quota",
+    ("post", "/tts"): "tts_access",
+    ("post", "/stt"): "stt_access",
+    ("post", "/chat/title"): "title_access",
+}
+GUARDS = set(EXPECTED_GUARD.values())
+assert set(EXPECTED_GUARD) == LLM_ENDPOINTS
 
 
 def _endpoints():
@@ -68,13 +77,28 @@ def test_llm_endpoint_requires_login(key):
     assert _has_require_login(ENDPOINTS[key]), f"{key} gọi LLM nhưng không có Depends(require_login)"
 
 
-@pytest.mark.parametrize("key", sorted(QUESTION_ENDPOINTS))
-def test_question_endpoint_counts_daily_cap(key):
-    assert "question_quota" in _depends_on(ENDPOINTS[key]), f"{key} phải dùng Depends(question_quota)"
+@pytest.mark.parametrize("key", sorted(EXPECTED_GUARD))
+def test_endpoint_uses_expected_guard(key):
+    g = EXPECTED_GUARD[key]
+    assert g in _depends_on(ENDPOINTS[key]), f"{key} phải dùng Depends({g})"
 
 
-def test_question_quota_requires_login():
-    assert "require_login" in _depends_on(FUNCS["question_quota"])
+@pytest.mark.parametrize("guard", sorted(GUARDS))
+def test_guard_requires_login(guard):
+    assert "require_login" in _depends_on(FUNCS[guard])
+
+
+@pytest.mark.parametrize("guard, kind", [
+    ("question_quota", "question"), ("tts_access", "tts"), ("stt_access", "stt"), ("title_access", "title"),
+])
+def test_guard_applies_rate_limit(guard, kind):
+    src = ast.get_source_segment(SRC.read_text(encoding="utf-8"), FUNCS[guard]) or ""
+    assert f'_rate_check("{kind}"' in src
+
+
+def test_question_quota_rate_limits_before_daily_cap():
+    src = ast.get_source_segment(SRC.read_text(encoding="utf-8"), FUNCS["question_quota"]) or ""
+    assert src.index("_rate_check(") < src.index("daily_cap.consume(")
 
 
 def test_guards_defined_before_first_use():

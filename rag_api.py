@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Literal, Optional
 
 import firebase_admin
 from dotenv import load_dotenv
-from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException, Response
+from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException, Request, Response
 from fastapi.responses import StreamingResponse
 from fastapi import FastAPI, UploadFile, File
 from firebase_admin import auth as fb_auth, credentials, storage as fb_storage
@@ -58,6 +58,7 @@ from services.utils import (
 from services.semantic_cache import semantic_cache
 from services import health as health_checks
 from services import usage_cap
+from services import rate_limit
 from services.sse import with_heartbeat
 from services import auth_guard
 from services.chat_title import generate_title as generate_chat_title
@@ -81,10 +82,46 @@ def require_login(authorization: Optional[str] = Header(default=None)) -> str:
 daily_cap = usage_cap.DailyCap(lambda: _mysql_connect(), usage_cap.cap_from_env())
 print(f"[UsageCap] Trần câu hỏi/ngày: {daily_cap.cap}")
 
+# Rate limit theo user + IP (RATE_LIMIT_<LOẠI>_USER/IP) — services/rate_limit.py
+rate_limiter = rate_limit.RateLimiter(rate_limit.rules_from_env())
 
-def question_quota(uid: str = Depends(require_login)) -> str:
-    """Dependency cho endpoint ĐẶT CÂU HỎI (chat, stream, rà soát): đăng nhập + trần chung/ngày.
-    Vượt trần → 429 kèm thông điệp, không gọi LLM; không đếm được (MySQL lỗi) → 503."""
+
+def client_ip(request: Request) -> str:
+    """IP người dùng: Next.js gửi X-Client-IP (lấy từ CF-Connecting-IP do Cloudflare đặt).
+    Backend chỉ nhận request từ frontend trong mạng nội bộ (bước 5e: kèm shared secret)."""
+    ip = (request.headers.get("x-client-ip") or "").strip()
+    if ip:
+        return ip[:64]
+    return request.client.host if request.client else ""
+
+
+def _rate_check(kind: str, uid: str, request: Request) -> None:
+    wait = rate_limiter.check(kind, uid, client_ip(request))
+    if wait:
+        raise HTTPException(status_code=429, detail=rate_limit.MESSAGE.format(seconds=wait),
+                            headers={"Retry-After": str(wait)})
+
+
+def tts_access(request: Request, uid: str = Depends(require_login)) -> str:
+    _rate_check("tts", uid, request)
+    return uid
+
+
+def stt_access(request: Request, uid: str = Depends(require_login)) -> str:
+    _rate_check("stt", uid, request)
+    return uid
+
+
+def title_access(request: Request, uid: str = Depends(require_login)) -> str:
+    _rate_check("title", uid, request)
+    return uid
+
+
+def question_quota(request: Request, uid: str = Depends(require_login)) -> str:
+    """Dependency cho endpoint ĐẶT CÂU HỎI (chat, stream, rà soát): đăng nhập → rate limit
+    (user + IP) → trần chung/ngày. Rate limit trước để spam không tiêu trần chung.
+    Vượt → 429 kèm thông điệp, không gọi LLM; không đếm được (MySQL lỗi) → 503."""
+    _rate_check("question", uid, request)
     try:
         daily_cap.consume()
     except usage_cap.CapExceeded:
@@ -950,7 +987,7 @@ class ChatTitleRequest(BaseModel):
 
 
 @app.post("/chat/title")
-def chat_title(req: ChatTitleRequest, uid: str = Depends(require_login)) -> Dict[str, str]:
+def chat_title(req: ChatTitleRequest, uid: str = Depends(title_access)) -> Dict[str, str]:
     """Tên ngắn (3–8 từ) cho đoạn chat từ câu hỏi đầu + câu trả lời — xem services/chat_title.py."""
     return {"title": generate_chat_title(oai_client, req.question, req.answer)}
 
@@ -1154,7 +1191,7 @@ def put_memory_settings(user_id: str, req: MemorySettingsRequest,
 
 
 @app.post("/tts")
-async def text_to_speech(req: dict, uid: str = Depends(require_login)):
+async def text_to_speech(req: dict, uid: str = Depends(tts_access)):
     from services.history import save_tts_url
 
     text    = (req.get("text") or "").strip()
@@ -1221,7 +1258,7 @@ async def text_to_speech(req: dict, uid: str = Depends(require_login)):
     )
 
 @app.post("/stt")
-async def speech_to_text(file: UploadFile = File(...), uid: str = Depends(require_login)):
+async def speech_to_text(file: UploadFile = File(...), uid: str = Depends(stt_access)):
     from fastapi import UploadFile, File
     
     audio_bytes = await file.read()
