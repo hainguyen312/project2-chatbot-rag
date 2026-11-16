@@ -1,0 +1,44 @@
+@startuml ACT_RaSoat
+!include _style.iuml
+title Quy trình nghiệp vụ — Rà soát hợp đồng trước khi ký
+
+|Người dùng|
+start
+:Chọn nguồn văn bản\n(file / link / dán nội dung);
+:Bấm "Phân tích văn bản";
+
+|Hệ thống|
+:Trích xuất chữ\n(PDF, DOCX, HTML, TXT);
+if (Đủ nội dung để phân tích?) then (không)
+  |Người dùng|
+  :Nhận thông báo lỗi,\nchọn nguồn khác;
+  stop
+else (có)
+endif
+|Hệ thống|
+:LLM tóm tắt, nêu ý chính,\nliệt kê điều khoản rủi ro\nkèm cụm tra cứu;
+fork
+  :Tra Pháp Điển\n(2 truy vấn / điều khoản);
+fork again
+  if (Dễ thay đổi theo văn bản mới\nhoặc Pháp Điển yếu?) then (có)
+    :Tra web (Tavily,\nlọc độ tin cậy nguồn);
+  else (không)
+  endif
+end fork
+:LLM đối chiếu điều khoản với\ncác nguồn đã tra, chọn căn cứ\nvà trích nguyên văn;
+:Kiểm chứng căn cứ:\nmã nguồn hợp lệ, đoạn trích khớp,\nưu tiên Pháp Điển;
+if (Có căn cứ hợp lệ?) then (có)
+  :Đưa vào "Cảnh báo pháp lý";
+else (không)
+  :Đưa vào "Điều khoản nên xem lại";
+endif
+if (Người dùng chọn lưu?) then (có)
+  :Lưu file gốc (GridFS)\nvà kết quả (MongoDB);
+else (không)
+endif
+
+|Người dùng|
+:Đọc tóm tắt, cảnh báo,\nmở căn cứ pháp lý;
+:Sửa hoặc đàm phán lại hợp đồng;
+stop
+@enduml

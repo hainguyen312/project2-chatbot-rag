@@ -1,0 +1,24 @@
+@startuml UC12_SEQ
+!include ../_style.iuml
+title Biểu đồ tuần tự UC12 — Thu thập dữ liệu Pháp Điển
+autonumber
+actor "Quản trị viên" as A
+participant "law-crawler\n(main.py)" as C
+participant "BeautifulSoup" as BS
+database "MySQL" as DB
+A -> C : python main.py
+C -> DB : bulk_create(pdchude, pddemuc)
+loop mỗi tệp HTML đề mục
+  C -> BS : phân tích HTML
+  C -> DB : tạo pdchuong
+  loop mỗi điều
+    BS --> C : tên, ghi chú (vbqppl), nội dung
+    C -> DB : tạo pddieu
+    C -> DB : tạo pdtable, pdfile
+  end
+end
+loop mỗi cặp liên quan
+  C -> DB : tạo pdmuclienquan
+end
+C --> A : hoàn tất
+@enduml

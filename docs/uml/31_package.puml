@@ -1,0 +1,55 @@
+@startuml PKG_TongQuan
+!include _style.iuml
+title Biểu đồ gói — Thiết kế tổng quan
+skinparam packageStyle rectangle
+top to bottom direction
+
+package "Tầng trình bày (frontend/src)" as P {
+  package "app (trang)" as P_app
+  package "components" as P_cmp
+  package "store, hooks" as P_state
+  package "app/api (route handler)" as P_route
+}
+
+package "Tầng dịch vụ (backend)" as S {
+  package "rag_api (FastAPI endpoints)" as S_api
+  package "agents (tiền xử lý)" as S_agents
+  package "services" as S_srv {
+    package "agentic_rag" as S_rag
+    package "doc_review, review_history" as S_review
+    package "memory_manager, semantic_cache" as S_mem
+    package "lawdata" as S_law
+    package "auth_guard, roles" as S_auth
+  }
+}
+
+package "Tầng truy xuất dữ liệu" as D {
+  package "retrieve" as D_ret
+  package "data_processing" as D_proc
+}
+
+package "Hạ tầng lưu trữ và dịch vụ ngoài" as I {
+  package "MySQL / Milvus / Neo4j / MongoDB" as I_db
+  package "OpenAI / Tavily / Firebase" as I_ext
+}
+
+P_app ..> P_cmp
+P_app ..> P_state
+P_app ..> P_route
+P_route ..> S_api : HTTP / SSE
+
+S_api ..> S_agents
+S_api ..> S_rag
+S_api ..> S_review
+S_api ..> S_mem
+S_api ..> S_law
+S_api ..> S_auth
+S_review ..> S_rag
+S_rag ..> D_ret
+S_law ..> D_ret
+
+D_ret ..> I_db
+D_proc ..> I_db
+S_mem ..> I_db
+S_rag ..> I_ext
+@enduml

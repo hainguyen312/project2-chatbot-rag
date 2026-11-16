@@ -8,7 +8,9 @@ actor "Quản trị viên" as A
 package "Frontend (Next.js :3000)" {
   [Chat UI\n(page.tsx, MessageRow,\nPassagePanel, MemoryPanel)] as ChatUI
   [Văn phòng luật 3D\n(/office)] as Office
-  [API routes\n/api/stream, /api/chats,\n/api/tts, /api/stt,\n/api/memory, /api/auth] as Routes
+  [Rà soát văn bản\n(/review)] as Review
+  [Quản trị dữ liệu\n(/admin)] as AdminUI
+  [API routes\n/api/stream, /api/chats,\n/api/review, /api/admin,\n/api/tts, /api/stt, /api/memory] as Routes
 }
 
 package "Backend RAG (FastAPI :8001)" {
@@ -18,6 +20,8 @@ package "Backend RAG (FastAPI :8001)" {
   [GraphRAGRetriever] as Ret
   [MemoryManager] as Mem
   [SemanticCache] as Cache
+  [DocReview +\nReviewHistory] as DocRev
+  [Lawdata\n(nhập văn bản,\nhiệu lực)] as Law
 }
 
 package "Xử lý dữ liệu (offline)" {
@@ -28,17 +32,21 @@ package "Xử lý dữ liệu (offline)" {
 }
 
 database "MySQL\n(Pháp Điển)" as MySQL
-database "Milvus\n(vector điều luật,\nuser memory)" as Milvus
+database "Milvus\n(vector điều luật)" as Milvus
 database "Neo4j\n(đồ thị điều luật)" as Neo4j
-database "MongoDB\n(hội thoại, memory)" as Mongo
+database "MongoDB\n(hội thoại, memory,\ncache, lịch sử rà soát)" as Mongo
 cloud "OpenAI\n(LLM, embedding,\nWhisper, TTS)" as OpenAI
 cloud "Firebase\n(Auth, Storage)" as Firebase
 cloud "Tavily" as Tavily
 
 U --> ChatUI
 U --> Office
+U --> Review
+A --> AdminUI
 ChatUI --> Routes
 Office --> Routes
+Review --> Routes
+AdminUI --> Routes
 ChatUI ..> Firebase : đăng nhập
 Routes --> API : HTTP / SSE
 Routes --> Mongo : CRUD hội thoại
@@ -47,12 +55,17 @@ API --> Pre
 API --> Agent
 API --> Mem
 API --> Cache
+API --> DocRev
+API --> Law
+DocRev --> Ret
+DocRev --> Tavily
+DocRev --> Mongo
+Law --> MySQL
 Agent --> Ret
 Ret --> Milvus
 Ret --> Neo4j
 Agent --> MySQL : fallback
 Agent --> Tavily
-Mem --> Milvus
 Mem --> Mongo
 API --> OpenAI
 API --> Firebase : verify token,\nupload TTS

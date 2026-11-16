@@ -1,0 +1,27 @@
+@startuml UC19_SEQ
+!include ../_style.iuml
+title Biểu đồ tuần tự UC19 — Quản lý hiệu lực văn bản
+autonumber
+actor "Quản trị viên" as A
+participant "VanbanTab" as UI
+participant "/api/admin" as R
+participant "lawdata API" as API
+participant "store" as S
+database "MySQL" as DB
+participant "agentic_rag\n(lượt hỏi sau)" as AG
+participant "status" as ST
+A -> UI : tìm "100/2019/NĐ-CP"
+UI -> R : GET /admin/vanban?q=
+R -> API : require_admin
+API -> S : list_vanban(q)
+S -> DB : SELECT vanban
+API --> UI : danh sách
+A -> UI : chọn "hết hiệu lực", văn bản thay thế
+UI -> R : POST /admin/vanban/status
+API -> S : set_vanban_status(...)
+S -> DB : UPSERT vanban
+API --> UI : {ok}
+AG -> ST : annotate_hits(điều tìm được)
+ST -> DB : tra vanban, dieu_hieuluc
+ST --> AG : chú thích + hạ điểm
+@enduml

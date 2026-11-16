@@ -1,0 +1,22 @@
+@startuml UC03_UC
+!include ../_style.iuml
+title Biểu đồ use case UC03 — Xem điều luật trích dẫn
+left to right direction
+actor "Người dùng" as U
+rectangle "UC03. Xem điều luật trích dẫn" {
+  usecase "Bấm thẻ căn cứ" as C
+  usecase "Xem tất cả tài liệu đã tra" as A
+  usecase "Bấm số tham chiếu [n]\n(kết quả rà soát)" as N
+  usecase "Mở khung căn cứ pháp lý" as P
+  usecase "Xem toàn văn điều luật" as F
+  usecase "Mở trang nguồn web" as W
+}
+U --> C
+U --> A
+U --> N
+C ..> P : <<include>>
+A ..> P : <<include>>
+N ..> P : <<include>>
+F .> P : <<extend>>
+W .> P : <<extend>>
+@enduml

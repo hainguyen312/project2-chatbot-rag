@@ -1,0 +1,20 @@
+@startuml UC04_SEQ
+!include ../_style.iuml
+title Biểu đồ tuần tự UC04 — Hỏi bằng giọng nói
+autonumber
+actor "Người dùng" as U
+participant "useSTT" as STT
+participant "/api/stt" as R
+participant "rag_api /stt" as API
+participant "OpenAI whisper-1" as W
+U -> STT : bấm micro
+STT -> STT : getUserMedia, MediaRecorder
+U -> STT : bấm dừng
+STT -> R : POST multipart (audio)
+R -> API : chuyển tiếp
+API -> W : audio.transcriptions.create
+W --> API : văn bản
+API --> R : {text}
+R --> STT : {text}
+STT --> U : gửi văn bản như câu hỏi (UC01)
+@enduml

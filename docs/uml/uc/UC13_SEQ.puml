@@ -1,0 +1,29 @@
+@startuml UC13_SEQ
+!include ../_style.iuml
+title Biểu đồ tuần tự UC13 — Lập chỉ mục vector và BM25
+autonumber
+actor "Quản trị viên" as A
+participant "seed_data_batch" as S1
+participant "seed_contextual_chunks" as S2
+database "MySQL" as DB
+participant "OpenAI Embedding" as E
+database "Milvus" as M
+participant "lexical_bm25" as B
+A -> S1 : chạy (tuỳ chọn --resume)
+S1 -> DB : đọc điều + chủ đề, đề mục, chương
+loop mỗi lô 200
+  S1 -> E : embeddings(tên điều)
+  E --> S1 : vector 1536 chiều
+  S1 -> M : insert(phapdien_simple_tendieu)
+end
+A -> S2 : chạy
+S2 -> DB : đọc điều
+S2 -> S2 : tạo tiêu đề, chia đoạn
+loop theo ngân sách token
+  S2 -> E : embeddings(đoạn)
+  S2 -> M : insert(phapdien_ctx_chunks)
+end
+A -> B : khởi động máy chủ
+B -> DB : đọc điều (nếu chưa có bộ đệm)
+B -> B : tách từ, xây BM25, lưu đĩa
+@enduml

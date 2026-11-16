@@ -1,0 +1,27 @@
+@startuml UC08_ACT
+!include ../_style.iuml
+title Biểu đồ hoạt động UC08 — Quản lý bộ nhớ cá nhân
+|Người dùng|
+start
+:Mở bảng "Bộ nhớ";
+|Hệ thống|
+if (Mã người dùng khớp token\nhoặc là mã ẩn danh?) then (không)
+  :Từ chối (401/403);
+  stop
+else (có)
+endif
+:Hiển thị ký ức theo loại\nvà chế độ hiện tại;
+|Người dùng|
+:Chọn thao tác;
+|Hệ thống|
+switch (Thao tác?)
+case (Đổi chế độ)
+  :Lưu chế độ ghi nhớ;
+case (Xoá một mục)
+  :Xoá ký ức;
+case (Xoá toàn bộ)
+  :Hỏi xác nhận,\nxoá mọi ký ức của người dùng;
+endswitch
+:Cập nhật danh sách;
+stop
+@enduml

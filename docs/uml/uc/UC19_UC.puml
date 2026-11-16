@@ -1,0 +1,21 @@
+@startuml UC19_UC
+!include ../_style.iuml
+title Biểu đồ use case UC19 — Quản lý hiệu lực văn bản
+left to right direction
+actor "Quản trị viên" as A
+rectangle "UC19. Quản lý hiệu lực văn bản" {
+  usecase "Tìm văn bản trong sổ cái" as F
+  usecase "Cập nhật trạng thái hiệu lực" as S
+  usecase "Nhập ngày hết hiệu lực" as D
+  usecase "Nhập văn bản thay thế" as R
+  usecase "Kiểm tra quyền quản trị" as C
+  usecase "Gắn chú thích hiệu lực\nkhi trả lời" as N
+}
+A --> F
+A --> S
+D .> S : <<extend>>
+R .> S : <<extend>>
+F ..> C : <<include>>
+S ..> C : <<include>>
+S ..> N : <<include>>
+@enduml

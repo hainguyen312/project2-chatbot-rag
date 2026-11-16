@@ -1,0 +1,22 @@
+@startuml UC12_UC
+!include ../_style.iuml
+title Biểu đồ use case UC12 — Thu thập dữ liệu Pháp Điển
+left to right direction
+actor "Quản trị viên" as A
+actor "Cổng Bộ Pháp điển" as P <<hệ thống>>
+rectangle "UC12. Thu thập dữ liệu Pháp Điển" {
+  usecase "Tải bộ dữ liệu Pháp Điển" as D
+  usecase "Nạp chủ đề, đề mục" as C
+  usecase "Phân tích HTML đề mục" as H
+  usecase "Ghi chương, điều,\nbảng biểu, tệp đính kèm" as W
+  usecase "Ghi điều liên quan" as L
+  usecase "Chạy tiếp từ điểm khôi phục" as R
+}
+A --> D
+A --> C
+D --> P
+C ..> H : <<include>>
+H ..> W : <<include>>
+H ..> L : <<include>>
+R .> H : <<extend>>
+@enduml

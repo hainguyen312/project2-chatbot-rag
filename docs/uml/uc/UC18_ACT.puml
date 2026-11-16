@@ -1,0 +1,32 @@
+@startuml UC18_ACT
+!include ../_style.iuml
+title Biểu đồ hoạt động UC18 — Cập nhật văn bản pháp luật mới
+|Quản trị viên|
+start
+:Dán đường dẫn / tải lên PDF (tối đa 30);
+|Hệ thống|
+:Tạo mục chờ duyệt (queued);
+:Xử lý nền (processing):\ntải file theo robots.txt, trích chữ\n(lọc chú thích), tách cấu trúc;
+if (Có lỗi?) then (có)
+  :Trạng thái error kèm lý do;
+else (không)
+  :So sánh với dữ liệu hiện có;
+  :Trạng thái ready;
+endif
+|Quản trị viên|
+:Kiểm tra cấu trúc, phần so sánh,\nsửa nếu cần, chọn duyệt hoặc từ chối;
+|Hệ thống|
+if (Quyết định?) then (duyệt)
+  :Ghi MySQL trong một giao dịch\n(văn bản, điều, lịch sử, sổ cái);
+  :Nhúng lại các điều thay đổi vào Milvus;
+  if (Nhúng thành công?) then (có)
+    :Xây lại BM25 nền;
+    :Trạng thái published;
+  else (không)
+    :publish_error, cho phép thử lại;
+  endif
+else (từ chối)
+  :Trạng thái rejected;
+endif
+stop
+@enduml

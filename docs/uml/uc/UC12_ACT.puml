@@ -1,0 +1,22 @@
+@startuml UC12_ACT
+!include ../_style.iuml
+title Biểu đồ hoạt động UC12 — Thu thập dữ liệu Pháp Điển
+|Quản trị viên|
+start
+:Tải, giải nén dữ liệu Pháp Điển;
+:Chạy law-crawler;
+|law-crawler|
+:Nạp chủ đề, đề mục vào MySQL;
+repeat :Đọc tệp HTML đề mục tiếp theo;
+  if (Có nút trong cây?) then (không)
+    :Ghi cảnh báo, bỏ qua;
+  else (có)
+    :Tạo chương (hoặc chương ảo);
+    :Trích tên, nội dung, chú thích\nvăn bản gốc từng điều;
+    :Ghi bảng biểu, tệp đính kèm;
+    :Thu thập điều liên quan;
+  endif
+repeat while (Còn đề mục?) is (còn) not (hết)
+:Ghi các cặp điều liên quan;
+stop
+@enduml

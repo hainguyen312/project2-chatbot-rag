@@ -1,0 +1,19 @@
+@startuml UC08_UC
+!include ../_style.iuml
+title Biểu đồ use case UC08 — Quản lý bộ nhớ cá nhân
+left to right direction
+actor "Người dùng" as U
+rectangle "UC08. Quản lý bộ nhớ cá nhân" {
+  usecase "Xem bộ nhớ đã lưu" as L
+  usecase "Chọn chế độ ghi nhớ\n(không nhạy cảm / đầy đủ / tắt)" as M
+  usecase "Xoá một mục" as D
+  usecase "Xoá toàn bộ\n(quyền được quên)" as A
+  usecase "Kiểm tra quyền sở hữu" as C
+}
+U --> L
+U --> M
+D .> L : <<extend>>
+A .> L : <<extend>>
+L ..> C : <<include>>
+M ..> C : <<include>>
+@enduml

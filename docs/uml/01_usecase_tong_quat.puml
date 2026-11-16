@@ -1,32 +1,46 @@
 @startuml UC_TongQuat
 !include _style.iuml
-title Biểu đồ Use Case tổng quát — Chatbot RAG hỏi đáp pháp luật
+title Biểu đồ Use Case tổng quát — Hệ thống hỏi đáp pháp luật
 left to right direction
+skinparam packageStyle rectangle
 
 actor "Khách\n(ẩn danh)" as Guest
 actor "Người dùng\nđã đăng nhập" as Member
 actor "Quản trị viên" as Admin
 actor "OpenAI API" as OpenAI <<hệ thống>>
-actor "Firebase" as Firebase <<hệ thống>>
 actor "Tavily Search" as Tavily <<hệ thống>>
+actor "Firebase" as Firebase <<hệ thống>>
+
 Member -|> Guest
 
-rectangle "Hệ thống Chatbot RAG pháp luật" {
-  usecase "UC01. Hỏi đáp pháp luật" as UC01
-  usecase "UC02. Phân tích tình huống pháp lý" as UC02
-  usecase "UC03. Xem điều luật trích dẫn" as UC03
-  usecase "UC04. Hỏi bằng giọng nói (STT)" as UC04
-  usecase "UC05. Nghe câu trả lời (TTS)" as UC05
-  usecase "UC06. Đánh giá câu trả lời" as UC06
-  usecase "UC07. Quản lý hội thoại" as UC07
-  usecase "UC08. Quản lý bộ nhớ cá nhân" as UC08
-  usecase "UC09. Hỏi đáp trong văn phòng luật 3D" as UC09
-  usecase "UC10. Đăng ký / Đăng nhập" as UC10
-  usecase "UC11. Đăng xuất" as UC11
-  usecase "UC12. Thu thập dữ liệu Pháp Điển" as UC12
-  usecase "UC13. Lập chỉ mục vector (Milvus)" as UC13
-  usecase "UC14. Xây dựng đồ thị tri thức (Neo4j)" as UC14
-  usecase "UC15. Đánh giá chất lượng hệ thống" as UC15
+rectangle "Hệ thống hỏi đáp pháp luật" {
+  rectangle "Hỏi đáp" as G1 {
+    usecase "UC01. Hỏi đáp pháp luật" as UC01
+    usecase "UC02. Phân tích tình huống" as UC02
+    usecase "UC03. Xem điều luật trích dẫn" as UC03
+    usecase "UC04. Hỏi bằng giọng nói" as UC04
+    usecase "UC05. Nghe câu trả lời" as UC05
+    usecase "UC06. Đánh giá câu trả lời" as UC06
+    usecase "UC09. Văn phòng luật 3D" as UC09
+  }
+  rectangle "Rà soát văn bản" as G2 {
+    usecase "UC16. Rà soát văn bản pháp lý" as UC16
+    usecase "UC17. Quản lý lịch sử rà soát" as UC17
+  }
+  rectangle "Tài khoản và cá nhân hoá" as G3 {
+    usecase "UC07. Quản lý hội thoại" as UC07
+    usecase "UC08. Quản lý bộ nhớ cá nhân" as UC08
+    usecase "UC10. Đăng ký / Đăng nhập" as UC10
+    usecase "UC11. Đăng xuất" as UC11
+  }
+  rectangle "Quản trị" as G4 {
+    usecase "UC12. Thu thập dữ liệu Pháp Điển" as UC12
+    usecase "UC13. Lập chỉ mục vector và BM25" as UC13
+    usecase "UC14. Xây dựng đồ thị tri thức" as UC14
+    usecase "UC15. Đánh giá chất lượng" as UC15
+    usecase "UC18. Cập nhật văn bản mới" as UC18
+    usecase "UC19. Quản lý hiệu lực văn bản" as UC19
+  }
 }
 
 Guest --> UC01
@@ -35,9 +49,11 @@ Guest --> UC03
 Guest --> UC04
 Guest --> UC05
 Guest --> UC06
+Guest --> UC09
+Guest --> UC16
+Guest --> UC17
 Guest --> UC07
 Guest --> UC08
-Guest --> UC09
 Guest --> UC10
 Member --> UC11
 
@@ -45,17 +61,19 @@ Admin --> UC12
 Admin --> UC13
 Admin --> UC14
 Admin --> UC15
+Admin --> UC18
+Admin --> UC19
 
-UC02 .> UC01 : <<extend>>
-UC03 .> UC01 : <<extend>>
-UC04 .> UC01 : <<extend>>
-UC05 .> UC01 : <<extend>>
-UC09 .> UC01 : <<include>>
+UC02 ..> UC01 : <<extend>>
+UC03 ..> UC01 : <<extend>>
+UC04 ..> UC01 : <<extend>>
+UC05 ..> UC01 : <<extend>>
+UC09 ..> UC01 : <<include>>
+UC17 ..> UC16 : <<extend>>
 
 UC01 --> OpenAI
-UC04 --> OpenAI
-UC05 --> OpenAI
+UC16 --> OpenAI
 UC01 --> Tavily
+UC16 --> Tavily
 UC10 --> Firebase
-UC05 --> Firebase
 @enduml

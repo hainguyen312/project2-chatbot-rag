@@ -16,3 +16,4 @@ skinparam SequenceGroupBorderColor #888888
 skinparam NoteBackgroundColor #FFFBE6
 skinparam NoteBorderColor #C8B560
 skinparam PackageBorderColor #2F4F6F
+skinparam dpi 150

@@ -1,0 +1,27 @@
+@startuml UC15_ACT
+!include ../_style.iuml
+title Biểu đồ hoạt động UC15 — Đánh giá chất lượng hệ thống
+|Quản trị viên|
+start
+:Chọn bộ đánh giá;
+:Chạy với --dry-run;
+|Bộ đánh giá|
+:Kiểm tra tệp tình huống, ước tính chi phí;
+if (Vượt ngân sách?) then (có)
+  :Dừng;
+  stop
+else (không)
+endif
+fork
+  :Truy xuất: chạy các cấu hình,\ngộp kết quả, chấm mù 0/1/2;
+fork again
+  :Gọi công cụ: chạy tác tử thật,\nso với kỳ vọng từng tình huống;
+fork again
+  :Bộ nhớ: chạy hội thoại giả,\nkiểm tra kỳ vọng, xoá dữ liệu;
+end fork
+:Tính chỉ số, in bảng tổng hợp;
+:Lưu JSON có dấu thời gian;
+|Quản trị viên|
+:So sánh cấu hình, quyết định cấu hình mặc định;
+stop
+@enduml

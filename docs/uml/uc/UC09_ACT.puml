@@ -1,0 +1,27 @@
+@startuml UC09_ACT
+!include ../_style.iuml
+title Biểu đồ hoạt động UC09 — Hỏi đáp trong văn phòng luật 3D
+|Người dùng|
+start
+:Mở "Văn phòng 3D";
+|Giao diện|
+if (Có hội thoại đang mở?) then (có)
+  :Chế độ thật, tiếp tục hội thoại;
+else (không)
+  :Chế độ dữ liệu mẫu;
+endif
+|Người dùng|
+:Chọn góc nhìn, đặt câu hỏi;
+|Giao diện|
+if (Chế độ thật?) then (có)
+  :Gửi câu hỏi tới máy chủ (UC01);
+  repeat
+    :Nhận sự kiện trạng thái;
+    :Đạo diễn ánh xạ stage → nhân vật,\nnhân vật di chuyển và làm việc;
+  repeat while (Còn sự kiện?) is (còn) not (xong)
+else (không)
+  :Phát kịch bản mẫu;
+endif
+:Hiển thị câu trả lời và căn cứ;
+stop
+@enduml

@@ -1,0 +1,25 @@
+@startuml UC19_ACT
+!include ../_style.iuml
+title Biểu đồ hoạt động UC19 — Quản lý hiệu lực văn bản
+|Quản trị viên|
+start
+:Mở thẻ "Văn bản", tìm theo số hiệu;
+|Hệ thống|
+:Hiển thị sổ cái và trạng thái;
+|Quản trị viên|
+:Chọn trạng thái mới,\nngày hết hiệu lực, văn bản thay thế;
+|Hệ thống|
+if (Hợp lệ?) then (không)
+  :Báo lỗi, không lưu;
+  stop
+else (có)
+  :Lưu sổ cái (vanban);
+endif
+|Tác tử (lượt hỏi sau)|
+:Gắn chú thích hiệu lực cho điều thuộc văn bản;
+if (Hết hiệu lực?) then (có)
+  :Hạ điểm × 0,4, không dùng làm căn cứ chính;
+else (không)
+endif
+stop
+@enduml

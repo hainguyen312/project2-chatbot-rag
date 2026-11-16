@@ -1,0 +1,15 @@
+@startuml UC11_ACT
+!include ../_style.iuml
+title Biểu đồ hoạt động UC11 — Đăng xuất
+|Người dùng|
+start
+:Mở menu tài khoản, chọn "Đăng xuất";
+|Giao diện|
+:Gọi Firebase signOut;
+:Xoá trạng thái người dùng;
+:Dùng lại mã ẩn danh của trình duyệt;
+:Tải hội thoại của mã ẩn danh;
+|Người dùng|
+:Tiếp tục với vai trò khách;
+stop
+@enduml

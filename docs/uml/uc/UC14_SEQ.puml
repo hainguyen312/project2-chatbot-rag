@@ -1,0 +1,24 @@
+@startuml UC14_SEQ
+!include ../_style.iuml
+title Biểu đồ tuần tự UC14 — Xây dựng đồ thị tri thức
+autonumber
+actor "Quản trị viên" as A
+participant "build_graph" as G
+database "MySQL" as DB
+database "Neo4j" as N
+A -> G : python retrieve/build_graph.py
+G -> N : CREATE CONSTRAINT (ChuDe, DeMuc, Chuong, Dieu)
+G -> DB : đọc pdchude, pddemuc, pdchuong
+G -> N : MERGE nút + CO_DE_MUC, CO_CHUONG
+G -> DB : đọc pddieu
+loop mỗi lô 500
+  G -> N : UNWIND MERGE Dieu + CO_DIEU
+end
+G -> DB : đọc pdmuclienquan
+loop mỗi lô 500
+  G -> N : MERGE LIEN_QUAN (hai chiều)
+end
+G -> G : regex mã điều trong nội dung
+G -> N : MERGE THAM_CHIEU
+G --> A : hoàn tất
+@enduml

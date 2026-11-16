@@ -1,0 +1,15 @@
+@startuml UC06_UC
+!include ../_style.iuml
+title Biểu đồ use case UC06 — Đánh giá câu trả lời
+left to right direction
+actor "Người dùng" as U
+rectangle "UC06. Đánh giá câu trả lời" {
+  usecase "Đánh giá hữu ích" as Up
+  usecase "Đánh giá chưa hữu ích" as Down
+  usecase "Lưu đánh giá theo\nhội thoại và tin nhắn" as S
+}
+U --> Up
+U --> Down
+Up ..> S : <<include>>
+Down ..> S : <<include>>
+@enduml

@@ -1,0 +1,31 @@
+@startuml UC18_UC
+!include ../_style.iuml
+title Biểu đồ use case UC18 — Cập nhật văn bản pháp luật mới
+left to right direction
+actor "Quản trị viên" as A
+actor "Công báo / nguồn PDF" as S <<hệ thống>>
+actor "OpenAI Embedding" as E <<hệ thống>>
+rectangle "UC18. Cập nhật văn bản pháp luật mới" {
+  usecase "Thêm từ đường dẫn" as L
+  usecase "Tải lên file PDF" as F
+  usecase "Trích xuất, tách cấu trúc" as P
+  usecase "So sánh với dữ liệu hiện có" as D
+  usecase "Kiểm tra, sửa thông tin" as R
+  usecase "Duyệt" as AP
+  usecase "Từ chối" as RJ
+  usecase "Ghi kho tra cứu,\ncập nhật chỉ mục" as W
+  usecase "Thử lại khi lỗi" as RT
+}
+A --> L
+A --> F
+A --> R
+L ..> P : <<include>>
+F ..> P : <<include>>
+P ..> D : <<include>>
+AP .> R : <<extend>>
+RJ .> R : <<extend>>
+AP ..> W : <<include>>
+RT .> W : <<extend>>
+L --> S
+W --> E
+@enduml

@@ -1,0 +1,18 @@
+@startuml UC14_UC
+!include ../_style.iuml
+title Biểu đồ use case UC14 — Xây dựng đồ thị tri thức
+left to right direction
+actor "Quản trị viên" as A
+rectangle "UC14. Xây dựng đồ thị tri thức" {
+  usecase "Tạo ràng buộc duy nhất" as C
+  usecase "Tạo nút và cạnh phân cấp" as N
+  usecase "Tạo cạnh LIEN_QUAN" as L
+  usecase "Trích cạnh THAM_CHIEU" as T
+  usecase "Dự phòng bằng bảng\nquan hệ MySQL" as F
+}
+A --> C
+C ..> N : <<include>>
+N ..> L : <<include>>
+N ..> T : <<include>>
+F .> L : <<extend>>
+@enduml

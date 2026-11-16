@@ -1,0 +1,25 @@
+@startuml UC09_SEQ
+!include ../_style.iuml
+title Biểu đồ tuần tự UC09 — Hỏi đáp trong văn phòng luật 3D
+autonumber
+actor "Người dùng" as U
+participant "OfficePage" as P
+participant "useOfficeChat" as C
+participant "/api/stream" as R
+participant "rag_api" as API
+participant "director" as D
+participant "OfficeScene\n(Three.js)" as S
+U -> P : đặt câu hỏi
+P -> C : ask(question)
+C -> R : POST (SSE)
+R -> API : chuyển tiếp
+loop mỗi sự kiện trạng thái
+  API --> C : status {stage, tool, iteration}
+  C -> D : onStage(stage, tool)
+  D -> S : điều nhân vật tương ứng
+  S --> U : nhân vật di chuyển, làm việc
+end
+API --> C : meta (passages) + token
+C --> P : câu trả lời + căn cứ
+P --> U : hiển thị trong khung hội thoại
+@enduml

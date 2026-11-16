@@ -1,0 +1,19 @@
+@startuml UC10_ACT
+!include ../_style.iuml
+title Biểu đồ hoạt động UC10 — Đăng ký / Đăng nhập
+|Người dùng|
+start
+:Bấm "Đăng nhập";
+:Chọn Google hoặc email;
+|Firebase|
+:Xác thực tài khoản;
+|Hệ thống|
+if (Xác thực thành công?) then (có)
+  :Nhận token định danh, xác minh token;
+  :Chuyển hội thoại, bộ nhớ,\nlịch sử rà soát từ mã ẩn danh sang uid;
+  :Hiển thị tên tài khoản và dữ liệu cũ;
+else (không)
+  :Hiển thị lỗi, giữ trạng thái khách;
+endif
+stop
+@enduml

@@ -1,0 +1,20 @@
+@startuml UC11_SEQ
+!include ../_style.iuml
+title Biểu đồ tuần tự UC11 — Đăng xuất
+autonumber
+actor "Người dùng" as U
+participant "AuthButton" as B
+participant "useAuth" as A
+participant "Firebase Auth" as F
+participant "ChatPage" as P
+participant "/api/chats" as R
+U -> B : chọn "Đăng xuất"
+B -> A : signOut()
+A -> F : signOut(auth)
+F --> A : onAuthStateChanged(null)
+A --> P : user = null
+P -> P : userId = mã ẩn danh (localStorage)
+P -> R : GET ?user_id=demo_...
+R --> P : hội thoại của khách
+P --> U : giao diện khách
+@enduml

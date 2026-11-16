@@ -1,0 +1,22 @@
+@startuml UC05_UC
+!include ../_style.iuml
+title Biểu đồ use case UC05 — Nghe câu trả lời
+left to right direction
+actor "Người dùng" as U
+actor "OpenAI TTS" as T <<hệ thống>>
+actor "Firebase Storage" as F <<hệ thống>>
+rectangle "UC05. Nghe câu trả lời" {
+  usecase "Bấm Đọc câu trả lời" as R
+  usecase "Làm sạch Markdown" as M
+  usecase "Tổng hợp giọng nói" as S
+  usecase "Lưu file âm thanh" as L
+  usecase "Phát lại từ đường dẫn đã lưu" as C
+}
+U --> R
+R ..> M : <<include>>
+R ..> S : <<include>>
+L .> S : <<extend>>
+C .> R : <<extend>>
+S --> T
+L --> F
+@enduml

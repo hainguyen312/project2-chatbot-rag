@@ -1,0 +1,24 @@
+@startuml UC05_ACT
+!include ../_style.iuml
+title Biểu đồ hoạt động UC05 — Nghe câu trả lời
+|Người dùng|
+start
+:Bấm "Đọc" dưới câu trả lời;
+|Giao diện|
+if (Đã có đường dẫn âm thanh?) then (có)
+  :Phát lại;
+  stop
+else (chưa)
+endif
+|Hệ thống|
+:Loại định dạng Markdown;
+:Tổng hợp giọng nói (tts-1);
+if (Có Firebase Storage?) then (có)
+  :Tải lên, trả đường dẫn công khai;
+else (không)
+  :Trả luồng MP3;
+endif
+|Giao diện|
+:Phát âm thanh, lưu đường dẫn vào tin nhắn;
+stop
+@enduml

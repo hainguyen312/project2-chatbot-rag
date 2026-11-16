@@ -1,0 +1,20 @@
+@startuml UC04_UC
+!include ../_style.iuml
+title Biểu đồ use case UC04 — Hỏi bằng giọng nói
+left to right direction
+actor "Người dùng" as U
+actor "OpenAI Whisper" as W <<hệ thống>>
+rectangle "UC04. Hỏi bằng giọng nói" {
+  usecase "Ghi âm câu hỏi" as R
+  usecase "Hiển thị dạng sóng âm" as V
+  usecase "Chuyển giọng nói\nthành văn bản" as S
+  usecase "UC01. Hỏi đáp pháp luật" as Q
+  usecase "Cấp quyền micro" as P
+}
+U --> R
+R ..> V : <<include>>
+R ..> S : <<include>>
+S ..> Q : <<include>>
+P .> R : <<extend>>
+S --> W
+@enduml

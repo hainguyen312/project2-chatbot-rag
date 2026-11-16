@@ -1,0 +1,41 @@
+@startuml ACT_DuLieu
+!include _style.iuml
+title Quy trình xây dựng và xử lý dữ liệu
+
+|Quản trị viên|
+start
+:Tải bộ dữ liệu Pháp Điển\n(chude.json, demuc.json,\ntreeNode.json, HTML đề mục);
+
+|law-crawler|
+:Nạp chủ đề, đề mục;
+:Phân tích HTML từng đề mục:\nchương, điều, nội dung,\nchú thích văn bản gốc,\nbảng biểu, file đính kèm;
+:Thu thập liên kết điều liên quan;
+:Ghi vào MySQL\n(pdchude, pddemuc, pdchuong,\npddieu, pdtable, pdfile,\npdmuclienquan);
+
+fork
+  |seed_data_batch|
+  :Đọc điều luật kèm\nchủ đề, đề mục, chương;
+  :Nhúng tên điều theo lô 200\n(lỗi lô → nhúng từng bản ghi,\nghi embed_errors.csv);
+  :Cắt nội dung trong metadata\nnếu vượt 64KB;
+  :Ghi Milvus\nphapdien_simple_tendieu (HNSW);
+fork again
+  |seed_contextual_chunks|
+  :Tạo tiêu đề ngữ cảnh\n(chủ đề, đề mục, chương, điều);
+  :Chia nội dung theo đoạn,\n≤ 400 token, gối đầu 60 token;
+  :Nhúng theo ngân sách token\nmỗi yêu cầu, thử lại khi lỗi;
+  :Ghi Milvus\nphapdien_ctx_chunks (HNSW);
+fork again
+  |lexical_bm25|
+  :Tách âm tiết + cặp âm tiết,\nbỏ hư từ, lặp tên điều 3 lần;
+  :Xây chỉ mục BM25,\nlưu đệm xuống đĩa;
+fork again
+  |build_graph|
+  :Tạo ràng buộc duy nhất;
+  :MERGE nút ChuDe, DeMuc,\nChuong, Dieu theo lô 500;
+  :Tạo cạnh CO_DE_MUC, CO_CHUONG,\nCO_DIEU, LIEN_QUAN (2 chiều),\nTHAM_CHIEU;
+end fork
+
+|Quản trị viên|
+:Chạy bộ đánh giá truy xuất;
+stop
+@enduml

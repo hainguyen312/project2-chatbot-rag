@@ -1,0 +1,43 @@
+@startuml DEP_TrienKhai
+!include _style.iuml
+title Biểu đồ triển khai
+
+node "Trình duyệt người dùng" as Browser {
+  artifact "Ứng dụng Next.js\n(React 19, Three.js)" as SPA
+}
+
+node "Máy chủ ứng dụng (macOS / Linux)" as Host {
+  node "Node.js 20" {
+    artifact "Next.js 16 :3000\n(trang + route handler)" as Next
+  }
+  node "Python 3.12 (venv)" {
+    artifact "FastAPI + Uvicorn :8001\n(rag_api)" as API
+    artifact "Chỉ mục BM25\n(bm25s, bộ nhớ trong)" as BM25
+  }
+  node "Docker" {
+    database "MySQL 8 :3306" as MySQL
+    database "Milvus 2.4 :19530\n(etcd, MinIO)" as Milvus
+    database "Neo4j 5 :7687" as Neo4j
+  }
+}
+
+cloud "Dịch vụ đám mây" {
+  database "MongoDB Atlas" as Mongo
+  node "OpenAI API" as OpenAI
+  node "Tavily API" as Tavily
+  node "Firebase Auth / Storage" as Firebase
+}
+
+SPA --> Next : HTTPS
+SPA --> Firebase : đăng nhập
+Next --> API : HTTP / SSE
+Next --> Mongo : hội thoại
+API --> MySQL
+API --> Milvus
+API --> Neo4j
+API --> BM25
+API --> Mongo
+API --> OpenAI
+API --> Tavily
+API --> Firebase : xác thực token
+@enduml

@@ -1,0 +1,27 @@
+@startuml UC07_ACT
+!include ../_style.iuml
+title Biểu đồ hoạt động UC07 — Quản lý hội thoại
+|Người dùng|
+start
+:Mở trang hỏi đáp;
+|Hệ thống|
+:Tải hội thoại của người dùng\n(ghim trước, mới nhất trước);
+|Người dùng|
+:Chọn thao tác trên danh sách;
+|Hệ thống|
+switch (Thao tác?)
+case (Mở)
+  :Hiển thị tin nhắn và căn cứ;
+case (Đổi tên)
+  :Lưu tên, đánh dấu tên\ndo người dùng đặt;
+case (Ghim)
+  :Đảo trạng thái ghim,\nsắp xếp lại;
+case (Xoá)
+  :Hỏi xác nhận, xoá hội thoại;
+case (Hỏi câu đầu tiên)
+  :Đặt tên tạm từ câu hỏi;
+  :Sau câu trả lời, LLM đặt tên 3–8 từ\n(nếu chưa bị người dùng đổi);
+endswitch
+:Cập nhật danh sách;
+stop
+@enduml

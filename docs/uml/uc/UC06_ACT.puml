@@ -1,0 +1,16 @@
+@startuml UC06_ACT
+!include ../_style.iuml
+title Biểu đồ hoạt động UC06 — Đánh giá câu trả lời
+|Người dùng|
+start
+:Bấm hữu ích / chưa hữu ích;
+|Giao diện|
+:Tô màu lựa chọn ngay;
+|Hệ thống|
+:Ghi đánh giá (chat_id, vị trí tin nhắn, mức);
+if (Đã có đánh giá trước?) then (có)
+  :Ghi đè đánh giá cũ;
+else (không)
+endif
+stop
+@enduml

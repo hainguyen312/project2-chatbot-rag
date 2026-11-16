@@ -1,0 +1,67 @@
+@startuml CLS_RAG
+!include _style.iuml
+title Thiết kế lớp — Truy xuất và tác tử RAG
+hide empty members
+
+class GraphRAGRetriever {
+  - milvus_collection
+  - neo4j_driver
+  - openai_client
+  + _hybrid_search(query, top_k, pool, mode) : list
+  + _vector_search_scored(query, top_k) : list
+  + _graph_expand(seed_mapcs, hop) : list
+  + _rerank(candidates, query, top_k) : list
+  - _embed(text) : list<float>
+}
+
+class BM25Index {
+  - docs : list<mapc>
+  - retriever : bm25s.BM25
+  + search(query, top_k) : list<(mapc, score)>
+  + {static} tokenize(text, bigrams) : list<str>
+}
+
+class AgentLoop <<module agentic_rag>> {
+  + RAG_AGENT_TOOLS : list<tool>
+  + run_agentic_rag_sync(prompt, history, ...) : dict
+  + execute_agent_tool(name, args, retriever) : (json, hits)
+  + web_verify_reason(question, bucket, used) : str
+  + rerank_phapdien_hits(retriever, query, hits) : list
+}
+
+class SemanticCache {
+  - collection
+  - threshold : float = 0.97
+  + get(embedding) : dict
+  + set(embedding, value)
+}
+
+class MemoryManager {
+  - mongo_col
+  - settings_col
+  + extract_facts(turn) : list<Fact>
+  + update_memories(user_id, facts)
+  + retrieve_memories(user_id, query, top_k) : list
+  + get_mode(user_id) : str
+  + delete_all_for_user(user_id) : int
+}
+
+class AgentsManager {
+  - agents : list<BaseAgent>
+  + analyze(prompt, history) : dict
+}
+abstract class BaseAgent {
+  + name : str
+  + {abstract} run(prompt, history) : dict
+}
+class QuickAgent
+class SpamAgent
+class SentimentAgent
+
+GraphRAGRetriever ..> BM25Index : dùng
+AgentLoop ..> GraphRAGRetriever : gọi công cụ
+AgentsManager o-- "1..*" BaseAgent
+BaseAgent <|-- QuickAgent
+BaseAgent <|-- SpamAgent
+BaseAgent <|-- SentimentAgent
+@enduml

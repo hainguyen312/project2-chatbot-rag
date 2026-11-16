@@ -1,0 +1,26 @@
+@startuml UC07_UC
+!include ../_style.iuml
+title Biểu đồ use case UC07 — Quản lý hội thoại
+left to right direction
+actor "Người dùng" as U
+actor "OpenAI API" as AI <<hệ thống>>
+rectangle "UC07. Quản lý hội thoại" {
+  usecase "Xem danh sách hội thoại" as L
+  usecase "Tìm hội thoại" as F
+  usecase "Mở hội thoại" as O
+  usecase "Tạo hội thoại mới" as N
+  usecase "Đổi tên" as RN
+  usecase "Ghim / bỏ ghim" as P
+  usecase "Xoá" as D
+  usecase "Đặt tên tự động" as T
+}
+U --> L
+U --> N
+F .> L : <<extend>>
+O .> L : <<extend>>
+RN .> L : <<extend>>
+P .> L : <<extend>>
+D .> L : <<extend>>
+N ..> T : <<include>>
+T --> AI
+@enduml

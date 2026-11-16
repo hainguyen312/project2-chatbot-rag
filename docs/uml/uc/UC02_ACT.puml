@@ -1,0 +1,24 @@
+@startuml UC02_ACT
+!include ../_style.iuml
+title Biểu đồ hoạt động UC02 — Phân tích tình huống pháp lý
+|Người dùng|
+start
+:Chọn "Phân tích tình huống";
+:Mô tả tình huống và gửi;
+|Hệ thống|
+:Tiền xử lý, chuẩn hoá câu hỏi;
+:Nạp lời nhắc chế độ tình huống\n(tác tử nhận nguyên văn mô tả);
+repeat
+  :Tác tử chọn công cụ\n(tìm kiếm lai / đồ thị / toàn văn / web);
+  :Thu thập điều luật;
+repeat while (Đủ căn cứ cho mọi hành vi?) is (chưa) not (đủ)
+if (Thiếu yếu tố quyết định?) then (có)
+  :Kết luận theo từng trường hợp;
+else (không)
+  :Kết luận cụ thể;
+endif
+:Nêu hành vi, căn cứ, rủi ro,\nhướng xử lý, lưu ý luật sư;
+|Người dùng|
+:Đọc phân tích, mở căn cứ;
+stop
+@enduml

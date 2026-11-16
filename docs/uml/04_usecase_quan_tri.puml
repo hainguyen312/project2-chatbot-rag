@@ -5,17 +5,28 @@ left to right direction
 
 actor "Quản trị viên" as Admin
 actor "Cổng Pháp Điển\n(phapdien.moj.gov.vn)" as PD <<hệ thống>>
+actor "Công báo /\nnguồn PDF" as CB <<hệ thống>>
 actor "OpenAI API" as OpenAI <<hệ thống>>
 
-rectangle "Quản trị" {
+rectangle "Xây dựng dữ liệu (dòng lệnh)" {
   usecase "Thu thập dữ liệu Pháp Điển\nvào MySQL" as Crawl
   usecase "Lập chỉ mục vector Milvus" as Index
-  usecase "Tiếp tục lập chỉ mục\nkhi bị gián đoạn (--resume)" as Resume
+  usecase "Tiếp tục lập chỉ mục\nkhi bị gián đoạn" as Resume
   usecase "Sinh embedding" as Embed
-  usecase "Xây dựng đồ thị Neo4j" as Graph
-  usecase "Đánh giá truy xuất\n(Recall, MRR, ...)" as EvalR
-  usecase "Đánh giá câu trả lời" as EvalA
-  usecase "Trực quan hoá kết quả" as Viz
+  usecase "Xây dựng đồ thị tri thức" as Graph
+  usecase "Đánh giá truy xuất\n(nDCG, MRR, Hit@k)" as EvalR
+  usecase "Đánh giá gọi công cụ\nvà bộ nhớ" as EvalA
+}
+
+rectangle "Trang quản trị (/admin)" {
+  usecase "Đăng nhập với vai trò admin" as Login
+  usecase "UC18. Cập nhật văn bản\npháp luật mới" as Ingest
+  usecase "Thêm từ link / file PDF" as Add
+  usecase "Kiểm tra và sửa\ncấu trúc đã tách" as Review
+  usecase "So sánh với dữ liệu hiện có" as Diff
+  usecase "Duyệt / từ chối" as Approve
+  usecase "UC19. Quản lý hiệu lực\nvăn bản" as Status
+  usecase "Cập nhật bản Pháp Điển mới" as PDUpdate
 }
 
 Admin --> Crawl
@@ -23,10 +34,21 @@ Admin --> Index
 Admin --> Graph
 Admin --> EvalR
 Admin --> EvalA
+Admin --> Login
 Crawl --> PD
 Index ..> Embed : <<include>>
 Resume .> Index : <<extend>>
 Embed --> OpenAI
-Viz .> EvalR : <<extend>>
-Viz .> EvalA : <<extend>>
+
+Login <.. Ingest : <<include>>
+Login <.. Status : <<include>>
+Login <.. PDUpdate : <<include>>
+Admin --> Ingest
+Admin --> Status
+Admin --> PDUpdate
+Ingest ..> Add : <<include>>
+Ingest ..> Review : <<include>>
+Review ..> Diff : <<include>>
+Ingest ..> Approve : <<include>>
+Add --> CB
 @enduml

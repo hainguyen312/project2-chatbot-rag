@@ -1,0 +1,32 @@
+@startuml UC17_SEQ
+!include ../_style.iuml
+title Biểu đồ tuần tự UC17 — Quản lý lịch sử rà soát
+autonumber
+actor "Người dùng" as U
+participant "ReviewPage" as P
+participant "/api/review/history" as R
+participant "rag_api" as API
+participant "ReviewHistory" as H
+database "MongoDB + GridFS" as DB
+U -> P : mở /review
+P -> R : GET ?user_id (+ token)
+R -> API : GET /review/history
+API -> H : list(owner)
+H -> DB : find(user_id) sắp xếp mới nhất
+API --> P : danh sách
+U -> P : chọn một lượt
+P -> R : GET /{id}
+API -> H : get(owner, id)
+H -> DB : find_one(_id, user_id)
+API --> P : kết quả + văn bản
+U -> P : "Tải file gốc"
+P -> R : GET /{id}/file
+API -> H : get_file(owner, id)
+H -> DB : GridFS download
+API --> P : file (attachment)
+U -> P : "Xoá" + xác nhận
+P -> R : DELETE /{id}
+API -> H : delete(owner, id)
+H -> DB : xoá tài liệu + file
+API --> P : {ok}
+@enduml

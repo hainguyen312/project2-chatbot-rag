@@ -1,0 +1,30 @@
+@startuml UC05_SEQ
+!include ../_style.iuml
+title Biểu đồ tuần tự UC05 — Nghe câu trả lời
+autonumber
+actor "Người dùng" as U
+participant "MessageRow" as M
+participant "useTTS" as TTS
+participant "/api/tts" as R
+participant "rag_api /tts" as API
+participant "OpenAI tts-1" as AI
+participant "Firebase Storage" as FB
+U -> M : bấm "Đọc"
+M -> TTS : speak(text, cachedUrl)
+alt đã có đường dẫn
+  TTS --> U : phát lại
+else chưa có
+  TTS -> R : POST {text}
+  R -> API : chuyển tiếp
+  API -> API : loại Markdown
+  API -> AI : audio.speech.create
+  AI --> API : MP3
+  opt có Firebase
+    API -> FB : upload MP3
+    FB --> API : URL công khai
+  end
+  API --> TTS : URL hoặc luồng MP3
+  TTS --> U : phát âm thanh
+  TTS -> M : onSaveTtsUrl(url)
+end
+@enduml

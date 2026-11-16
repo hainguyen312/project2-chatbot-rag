@@ -1,0 +1,53 @@
+@startuml UC_RaSoat
+!include _style.iuml
+title Phân rã Use Case UC16 — Rà soát văn bản pháp lý
+left to right direction
+
+actor "Người dùng" as User
+actor "OpenAI API" as OpenAI <<hệ thống>>
+actor "Tavily Search" as Tavily <<hệ thống>>
+
+rectangle "Rà soát văn bản pháp lý" {
+  usecase "Gửi văn bản cần rà soát" as Submit
+  usecase "Tải file (PDF, DOCX, TXT)" as File
+  usecase "Dán link văn bản" as Link
+  usecase "Dán nội dung văn bản" as Text
+  usecase "Trích xuất nội dung" as Extract
+  usecase "Tóm tắt và nêu ý chính" as Summary
+  usecase "Phát hiện điều khoản rủi ro" as Detect
+  usecase "Tra cứu căn cứ Pháp Điển" as PD
+  usecase "Tra cứu nguồn web tin cậy" as Web
+  usecase "Đối chiếu và kết luận\n(kèm trích nguyên văn)" as Verify
+  usecase "Xem căn cứ pháp lý" as ViewBasis
+  usecase "Lưu vào lịch sử" as Save
+}
+
+rectangle "UC17. Quản lý lịch sử rà soát" {
+  usecase "Xem danh sách lượt rà soát" as HList
+  usecase "Mở lại kết quả" as HOpen
+  usecase "Tải file gốc" as HFile
+  usecase "Xoá lượt rà soát" as HDel
+}
+
+User --> Submit
+File .> Submit : <<extend>>
+Link .> Submit : <<extend>>
+Text .> Submit : <<extend>>
+Submit ..> Extract : <<include>>
+Submit ..> Summary : <<include>>
+Submit ..> Detect : <<include>>
+Detect ..> PD : <<include>>
+Web .> Detect : <<extend>>
+Detect ..> Verify : <<include>>
+ViewBasis .> Verify : <<extend>>
+Save .> Submit : <<extend>>
+
+User --> HList
+HOpen .> HList : <<extend>>
+HFile .> HOpen : <<extend>>
+HDel .> HOpen : <<extend>>
+
+Summary --> OpenAI
+Verify --> OpenAI
+Web --> Tavily
+@enduml

@@ -1,0 +1,80 @@
+@startuml DB_MongoMilvus
+!include _style.iuml
+title Thiết kế lưu trữ — MongoDB, Milvus và đồ thị tri thức
+hide circle
+hide methods
+
+package "MongoDB (chatbot_rag)" {
+  class conversations {
+    _id : string
+    user_id : string
+    title, title_source
+    pinned : bool
+    messages : [{role, content, passages, ...}]
+    created_at, updated_at
+  }
+  class memories {
+    mem_id : string
+    user_id : string
+    fact : string
+    type : core | episodic | semantic | procedural
+    embedding : float[1536]
+    sensitive : bool
+    history : [...]
+  }
+  class memory_settings {
+    user_id : string
+    mode : no_sensitive | full | off
+  }
+  class semantic_cache {
+    embedding : float[1536]
+    answer : string
+    meta : {passages, sources}
+    expire_at (TTL 24h)
+  }
+  class doc_reviews {
+    _id : string
+    user_id : string
+    title, loai_van_ban
+    counts, source
+    file : {id, name, size}
+    text : string
+    result : {tom_tat, canh_bao, passages, ...}
+  }
+  class "doc_review_files (GridFS)" as gridfs
+  class user_roles {
+    _id : email
+    role : admin
+  }
+  doc_reviews --> gridfs : file.id
+}
+
+package "Milvus" {
+  class phapdien_simple_tendieu {
+    id : int64
+    metadata : json (mapc, ten, noidung)
+    embedding : float[1536] (HNSW, COSINE)
+  }
+  class phapdien_ctx_chunks {
+    id : int64
+    mapc : varchar
+    chunk_idx, n_chunks
+    text : varchar
+    embedding : float[1536] (HNSW, COSINE)
+  }
+}
+
+package "Đồ thị tri thức (Neo4j)" {
+  class ChuDe
+  class DeMuc
+  class Chuong
+  class Dieu {
+    mapc, ten, noidung, chimuc, stt
+  }
+  ChuDe --> DeMuc : CO_DE_MUC
+  DeMuc --> Chuong : CO_CHUONG
+  Chuong --> Dieu : CO_DIEU
+  Dieu --> Dieu : LIEN_QUAN
+  Dieu --> Dieu : THAM_CHIEU
+}
+@enduml

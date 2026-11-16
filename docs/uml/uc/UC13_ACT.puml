@@ -1,0 +1,26 @@
+@startuml UC13_ACT
+!include ../_style.iuml
+title Biểu đồ hoạt động UC13 — Lập chỉ mục vector và BM25
+|Quản trị viên|
+start
+:Chạy seed_data_batch.py;
+|seed_data_batch|
+repeat :Lấy lô 200 điều;
+  if (Nhúng cả lô thành công?) then (có)
+    :Ghi Milvus;
+  else (không)
+    :Nhúng từng điều,\nghi điều lỗi vào embed_errors.csv;
+  endif
+repeat while (Còn điều?) is (còn) not (hết)
+|Quản trị viên|
+:Chạy seed_contextual_chunks.py --dry-run;
+:Xem số đoạn, chi phí ước tính;
+:Chạy thật;
+|seed_contextual_chunks|
+:Tạo tiêu đề ngữ cảnh, chia đoạn 400 token;
+:Nhúng theo ngân sách token, thử lại khi lỗi;
+:Ghi Milvus theo lô 500;
+|Máy chủ dịch vụ|
+:Khởi động: xây hoặc nạp chỉ mục BM25;
+stop
+@enduml

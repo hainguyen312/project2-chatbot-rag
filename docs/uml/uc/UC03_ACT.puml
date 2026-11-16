@@ -1,0 +1,26 @@
+@startuml UC03_ACT
+!include ../_style.iuml
+title Biểu đồ hoạt động UC03 — Xem điều luật trích dẫn
+|Người dùng|
+start
+:Bấm thẻ căn cứ / số tham chiếu\n/ "Xem N tài liệu đã tra";
+|Giao diện|
+:Lấy danh sách điều luật đã tra\ncủa câu trả lời (có sẵn trong tin nhắn);
+if (Màn hình nhỏ?) then (có)
+  :Mở khung toàn màn hình;
+else (không)
+  :Mở khung bên phải;
+endif
+:Cuộn tới và tô viền điều được chọn;
+|Người dùng|
+if (Tài liệu là nguồn web?) then (có)
+  :Mở trang nguồn;
+else (không)
+  :Bấm "Xem nội dung đầy đủ";
+  |Giao diện|
+  :Hiển thị toàn văn trong hộp thoại;
+endif
+|Người dùng|
+:Đóng khung;
+stop
+@enduml

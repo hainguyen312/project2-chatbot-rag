@@ -1,0 +1,20 @@
+@startuml UC03_SEQ
+!include ../_style.iuml
+title Biểu đồ tuần tự UC03 — Xem điều luật trích dẫn
+autonumber
+actor "Người dùng" as U
+participant "MessageRow /\nFindingCard" as M
+participant "Trang (page.tsx)" as P
+participant "PassagePanel" as PP
+participant "PassageFullModal" as FM
+U -> M : bấm thẻ căn cứ [n]
+M -> P : onSelect(passages, focusIndex)
+P -> PP : render(passages, focusIndex, nonce)
+PP -> PP : cuộn tới + tô viền điều thứ n
+PP --> U : khung căn cứ pháp lý
+U -> PP : "Xem nội dung đầy đủ"
+PP -> FM : mở(passage)
+FM --> U : toàn văn điều luật
+U -> FM : đóng
+note over M, FM : Dữ liệu điều luật đã có trong tin nhắn\n(sự kiện meta), không gọi lại máy chủ
+@enduml

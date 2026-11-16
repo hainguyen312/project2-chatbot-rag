@@ -1,0 +1,48 @@
+@startuml SEQ_RaSoat
+!include _style.iuml
+title Biểu đồ tuần tự — UC16 Rà soát văn bản pháp lý
+autonumber
+
+actor "Người dùng" as U
+participant "ReviewPage\n(/review)" as UI
+participant "API route\n/api/review" as R
+participant "rag_api\n/review/analyze" as API
+participant "doc_review" as DR
+participant "GraphRAGRetriever\n(hybrid search)" as RET
+participant "Tavily" as WEB
+participant "OpenAI" as LLM
+participant "ReviewHistory" as H
+database "MongoDB\n+ GridFS" as DB
+
+U -> UI : chọn file, bấm "Phân tích"
+UI -> R : POST multipart (file, user_id, save)
+R -> API : chuyển tiếp multipart
+API -> DR : text_from_bytes(file)
+API --> UI : SSE status "extract"
+API -> DR : review_events(...)
+DR -> LLM : phân tích văn bản (JSON)
+LLM --> DR : tóm tắt, ý chính, rủi ro
+DR --> UI : SSE status "analyze"
+loop mỗi điều khoản rủi ro (song song)
+  DR -> RET : truy vấn pháp lý + tên điều dự kiến
+  RET --> DR : điều luật Pháp Điển (đã xếp hạng)
+  opt cần kiểm tra văn bản mới
+    DR -> WEB : web_search(truy vấn)
+    WEB --> DR : kết quả có URL, độ tin cậy
+  end
+end
+DR --> UI : SSE status "search"
+DR -> LLM : đối chiếu điều khoản ↔ nguồn ứng viên (mã N1, N2…)
+LLM --> DR : kết luận, căn cứ, đoạn trích
+DR -> DR : kiểm chứng căn cứ\n(mã hợp lệ, trích khớp, ưu tiên Pháp Điển)
+DR --> UI : SSE status "verify"
+alt người dùng chọn lưu
+  DR -> H : save(user_id, kết quả, văn bản, file)
+  H -> DB : GridFS(file) + doc_reviews
+  H --> DR : history_id
+end
+DR --> API : sự kiện result
+API --> R : SSE result
+R --> UI : SSE result
+UI --> U : tóm tắt, cảnh báo, căn cứ pháp lý
+@enduml

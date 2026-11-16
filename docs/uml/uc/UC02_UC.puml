@@ -1,0 +1,25 @@
+@startuml UC02_UC
+!include ../_style.iuml
+title Biểu đồ use case UC02 — Phân tích tình huống pháp lý
+left to right direction
+actor "Người dùng" as U
+actor "OpenAI API" as AI <<hệ thống>>
+actor "Tavily" as T <<hệ thống>>
+rectangle "UC02. Phân tích tình huống" {
+  usecase "Chọn chế độ\nphân tích tình huống" as M
+  usecase "Mô tả tình huống" as D
+  usecase "UC01. Hỏi đáp pháp luật" as Q
+  usecase "Xác định hành vi\nvà căn cứ áp dụng" as B
+  usecase "Đánh giá rủi ro,\ngợi ý hướng xử lý" as R
+  usecase "Tách trường hợp khi\nthiếu yếu tố quyết định" as S
+}
+U --> M
+U --> D
+M .> Q : <<extend>>
+D ..> Q : <<include>>
+Q ..> B : <<include>>
+Q ..> R : <<include>>
+S .> B : <<extend>>
+Q --> AI
+Q --> T
+@enduml

@@ -1,0 +1,21 @@
+@startuml UC14_ACT
+!include ../_style.iuml
+title Biểu đồ hoạt động UC14 — Xây dựng đồ thị tri thức
+|Quản trị viên|
+start
+:Chạy build_graph.py;
+|build_graph|
+:Tạo ràng buộc duy nhất 4 loại nút;
+:MERGE ChuDe, DeMuc (+CO_DE_MUC);
+:MERGE Chuong (+CO_CHUONG);
+:MERGE Dieu theo lô 500 (+CO_DIEU);
+:Tạo LIEN_QUAN hai chiều từ 38.435 cặp;
+:Tìm mã điều trong nội dung,\ntạo THAM_CHIEU tới mã có thật;
+|Bộ truy xuất|
+if (Neo4j có dữ liệu?) then (có)
+  :graph_traverse dùng Neo4j;
+else (không)
+  :Dùng bảng pdmuclienquan (MySQL);
+endif
+stop
+@enduml

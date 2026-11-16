@@ -1,0 +1,23 @@
+@startuml UC17_UC
+!include ../_style.iuml
+title Biểu đồ use case UC17 — Quản lý lịch sử rà soát
+left to right direction
+actor "Người dùng" as U
+rectangle "UC17. Quản lý lịch sử rà soát" {
+  usecase "Xem danh sách lượt rà soát" as L
+  usecase "Mở lại kết quả" as O
+  usecase "Mở bằng đường dẫn ?id=" as I
+  usecase "Tải file gốc" as F
+  usecase "Xem văn bản đã trích" as T
+  usecase "Xoá lượt rà soát" as D
+  usecase "Kiểm tra chủ sở hữu" as C
+}
+U --> L
+O .> L : <<extend>>
+I .> O : <<extend>>
+F .> O : <<extend>>
+T .> O : <<extend>>
+D .> O : <<extend>>
+L ..> C : <<include>>
+O ..> C : <<include>>
+@enduml

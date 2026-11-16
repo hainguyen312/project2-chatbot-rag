@@ -1,0 +1,22 @@
+@startuml UC09_UC
+!include ../_style.iuml
+title Biểu đồ use case UC09 — Hỏi đáp trong văn phòng luật 3D
+left to right direction
+actor "Người dùng" as U
+rectangle "UC09. Văn phòng luật 3D" {
+  usecase "Chọn góc nhìn\n(toàn cảnh / nhập vai / mắt nhân vật)" as V
+  usecase "Chọn dữ liệu mẫu / thật" as M
+  usecase "Đặt câu hỏi" as Q
+  usecase "UC01. Hỏi đáp pháp luật" as H
+  usecase "Theo dõi nhân vật làm việc" as A
+  usecase "Nói chuyện với một nhân vật" as T
+  usecase "Xem nhật ký hoạt động" as L
+}
+U --> V
+U --> M
+U --> Q
+Q ..> H : <<include>>
+Q ..> A : <<include>>
+T .> Q : <<extend>>
+L .> A : <<extend>>
+@enduml

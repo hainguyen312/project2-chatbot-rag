@@ -1,0 +1,25 @@
+@startuml UC15_SEQ
+!include ../_style.iuml
+title Biểu đồ tuần tự UC15 — Đánh giá truy xuất (đại diện)
+autonumber
+actor "Quản trị viên" as A
+participant "eval_retrieval_nogt" as E
+participant "GraphRAGRetriever" as R
+participant "judgments_cache" as C
+participant "LLM chấm điểm" as J
+A -> E : chạy (--budget, --synthetic)
+loop mỗi cấu hình, mỗi câu hỏi
+  E -> R : truy xuất top-10
+  R --> E : danh sách điều
+end
+E -> E : gộp, khử trùng các cặp
+E -> C : lấy cặp đã chấm
+E -> E : ước tính chi phí phần còn lại
+alt trong ngân sách
+  E -> J : chấm mù từng cặp (0/1/2)
+  J --> E : điểm + lý do
+  E -> C : lưu đệm
+end
+E -> E : P@k, nDCG@10, MRR, Top1, sign test
+E --> A : bảng tổng hợp + JSON
+@enduml

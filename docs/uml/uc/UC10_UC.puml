@@ -1,0 +1,22 @@
+@startuml UC10_UC
+!include ../_style.iuml
+title Biểu đồ use case UC10 — Đăng ký / Đăng nhập
+left to right direction
+actor "Khách" as G
+actor "Firebase Auth" as F <<hệ thống>>
+rectangle "UC10. Đăng ký / Đăng nhập" {
+  usecase "Đăng nhập bằng Google" as GG
+  usecase "Đăng nhập bằng email" as E
+  usecase "Đăng ký bằng email" as SU
+  usecase "Đồng bộ dữ liệu ẩn danh\nsang tài khoản" as C
+}
+G --> GG
+G --> E
+G --> SU
+GG ..> C : <<include>>
+E ..> C : <<include>>
+SU ..> C : <<include>>
+GG --> F
+E --> F
+SU --> F
+@enduml

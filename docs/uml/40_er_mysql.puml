@@ -1,0 +1,109 @@
+@startuml ER_MySQL
+!include _style.iuml
+title Biểu đồ thực thể liên kết — Dữ liệu Pháp Điển và văn bản (MySQL)
+hide circle
+skinparam linetype ortho
+
+entity pdchude {
+  * id : varchar <<PK>>
+  --
+  ten : text
+  stt : int
+}
+entity pddemuc {
+  * id : varchar <<PK>>
+  --
+  ten : text
+  stt : int
+  chude_id : varchar <<FK>>
+}
+entity pdchuong {
+  * mapc : varchar <<PK>>
+  --
+  ten : text
+  chimuc : text
+  stt : int
+  demuc_id : varchar <<FK>>
+}
+entity pddieu {
+  * mapc : varchar <<PK>>
+  --
+  ten : text
+  noidung : text
+  vbqppl : text
+  vbqppl_link : text
+  stt : int
+  chude_id : varchar <<FK>>
+  demuc_id : varchar <<FK>>
+  chuong_id : varchar <<FK>>
+}
+entity pdfile {
+  * id : int <<PK>>
+  --
+  dieu_id : varchar <<FK>>
+  link, path : text
+}
+entity pdtable {
+  * id : int <<PK>>
+  --
+  dieu_id : varchar <<FK>>
+  html : text
+}
+entity pdmuclienquan {
+  * id : int <<PK>>
+  --
+  dieu_id1_id : varchar <<FK>>
+  dieu_id2_id : varchar <<FK>>
+}
+entity vanban {
+  * so_hieu : varchar <<PK>>
+  --
+  loai, trich_yeu, co_quan
+  ngay_ban_hanh, hieu_luc_tu, hieu_luc_den
+  trang_thai
+  thay_the_boi : varchar
+  is_vbhn, goc_so_hieu
+}
+entity vanban_quanhe {
+  * id : int <<PK>>
+  --
+  so_hieu : varchar <<FK>>
+  loai : sua_doi | thay_the | hop_nhat ...
+  doi_tuong : varchar
+}
+entity dieu_hieuluc {
+  * mapc : varchar <<PK>>
+  --
+  so_hieu : varchar <<FK>>
+  trang_thai, hieu_luc_tu, hieu_luc_den
+}
+entity dieu_lichsu {
+  * id : int <<PK>>
+  --
+  mapc : varchar <<FK>>
+  noidung, ly_do, thay_doi_luc
+}
+entity law_staging {
+  * id : varchar <<PK>>
+  --
+  kind : vanban | phapdien
+  status : queued .. published
+  so_hieu, ten, so_dieu
+  source, extract : json
+  doc, diff : longtext (json)
+  created_by, approved_by
+  created_at, published_at
+}
+
+pdchude ||--o{ pddemuc
+pddemuc ||--o{ pdchuong
+pdchuong ||--o{ pddieu
+pddieu ||--o{ pdmuclienquan
+pddieu ||--o{ pdfile
+pddieu ||--o{ pdtable
+pdchude ||--o{ pddieu
+vanban ||--o{ vanban_quanhe
+vanban ||--o{ dieu_hieuluc
+pddieu ||--o| dieu_hieuluc
+pddieu ||--o{ dieu_lichsu
+@enduml

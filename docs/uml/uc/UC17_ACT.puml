@@ -1,0 +1,34 @@
+@startuml UC17_ACT
+!include ../_style.iuml
+title Biểu đồ hoạt động UC17 — Quản lý lịch sử rà soát
+|Người dùng|
+start
+:Mở trang rà soát;
+|Hệ thống|
+:Tải danh sách lượt rà soát của người dùng;
+|Người dùng|
+:Chọn một lượt;
+|Hệ thống|
+if (Là chủ sở hữu?) then (không)
+  :Báo không tìm thấy;
+  stop
+else (có)
+  :Hiển thị kết quả đầy đủ;
+endif
+|Người dùng|
+:Chọn thao tác;
+|Hệ thống|
+switch (Thao tác?)
+case (Tải file gốc)
+  if (Có file gốc?) then (có)
+    :Trả file;
+  else (không)
+    :Báo không có file;
+  endif
+case (Xem văn bản)
+  :Hiển thị văn bản đã trích;
+case (Xoá)
+  :Hỏi xác nhận,\nxoá kết quả và file GridFS;
+endswitch
+stop
+@enduml

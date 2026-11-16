@@ -1,0 +1,59 @@
+@startuml CLS_RaSoat
+!include _style.iuml
+title Thiết kế lớp — Rà soát văn bản và lịch sử
+hide empty members
+
+class DocReview <<module doc_review>> {
+  + text_from_bytes(data, filename, content_type) : (str, warnings)
+  + fetch_link(url) : (bytes, content_type, url)
+  + analyze_document(client, text) : dict
+  + search_for_risks(risks, search, web_search) : list
+  + verify_risks(client, doc_type, risks, candidates) : dict
+  + review_events(client, search, raw_text, ...) : Iterator<event>
+  + quote_in_source(quote, source) : bool
+  + promote_phapdien(cited, hits) : (list, map)
+}
+
+class Risk <<dữ liệu>> {
+  dieu_khoan : str
+  trich_dan : str
+  van_de : str
+  muc_do : cao | trung_binh | thap
+  truy_van : str
+  ten_dieu_luat : str
+}
+
+class Finding <<dữ liệu>> {
+  danh_gia : vi_pham | rui_ro
+  giai_thich : str
+  khuyen_nghi : str
+  can_cu : list<{p, trich}>
+  tai_lieu : list<int>
+  ngoai_can_cu : list<str>
+}
+
+class ReviewHistory {
+  - col : Collection
+  - files : FileStore
+  + save(user_id, result, text, file) : str
+  + list(user_id) : list
+  + get(user_id, id) : dict
+  + get_file(user_id, id) : (bytes, name, type)
+  + delete(user_id, id) : bool
+  + retag(old_user_id, new_user_id) : int
+}
+
+interface FileStore {
+  + put(data, filename, content_type)
+  + get(file_id) : bytes
+  + delete(file_id)
+}
+class GridFSStore
+
+DocReview ..> Risk : tạo
+DocReview ..> Finding : tạo
+Finding "1" o-- "1" Risk
+DocReview ..> ReviewHistory : on_result
+ReviewHistory o-- FileStore
+FileStore <|.. GridFSStore
+@enduml

@@ -1,0 +1,24 @@
+@startuml UC04_ACT
+!include ../_style.iuml
+title Biểu đồ hoạt động UC04 — Hỏi bằng giọng nói
+|Người dùng|
+start
+:Bấm nút micro;
+|Giao diện|
+if (Đã có quyền micro?) then (chưa)
+  :Yêu cầu cấp quyền;
+  if (Người dùng đồng ý?) then (không)
+    :Hiển thị hướng dẫn cấp quyền;
+    stop
+  endif
+endif
+:Ghi âm, hiển thị sóng âm;
+|Người dùng|
+:Bấm dừng;
+|Hệ thống|
+:Gửi file âm thanh;
+:Whisper chuyển thành văn bản;
+|Giao diện|
+:Điền văn bản vào ô câu hỏi và gửi (UC01);
+stop
+@enduml

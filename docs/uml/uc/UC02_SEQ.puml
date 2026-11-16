@@ -1,0 +1,28 @@
+@startuml UC02_SEQ
+!include ../_style.iuml
+title Biểu đồ tuần tự UC02 — Phân tích tình huống pháp lý
+autonumber
+actor "Người dùng" as U
+participant "ChatPage" as UI
+participant "/api/stream" as R
+participant "rag_api\n/rag/stream" as API
+participant "agentic_rag" as AG
+participant "OpenAI" as AI
+participant "GraphRAGRetriever" as RET
+U -> UI : chọn "Phân tích tình huống", gửi mô tả
+UI -> R : POST {prompt, query_mode: "situation"}
+R -> API : chuyển tiếp
+API -> API : tiền xử lý, chuẩn hoá
+API -> AG : agent_system_prompt(situation_mode=True)
+loop tối đa 6 vòng
+  AG -> AI : messages + công cụ
+  AI --> AG : yêu cầu gọi công cụ
+  AG -> RET : tìm kiếm / mở rộng đồ thị
+  RET --> AG : điều luật
+  AG --> UI : SSE status (tool)
+end
+AG -> AI : tổng hợp phân tích
+AI --> AG : hành vi, căn cứ, rủi ro, hướng xử lý
+API --> UI : SSE meta (passages) + token
+UI --> U : hiển thị phân tích kèm căn cứ
+@enduml

@@ -1,0 +1,36 @@
+@startuml UC18_SEQ
+!include ../_style.iuml
+title Biểu đồ tuần tự UC18 — Cập nhật văn bản pháp luật mới
+autonumber
+actor "Quản trị viên" as A
+participant "AdminPage\n(IngestTab, ReviewTab)" as UI
+participant "/api/admin" as R
+participant "lawdata API" as API
+participant "staging\n(hàng đợi nền)" as ST
+participant "sources / pdf_extract\n/ parser" as P
+participant "store" as S
+database "MySQL" as DB
+participant "OpenAI Embedding" as E
+database "Milvus" as M
+A -> UI : dán link / chọn PDF
+UI -> R : POST /admin/ingest (+ token)
+R -> API : chuyển tiếp
+API -> API : require_admin
+API -> ST : tạo mục queued
+ST -> P : tải, trích chữ, tách cấu trúc
+P --> ST : metadata, điều, quan hệ
+ST -> S : so sánh với dữ liệu hiện có
+ST -> DB : lưu law_staging (ready)
+A -> UI : mở "Chờ duyệt", kiểm tra
+UI -> R : POST /admin/staging/{id}/approve
+R -> API : chuyển tiếp
+API -> ST : approve → publish
+ST -> S : publish_document
+S -> DB : ghi trong một giao dịch
+ST -> S : reindex_mapcs(điều thay đổi)
+S -> E : embeddings
+S -> M : xoá vector cũ, chèn vector mới
+ST -> S : rebuild_bm25_async
+ST -> DB : trạng thái published
+UI --> A : cập nhật danh sách
+@enduml

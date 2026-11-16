@@ -1,0 +1,16 @@
+@startuml UC11_UC
+!include ../_style.iuml
+title Biểu đồ use case UC11 — Đăng xuất
+left to right direction
+actor "Người dùng đã đăng nhập" as M
+actor "Firebase Auth" as F <<hệ thống>>
+rectangle "UC11. Đăng xuất" {
+  usecase "Đăng xuất" as O
+  usecase "Huỷ phiên đăng nhập" as S
+  usecase "Quay về chế độ khách\n(mã ẩn danh)" as G
+}
+M --> O
+O ..> S : <<include>>
+O ..> G : <<include>>
+S --> F
+@enduml
