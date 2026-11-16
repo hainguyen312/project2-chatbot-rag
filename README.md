@@ -179,7 +179,11 @@ uvicorn rag_api:app --host 0.0.0.0 --port 8001 --reload
 
 Passages trả về UI lấy **full text từ Neo4j** (bucket agent), không phụ thuộc snippet Milvus. MySQL là fallback khi Neo4j thiếu node.
 
-**Rerank:** điểm retrieval + độ phủ từ khoá; tuỳ chọn cộng điểm theo liên kết đồ thị giữa các ứng viên (`GRAPH_BOOST_BETA`) và LLM rerank (`RAG_AGENT_LLM_RERANK=1`).
+**Truy hồi (`hybrid_new`, pipeline duy nhất)** — `GraphRAGRetriever._hybrid_search` + `_rerank`:
+1. BM25 (tên điều ×3 + nội dung, điều dài tách theo khoản) và Milvus `phapdien_simple_tendieu` (embed tên điều, `text-embedding-3-small`), mỗi nguồn lấy 50 ứng viên.
+2. Gộp bằng RRF: `score = Σ w / (60 + hạng + 1)`, w(BM25) = 1.0, w(vector) = `RRF_W_VECTOR` (0.5); chuẩn hoá về (0, 1].
+3. Rerank từ khoá: `0.7 × RRF + 0.3 × độ phủ` (âm tiết + bigram của câu hỏi có trong tên điều ×2 / nội dung ×1).
+4. Hậu xử lý trong `vector_search`: hiệu lực (điều bị bãi bỏ ×0.4) → kiểm tra ngoại lệ (Neo4j) → kèm điều được dẫn chiếu (top 3, tối đa 4 điều, ≤ 1500 ký tự) → rút gọn điều dài (≤ 4000 ký tự).
 
 **Điều dài:** gửi LLM phần mở đầu + các **khoản khớp truy vấn nhất** (không cắt 4000 ký tự đầu); BM25 index điều > 6000 ký tự theo nhóm khoản.
 
@@ -200,7 +204,7 @@ Passages trả về UI lấy **full text từ Neo4j** (bucket agent), không ph�
 ```bash
 OPENAI_API_KEY=sk-...
 OPENAI_MODEL=gpt-4o-mini
-OPENAI_AGENT_MODEL=gpt-4o-mini
+OPENAI_AGENT_MODEL=gpt-4.1
 
 # MySQL (fallback khi Neo4j thiếu node)
 MYSQL_HOST=localhost
@@ -213,7 +217,7 @@ MYSQL_DATABASE=law
 AGENT_LLM_MAX_NOIDUNG_CHARS=4000
 AGENT_LLM_MAX_PASSAGE_CHARS=4000
 AGENT_VECTOR_POOL_MULT=3
-RAG_AGENT_LLM_RERANK=0
+RRF_W_VECTOR=0.5               # vector_weight: trọng số Milvus (tên điều) trong RRF; BM25 cố định 1.0
 
 # Đồ thị (Neo4j)
 NEO4J_URI=bolt://localhost:7687
@@ -221,9 +225,7 @@ NEO4J_USER=neo4j
 NEO4J_PASSWORD=password123
 AGENT_REF_CLOSURE=1            # tự kèm điều/khoản được dẫn chiếu
 AGENT_REF_CLOSURE_MAX=4
-GRAPH_BOOST_BETA=0             # >0: cộng điểm ứng viên liên kết với ứng viên khác
 BM25_SPLIT_LONG=1              # tách điều dài theo khoản khi index BM25
-RRF_W_VECTOR=0.5               # trọng số vector (tên điều) trong RRF; BM25 = 1.0
 AGENT_EXCEPTION_CHECK=1        # tự kèm khoản cấm/ngoại lệ liên quan (đồ thị)
 
 # Tavily (web_search)
@@ -299,7 +301,9 @@ project2-chatbot-rag/
 │   └── history.py             # Mongo / SQLite / JSON chat
 ├── retrieve/
 │   ├── build_graph.py         # MySQL → Neo4j + GraphRAGRetriever
-│   ├── two_stage_search.py    # Milvus client + collection
+│   ├── legal_graph.py         # parser dẫn chiếu/khoản/vbqppl, ghi + đồng bộ Neo4j
+│   ├── lexical_bm25.py        # BM25 tiếng Việt
+│   ├── two_stage_search.py    # kết nối dùng chung: OpenAI client, Milvus collection, MySQL engine
 │   └── tavily_fallback.py
 ├── agents/
 │   ├── pipeline.py            # run_pre_retrieve
@@ -309,7 +313,8 @@ project2-chatbot-rag/
 │   └── seed_data_batch.py     # MySQL → Milvus
 ├── law-crawler/               # Crawl + MySQL docker
 ├── test_raptor/               # Milvus + Neo4j docker-compose
-├── evaluation/                # benchmark retrieval
+├── evaluation/                # eval retrieval / tool-call / memory / ngoại lệ (xem "Đánh giá")
+├── legacy/                    # chiến lược + eval thử nghiệm đã thôi dùng (xem "Đã lược bỏ")
 └── frontend/                  # Next.js 16 + Tailwind 4
     └── src/
         ├── app/api/stream/    # SSE proxy
@@ -335,15 +340,37 @@ project2-chatbot-rag/
 
 ---
 
-## Đánh giá / thử nghiệm
+## Đánh giá
 
 ```bash
-cd evaluation
-pip install -r requirements.txt
-python run_evaluation.py
+pip install -r evaluation/requirements.txt
+# Retrieval: pooled LLM-judge (Claude) trên câu hỏi thật + known-item (100 câu tổng hợp, cache sẵn)
+python evaluation/eval_retrieval_nogt.py --judge-model claude-sonnet-5-5 --judge-effort low --synthetic 100
+python evaluation/eval_retrieval_nogt.py --skip-judge --synthetic 100      # chỉ known-item, không gọi Claude
+# Hồi quy agent / bộ nhớ / kiểm tra ngoại lệ
+python evaluation/eval_tool_calls.py --model gpt-4.1          # 23 case
+python evaluation/eval_memory.py                              # 14 case
+python evaluation/eval_exceptions.py --n 30 [--answers]       # 30 case "cho phép nhưng có ngoại lệ"
 ```
 
-Các chiến lược retrieval benchmark nằm trong `retrieve/retrieval_strategies.py` (không phải luồng agentic mặc định).
+`eval_retrieval_nogt.py` chỉ còn 2 pipeline: `hybrid_new` (đúng pipeline chatbot) và `bm25_only` (mốc tham chiếu).
+Kết quả lưu ở `evaluation/results/` (các file cũ có cả pipeline đã lược bỏ — giữ làm số liệu lịch sử).
+
+### Đã lược bỏ
+
+Mã chuyển vào `legacy/` (không xoá); chatbot và eval hiện tại không import gì từ đó.
+
+| Mục | Lý do |
+|---|---|
+| Đợt 1: `semantic_search`, `hybrid_search`, `two_stage_search`, `hybrid_rerank` + eval ROUGE-L / BLEU / semantic similarity | Chỉ 5 câu có đáp án; đã có bản thay thế tốt hơn ở đợt 2 (pooled judge 50 câu + known-item 100 câu) |
+| `old` | Rerank cũ (điểm hằng 0.8 + đếm cả hư từ) — kém mọi pipeline hybrid |
+| `vector_new`, `ctx_only` | Vector thuần (tên điều hoặc chunk nội dung) kém hybrid ở mọi chỉ số (known-item Hit@10 0.35 / 0.50 so với 0.69) |
+| `hybrid_norerank` | Kém `hybrid_new` ở mọi chỉ số — rerank từ khoá luôn có lợi |
+| `hybrid3_*` (thêm nguồn `phapdien_ctx_chunks`) | Không tăng chỉ số retrieval (hoà `hybrid_new`), tốn thêm một lượt tìm Milvus. Collection vẫn còn trong Milvus |
+| `hybrid_graph` (cộng điểm theo liên kết đồ thị) | Không tăng chỉ số retrieval (known-item Hit@1 0.27 → 0.22) |
+| `hybrid_closure` | Không tăng chỉ số retrieval; phần kèm điều được dẫn chiếu vẫn giữ trong `vector_search` của agent |
+| `hybrid_wv*` | Gộp thành một tham số `RRF_W_VECTOR` (0.5) |
+| LLM rerank (`RAG_AGENT_LLM_RERANK`, `hybrid_llmrr`) | Chưa từng đo trên `hybrid_new`, vốn tắt mặc định. Nếu làm lại (top 20 → gpt-4o-mini chấm 0–1 → top 10), tham khảo prompt chấm điểm trong `legacy/services/llm_rerank.py` thay vì viết từ đầu |
 
 ---
 
