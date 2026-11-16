@@ -1,0 +1,323 @@
+{
+ "config": {
+  "n": 30,
+  "seed": 11,
+  "answers": false,
+  "budget": 1.5,
+  "workers": 2
+ },
+ "n_cases": 30,
+ "retrieval": {
+  "summary": {
+   "A (điều chính) có trong kết quả": 0.5,
+   "B (ngoại lệ) có — TẮT kiểm tra ngoại lệ": 0.4,
+   "B (ngoại lệ) có — BẬT kiểm tra ngoại lệ": 0.4666666666666667,
+   "B có | A có — BẬT": 0.6,
+   "số kết quả TB — TẮT": 10.9,
+   "số kết quả TB — BẬT": 11.333333333333334
+  },
+  "rows": [
+   {
+    "cau_hoi": "Tôi đi du học về, mang theo mấy cuốn sách in nước ngoài trong hành lý xách tay để đọc cho mình thì có cần xin giấy phép nhập khẩu không?",
+    "query": "Giấy phép nhập khẩu sách in nước ngoài",
+    "a_off": true,
+    "b_off": false,
+    "n_off": 12,
+    "a_on": true,
+    "b_on": false,
+    "n_on": 12
+   },
+   {
+    "cau_hoi": "Cơ sở chế biến thủy sản của tôi đã nằm trong danh sách ưu tiên, được xếp hạng 1 và gần đây không có lô hàng nào bị phát hiện vi phạm. Vậy tôi có chắc chắn được cấp chứng thư cho lô hàng xuất khẩu sắp tới theo hình thức dành cho cơ sở ưu tiên không?",
+    "query": "Cấp chứng thư cho lô hàng xuất khẩu cơ sở ưu tiên",
+    "a_off": true,
+    "b_off": true,
+    "n_off": 12,
+    "a_on": true,
+    "b_on": true,
+    "n_on": 12
+   },
+   {
+    "cau_hoi": "Tôi viết một kịch bản phim có nội dung tư tưởng sâu sắc, kỹ thuật viết rất tốt, được hội đồng chấm trung bình 9,5 điểm. Vậy kịch bản của tôi có chắc chắn được xếp loại Xuất sắc và được chọn sản xuất bằng ngân sách nhà nước không?",
+    "query": "Xếp loại kịch bản phim xuất sắc ngân sách nhà nước",
+    "a_off": true,
+    "b_off": false,
+    "n_off": 11,
+    "a_on": true,
+    "b_on": false,
+    "n_on": 11
+   },
+   {
+    "cau_hoi": "Trang trại nhà tôi có mấy con lợn bị ốm lừ đừ, bỏ ăn, tôi định tự chăm sóc rồi chở số lợn còn lại sang bán cho người ở huyện khác thì có được không?",
+    "query": "Chăm sóc lợn ốm và bán lợn",
+    "a_off": false,
+    "b_off": false,
+    "n_off": 13,
+    "a_on": false,
+    "b_on": false,
+    "n_on": 13
+   },
+   {
+    "cau_hoi": "Tôi là sĩ quan, thẻ chứng minh sĩ quan của tôi bị hỏng nặng nên tôi định tự sửa lại thông tin và chỉnh cho rõ nét rồi dùng tiếp, vậy có được không?",
+    "query": "Sửa thẻ chứng minh sĩ quan bị hỏng",
+    "a_off": true,
+    "b_off": true,
+    "n_off": 12,
+    "a_on": true,
+    "b_on": true,
+    "n_on": 12
+   },
+   {
+    "cau_hoi": "Tôi không muốn công ty bảo hiểm tiếp tục xử lý thông tin cá nhân của tôi nữa, tôi không đồng ý thì họ có được dùng dữ liệu của tôi không? Tôi đang có hợp đồng với họ.",
+    "query": "Công ty bảo hiểm sử dụng thông tin cá nhân",
+    "a_off": false,
+    "b_off": false,
+    "n_off": 10,
+    "a_on": false,
+    "b_on": false,
+    "n_on": 10
+   },
+   {
+    "cau_hoi": "Công ty tôi đã mua ảnh viễn thám của một cơ quan nhà nước để làm dự án, giờ có công ty đối tác muốn xin bản sao bộ ảnh đó để dùng cho dự án riêng của họ thì tôi đưa cho họ được không?",
+    "query": "Chia sẻ bản sao ảnh viễn thám",
+    "a_off": false,
+    "b_off": false,
+    "n_off": 10,
+    "a_on": false,
+    "b_on": true,
+    "n_on": 12
+   },
+   {
+    "cau_hoi": "Tôi đã khiếu nại lần hai lên chủ tịch tỉnh về quyết định thu hồi đất của huyện, và đơn tôi gửi đã hơn 10 ngày rồi. Tôi cũng đã nộp đơn kiện ra Tòa án về việc này. Vậy chủ tịch tỉnh có bắt buộc phải thụ lý giải quyết khiếu nại của tôi không?",
+    "query": "Thụ lý giải quyết khiếu nại của chủ tịch tỉnh",
+    "a_off": true,
+    "b_off": true,
+    "n_off": 10,
+    "a_on": true,
+    "b_on": true,
+    "n_on": 11
+   },
+   {
+    "cau_hoi": "Công ty tôi mới nhập khẩu lô hàng và nghe nói doanh nghiệp ưu tiên được làm thủ tục giao nhận hàng trước và miễn kiểm tra sau thông quan, vậy công ty tôi có được hưởng ngay những ưu đãi đó không? Năm ngoái công ty tôi bị phạt vì khai sai trốn thuế.",
+    "query": "ưu đãi thủ tục giao nhận hàng nhập khẩu",
+    "a_off": true,
+    "b_off": false,
+    "n_off": 11,
+    "a_on": true,
+    "b_on": false,
+    "n_on": 12
+   },
+   {
+    "cau_hoi": "Tôi đang chấp hành án cấm cư trú, mấy lần không trình diện và không báo cáo theo yêu cầu của xã. Giờ tôi muốn xin miễn chấp hành phần thời hạn cấm cư trú còn lại thì có được xem xét không, nếu bị phạt thì chỉ bị phạt tiền thôi đúng không?",
+    "query": "Miễn chấp hành án cấm cư trú",
+    "a_off": false,
+    "b_off": true,
+    "n_off": 10,
+    "a_on": false,
+    "b_on": true,
+    "n_on": 10
+   },
+   {
+    "cau_hoi": "Tôi nộp đơn khiếu nại quyết định xử phạt hành chính của UBND xã cách đây hơn một năm, giờ mới gửi đơn lên. Người có thẩm quyền có phải nhận và giải quyết khiếu nại của tôi trong vòng 10 ngày không?",
+    "query": "Thời gian giải quyết khiếu nại quyết định xử phạt hành chính",
+    "a_off": false,
+    "b_off": false,
+    "n_off": 10,
+    "a_on": false,
+    "b_on": false,
+    "n_on": 11
+   },
+   {
+    "cau_hoi": "Công ty tôi sản xuất thép trong nước, thấy hàng nhập khẩu từ các nước đối tác Hiệp định tăng mạnh gây thiệt hại. Tôi chuẩn bị hồ sơ yêu cầu điều tra áp dụng biện pháp tự vệ chuyển tiếp thì cần có những thông tin gì?",
+    "query": "Hồ sơ yêu cầu điều tra biện pháp tự vệ chuyển tiếp",
+    "a_off": true,
+    "b_off": true,
+    "n_off": 10,
+    "a_on": true,
+    "b_on": true,
+    "n_on": 10
+   },
+   {
+    "cau_hoi": "Tôi bị lập biên bản vì vi phạm hành chính từ hơn hai năm trước, giờ cơ quan chức năng vẫn có thể phạt tiền tôi theo các hình thức xử phạt không?",
+    "query": "hình thức xử phạt vi phạm hành chính quá hạn",
+    "a_off": false,
+    "b_off": false,
+    "n_off": 10,
+    "a_on": false,
+    "b_on": false,
+    "n_on": 10
+   },
+   {
+    "cau_hoi": "Tôi là đấu giá viên, có bạn nhờ tôi cho mượn chứng chỉ hành nghề để bạn ấy đứng ra điều hành một cuộc đấu giá, tôi hành nghề trên toàn quốc nên làm vậy có được không?",
+    "query": "Cho mượn chứng chỉ hành nghề đấu giá viên",
+    "a_off": false,
+    "b_off": true,
+    "n_off": 11,
+    "a_on": false,
+    "b_on": true,
+    "n_on": 11
+   },
+   {
+    "cau_hoi": "Tôi phụ trách một kho nhiên liệu sân bay, muốn cho xe truyền tiếp nhiên liệu đã lắp đặt đúng tiêu chuẩn tra nạp thẳng cho tàu bay đang có sấm chớp vào chiều nay thì có được không?",
+    "query": "cho xe truyền tiếp nhiên liệu trong sấm chớp",
+    "a_off": true,
+    "b_off": true,
+    "n_off": 12,
+    "a_on": true,
+    "b_on": true,
+    "n_on": 12
+   },
+   {
+    "cau_hoi": "Tôi cho bạn mượn tài khoản ngân hàng của mình để nhận tiền, giờ tôi muốn đóng tài khoản này thì ngân hàng có thể đóng không, và tôi có phải làm gì thêm không?",
+    "query": "Đóng tài khoản ngân hàng cho người khác mượn",
+    "a_off": true,
+    "b_off": false,
+    "n_off": 10,
+    "a_on": true,
+    "b_on": false,
+    "n_on": 10
+   },
+   {
+    "cau_hoi": "Tôi muốn nhập khẩu thịt đông lạnh từ một nước đang có dịch bệnh động vật lây lan, theo quy định thì tôi cần làm thủ tục kiểm tra cơ sở sản xuất như thế nào để nhập về Việt Nam?",
+    "query": "Thủ tục kiểm tra cơ sở sản xuất nhập khẩu thịt đông lạnh",
+    "a_off": false,
+    "b_off": false,
+    "n_off": 12,
+    "a_on": false,
+    "b_on": false,
+    "n_on": 12
+   },
+   {
+    "cau_hoi": "Tôi là công dân Việt Nam, tốt nghiệp đại học luật, đã học xong khóa đào tạo nghề đấu giá và đạt kiểm tra tập sự. Hiện tôi đang làm công chức ở một sở của tỉnh, vậy tôi có thể xin làm đấu giá viên được không?",
+    "query": "Điều kiện xin làm đấu giá viên",
+    "a_off": true,
+    "b_off": false,
+    "n_off": 10,
+    "a_on": true,
+    "b_on": false,
+    "n_on": 10
+   },
+   {
+    "cau_hoi": "Tôi tự viết một bản cam kết rồi ký, giờ muốn ra UBND phường chứng thực chữ ký của tôi trên đó thì có được không, và tôi chịu trách nhiệm gì?",
+    "query": "Chứng thực chữ ký tại UBND phường",
+    "a_off": true,
+    "b_off": false,
+    "n_off": 10,
+    "a_on": true,
+    "b_on": false,
+    "n_on": 11
+   },
+   {
+    "cau_hoi": "Bố tôi mới mất, một công ty đang giữ thông tin cá nhân của ông và tôi muốn họ chuyển dữ liệu đó cho bên khác. Vợ con của bố tôi không có ai, mẹ tôi cũng đã mất, thì có làm được không?",
+    "query": "Chuyển dữ liệu cá nhân của người đã mất",
+    "a_off": true,
+    "b_off": true,
+    "n_off": 13,
+    "a_on": true,
+    "b_on": true,
+    "n_on": 13
+   },
+   {
+    "cau_hoi": "Tôi và hai cửa hàng vật liệu xây dựng cùng khu vực muốn bàn nhau thống nhất bán xi măng theo một mức giá chung để khỏi bị cạnh tranh giá, như vậy có được không?",
+    "query": "Thỏa thuận giá bán xi măng giữa các cửa hàng",
+    "a_off": false,
+    "b_off": false,
+    "n_off": 12,
+    "a_on": false,
+    "b_on": false,
+    "n_on": 12
+   },
+   {
+    "cau_hoi": "Tôi đã rút đơn khiếu nại về việc thi hành án được vài tháng rồi, giờ muốn nộp đơn khiếu nại lại thì cơ quan thi hành án có phải thụ lý giải quyết không?",
+    "query": "Nộp đơn khiếu nại thi hành án trở lại",
+    "a_off": true,
+    "b_off": false,
+    "n_off": 11,
+    "a_on": true,
+    "b_on": true,
+    "n_on": 12
+   },
+   {
+    "cau_hoi": "Chuyến bay của tôi bị hủy sát giờ khởi hành dù tôi đã có vé và xác nhận chỗ. Hãng hàng không có phải bồi thường cho tôi không?",
+    "query": "Bồi thường chuyến bay bị hủy sát giờ khởi hành",
+    "a_off": true,
+    "b_off": true,
+    "n_off": 10,
+    "a_on": true,
+    "b_on": true,
+    "n_on": 11
+   },
+   {
+    "cau_hoi": "Tôi đang làm ăn xa, muốn cho người bạn thân mượn tài khoản ngân hàng của tôi để nhận và chuyển tiền giúp bạn ấy trong vài tháng thì có được không?",
+    "query": "Cho mượn tài khoản ngân hàng",
+    "a_off": false,
+    "b_off": false,
+    "n_off": 10,
+    "a_on": false,
+    "b_on": false,
+    "n_on": 10
+   },
+   {
+    "cau_hoi": "Tôi làm ở một bệnh viện, tập thể anh chị em đồng nghiệp đang bàn chuyện đình công để đòi tăng lương thì có được không?",
+    "query": "Đình công đòi tăng lương bệnh viện",
+    "a_off": false,
+    "b_off": false,
+    "n_off": 11,
+    "a_on": false,
+    "b_on": false,
+    "n_on": 11
+   },
+   {
+    "cau_hoi": "Con tôi 16 tuổi, nghỉ học và muốn xin vào làm phục vụ ở một quán karaoke gần nhà thì có được không?",
+    "query": "Điều kiện làm việc của người dưới 18 tuổi",
+    "a_off": false,
+    "b_off": false,
+    "n_off": 13,
+    "a_on": false,
+    "b_on": false,
+    "n_on": 13
+   },
+   {
+    "cau_hoi": "Đơn vị sự nghiệp của Đảng chỗ tôi muốn khoán kinh phí sử dụng toàn bộ tài sản, kể cả thiết bị lưu trữ tài liệu mật của nhà nước, cho cán bộ phụ trách. Vậy làm vậy có được không?",
+    "query": "Khoán kinh phí tài sản nhà nước",
+    "a_off": true,
+    "b_off": true,
+    "n_off": 10,
+    "a_on": true,
+    "b_on": true,
+    "n_on": 11
+   },
+   {
+    "cau_hoi": "Tôi mở quán cà phê, khách quẹt thẻ thanh toán thì tôi có bắt buộc phải nhận thẻ không, hay muốn từ chối lúc nào cũng được?",
+    "query": "Bắt buộc nhận thẻ thanh toán trong quán cà phê",
+    "a_off": false,
+    "b_off": true,
+    "n_off": 10,
+    "a_on": false,
+    "b_on": true,
+    "n_on": 10
+   },
+   {
+    "cau_hoi": "Tôi là công dân Việt Nam, có CCCD đầy đủ. Tôi muốn đi thăm một công trình quân sự sát đường biên giới ở tỉnh biên giới thì chỉ cần mang CCCD là vào được đúng không?",
+    "query": "Thăm công trình quân sự biên giới với CCCD",
+    "a_off": false,
+    "b_off": false,
+    "n_off": 11,
+    "a_on": false,
+    "b_on": false,
+    "n_on": 12
+   },
+   {
+    "cau_hoi": "Công ty tôi vừa được cấp quyền khai thác dữ liệu ảnh viễn thám từ một cơ quan nhà nước, giờ có đối tác muốn mua lại bộ ảnh đó để dùng cho dự án của họ thì tôi có chuyển giao cho họ được không?",
+    "query": "Chuyển giao quyền khai thác dữ liệu ảnh viễn thám",
+    "a_off": false,
+    "b_off": true,
+    "n_off": 10,
+    "a_on": false,
+    "b_on": true,
+    "n_on": 13
+   }
+  ]
+ },
+ "claude_cost_usd": 0.0
+}

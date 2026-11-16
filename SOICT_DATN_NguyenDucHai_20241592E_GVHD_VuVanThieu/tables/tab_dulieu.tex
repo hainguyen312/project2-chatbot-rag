@@ -1,0 +1,20 @@
+% Tự sinh bởi scripts/make_thesis_tables.py — KHÔNG sửa tay.
+% Nguồn: evaluation/results/thesis_snapshot.json (truy vấn MySQL, Neo4j, Milvus ngày 2026-11-16)
+\begin{table}[H]
+\centering
+\small
+\caption{Thống kê dữ liệu}
+\label{tab:dulieu}
+\begin{tabular}{|L{6.6cm}|L{3.4cm}|L{3.6cm}|}
+\hline
+\textbf{Dữ liệu} & \textbf{Số lượng} & \textbf{Nơi lưu} \\ \hline
+Chủ đề / đề mục / chương & 45 / 306 / 1.583 & MySQL \\ \hline
+Điều luật & 66.706 & MySQL \\ \hline
+Cặp điều liên quan & 38.435 & MySQL (nguồn của LIEN\_QUAN) \\ \hline
+File đính kèm / bảng biểu & 5.774 / 1.871 & MySQL \\ \hline
+Độ dài nội dung điều (trung bình / lớn nhất) & 1.207 / 50.905 ký tự & -- \\ \hline
+Điều dài hơn 4.000 / 6.000 ký tự & 2.570 / 1.073 & -- \\ \hline
+Vector tên điều & 66.751 & Milvus \\ \hline
+Tài liệu BM25 (sau khi tách điều dài theo khoản) & 68.086 & Chỉ mục BM25 \\ \hline
+\end{tabular}
+\end{table}

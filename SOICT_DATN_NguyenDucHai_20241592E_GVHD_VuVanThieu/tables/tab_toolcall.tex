@@ -1,0 +1,24 @@
+% Tự sinh bởi scripts/make_thesis_tables.py — KHÔNG sửa tay.
+% Nguồn: tool_eval_gpt-4.1_20261116_144452.json; tool_eval_gpt-4o-mini_20261116_153233.json
+\begin{table}[H]
+\centering
+\small
+\caption{Đánh giá gọi công cụ trên 23 tình huống (cùng mã nguồn, hai mô hình tác tử)}
+\label{tab:pl_tool}
+\begin{tabular}{|L{7.4cm}|L{2.9cm}|L{2.9cm}|}
+\hline
+\textbf{Chỉ số} & \textbf{GPT-4.1} & \textbf{GPT-4o-mini} \\ \hline
+Tình huống đạt mọi kỳ vọng & 91{,}3\% (21/23) & 82{,}6\% (19/23) \\ \hline
+Gọi đủ công cụ bắt buộc & 97{,}6\% & 92{,}9\% \\ \hline
+Gọi công cụ nên gọi & 66{,}7\% & 33{,}3\% \\ \hline
+Gọi công cụ bị cấm & 0{,}0\% & 0{,}0\% \\ \hline
+Công cụ đầu tiên đúng kỳ vọng & 100{,}0\% & 100{,}0\% \\ \hline
+Luật buộc web kích hoạt đúng & 100{,}0\% & 100{,}0\% \\ \hline
+Mã điều bịa đặt & 0{,}0\% & 8{,}3\% \\ \hline
+Chạm trần vòng lặp & 4{,}3\% & 0{,}0\% \\ \hline
+Câu trả lời chứa từ khoá kỳ vọng & 95{,}7\% & 95{,}7\% \\ \hline
+Số lượt gọi công cụ trung bình & 2{,}13 & 1{,}91 \\ \hline
+Thời gian trung bình mỗi tình huống (giây) & 9{,}5 & 18{,}6 \\ \hline
+Tổng chi phí (USD) & 1{,}62 & 0{,}09 \\ \hline
+\end{tabular}
+\end{table}

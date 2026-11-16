@@ -1,0 +1,19 @@
+% Tự sinh bởi scripts/make_thesis_tables.py — KHÔNG sửa tay.
+% Nguồn: nogt_eval_20261116_121754.json
+\begin{table}[H]
+\centering
+\small
+\caption{Dò trọng số vector trong RRF (cùng một lần chạy, 50 câu hỏi thật và 100 câu mục đã biết)}
+\label{tab:trongso}
+\begin{tabular}{|L{1.6cm}|c|c|c|c|c|c|L{3.0cm}|}
+\hline
+\textbf{$w_{v}$} & \textbf{P@5} & \textbf{P@10} & \textbf{nDCG@10} & \textbf{MRR} & \textbf{KI Hit@1} & \textbf{KI Hit@10} & \textbf{Thắng/thua so với $w_{v}=1{,}0$ (nDCG)} \\ \hline
+1,0 & 0{,}588 & 0{,}520 & 0{,}602 & 0{,}458 & 0{,}27 & 0{,}67 & -- \\ \hline
+0,7 & 0{,}596 & 0{,}540 & 0{,}617 & 0{,}468 & 0{,}25 & 0{,}68 & 18/13 ($p=0{,}473$) \\ \hline
+0,5 & 0{,}588 & 0{,}544 & 0{,}620 & 0{,}471 & 0{,}27 & 0{,}69 & 21/15 ($p=0{,}405$) \\ \hline
+0,3 & 0{,}608 & 0{,}552 & 0{,}629 & 0{,}451 & 0{,}29 & 0{,}73 & 24/19 ($p=0{,}542$) \\ \hline
+0 & 0{,}620 & 0{,}554 & 0{,}634 & 0{,}419 & 0{,}41 & 0{,}75 & 23/22 ($p=1{,}000$) \\ \hline
+chỉ BM25 & 0{,}640 & 0{,}560 & 0{,}647 & 0{,}401 & 0{,}42 & 0{,}74 & 23/23 ($p=1{,}000$) \\ \hline
+\end{tabular}
+\par\smallskip\parbox{0.95\linewidth}{\footnotesize nDCG so được giữa các dòng vì cùng một tập kết quả gộp. Kiểm định dấu hai phía trên 50 câu.}
+\end{table}

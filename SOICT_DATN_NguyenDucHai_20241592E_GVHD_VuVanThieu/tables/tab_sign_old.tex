@@ -1,0 +1,16 @@
+% Tự sinh bởi scripts/make_thesis_tables.py — KHÔNG sửa tay.
+% Nguồn: nogt_eval_20261116_121754.json
+\begin{table}[H]
+\centering
+\small
+\caption{So sánh từng câu hỏi theo nDCG@10 với cấu hình ban đầu (50 câu, kiểm định dấu hai phía)}
+\label{tab:pl_sign}
+\begin{tabular}{|L{6.4cm}|c|c|c|c|}
+\hline
+\textbf{Cấu hình} & \textbf{Thắng} & \textbf{Hoà} & \textbf{Thua} & \textbf{$p$} \\ \hline
+Lai, không xếp hạng lại & 36 & 7 & 7 & $<$0{,}001 \\ \hline
+Lai, xếp hạng lại ($w_{v}=1{,}0$) & 36 & 6 & 8 & $<$0{,}001 \\ \hline
+Lai, xếp hạng lại ($w_{v}=0{,}5$) & 35 & 6 & 9 & $<$0{,}001 \\ \hline
+Chỉ BM25 & 33 & 3 & 14 & 0{,}008 \\ \hline
+\end{tabular}
+\end{table}

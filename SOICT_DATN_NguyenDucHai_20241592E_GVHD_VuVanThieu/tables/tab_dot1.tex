@@ -1,0 +1,17 @@
+% Tự sinh bởi scripts/make_thesis_tables.py — KHÔNG sửa tay.
+% Nguồn: legacy/evaluation/results/results.json
+\begin{table}[H]
+\centering
+\small
+\caption{Thử nghiệm ban đầu trên 5 câu hỏi có đáp án gán tay (10 kết quả đầu)}
+\label{tab:dot1}
+\begin{tabular}{|L{6.6cm}|c|c|c|c|}
+\hline
+\textbf{Chiến lược} & \textbf{P@10} & \textbf{Hit@10} & \textbf{nDCG@10} & \textbf{MRR} \\ \hline
+Vector nội dung & 0{,}195 & 0{,}84 & 0{,}444 & 0{,}561 \\ \hline
+Vector + độ trùng từ ($\alpha=0{,}6$) & 0{,}200 & 0{,}82 & 0{,}504 & 0{,}696 \\ \hline
+Vector tên điều + xếp hạng theo độ trùng từ & 0{,}334 & 1{,}00 & 0{,}669 & 0{,}879 \\ \hline
+Vector tên điều + LLM chấm lại & 0{,}356 & 1{,}00 & 0{,}891 & 0{,}949 \\ \hline
+\end{tabular}
+\par\smallskip\parbox{0.95\linewidth}{\footnotesize Chỉ 5 câu hỏi nên kết quả chỉ mang tính định hướng.}
+\end{table}

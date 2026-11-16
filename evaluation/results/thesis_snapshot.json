@@ -1,0 +1,75 @@
+{
+ "ngay": "2026-11-16",
+ "chude": 45,
+ "demuc": 306,
+ "chuong": 1583,
+ "dieu": 66706,
+ "cap_lien_quan": 38435,
+ "file": 5774,
+ "bang": 1871,
+ "noidung_tb": 1207,
+ "noidung_max": 50905,
+ "dieu_gt_4000": 2570,
+ "dieu_gt_6000": 1073,
+ "vbqppl_co_ghi_chu_sua_doi": 5124,
+ "neo4j_dieu": 66706,
+ "neo4j_khoan": 195658,
+ "neo4j_khoan_ngoai_le": 628,
+ "neo4j_dieu_ngoai_le": 1104,
+ "neo4j_vanban": 4469,
+ "neo4j_tham_chieu": 24718,
+ "neo4j_tham_chieu_ngoai_le": 1250,
+ "neo4j_lien_quan": 45250,
+ "neo4j_thuoc": 64476,
+ "neo4j_duoc_sua_doi_boi": 5346,
+ "milvus_tendieu": 66751,
+ "milvus_ctx_chunks": 147641,
+ "bm25_tai_lieu": 68086,
+ "kiem_thu": {
+  "test_agent_tools.py": 55,
+  "test_legal_graph.py": 52,
+  "test_doc_review.py": 36,
+  "test_agent_loop.py": 29,
+  "test_memory_privacy.py": 29,
+  "test_memory_update.py": 25,
+  "test_memory_retrieve.py": 23,
+  "test_retriever.py": 23,
+  "test_lexical_bm25.py": 22,
+  "test_eval_tool_calls.py": 19,
+  "test_chat_title.py": 14,
+  "test_eval_memory.py": 12,
+  "test_review_history.py": 9,
+  "test_roles.py": 9,
+  "test_lawdata.py": 8,
+  "test_status_vbqppl.py": 4,
+  "test_lawdata_publish.py": 3
+ },
+ "kiem_thu_dat": 372,
+ "kiem_thu_tong": 372,
+ "ma_nguon": {
+  "may_chu": [
+   40,
+   9933
+  ],
+  "giao_dien": [
+   55,
+   10090
+  ],
+  "kiem_thu": [
+   19,
+   3087
+  ],
+  "danh_gia": [
+   5,
+   1456
+  ],
+  "thu_thap": [
+   5,
+   345
+  ],
+  "uml": [
+   72,
+   2563
+  ]
+ }
+}

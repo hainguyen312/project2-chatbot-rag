@@ -1,0 +1,21 @@
+% Tự sinh bởi scripts/make_thesis_tables.py — KHÔNG sửa tay.
+% Nguồn: evaluation/results/thesis_snapshot.json (truy vấn MySQL, Neo4j, Milvus ngày 2026-11-16)
+\begin{table}[H]
+\centering
+\small
+\caption{Thống kê đồ thị tri thức (Neo4j)}
+\label{tab:dothi}
+\begin{tabular}{|L{5.6cm}|L{2.0cm}|L{6.0cm}|}
+\hline
+\textbf{Thành phần} & \textbf{Số lượng} & \textbf{Ghi chú} \\ \hline
+Dieu (điều luật) & 66.706 & kèm vbqppl, số hiệu, số điều \\ \hline
+Khoan (khoản của điều có từ hai khoản) & 195.658 &  \\ \hline
+Khoản ngoại lệ & 628 & khoản bắt đầu bằng ``Không được'', ``Cấm''\ldots \\ \hline
+Điều ngoại lệ & 1.104 & tiêu đề hoặc có khoản ngoại lệ \\ \hline
+VanBan (văn bản) & 4.469 & phân tích từ vbqppl \\ \hline
+Cạnh THAM\_CHIEU & 24.718 & phân tích dẫn chiếu trong nội dung \\ \hline
+\quad trong ngữ cảnh ngoại lệ & 1.250 & ``trừ trường hợp'', ``không thuộc''\ldots \\ \hline
+Cạnh LIEN\_QUAN (có hướng) & 45.250 & hai chiều từ pdmuclienquan \\ \hline
+Cạnh THUOC / DUOC\_SUA\_DOI\_BOI & 64.476 / 5.346 & từ vbqppl \\ \hline
+\end{tabular}
+\end{table}
