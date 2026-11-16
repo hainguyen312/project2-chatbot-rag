@@ -48,7 +48,7 @@ jobs:
         run: python -m pytest -rs
 
   frontend:
-    name: frontend · lint + build
+    name: frontend · lint + test + build
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
@@ -65,6 +65,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci --no-audit --no-fund
       - run: npm run lint
+      - run: npm test
       - run: npm run build
 
   docker-build:

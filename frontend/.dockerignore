@@ -16,3 +16,6 @@ npm-debug.log*
 firebase-credentials.json
 Dockerfile
 .dockerignore
+# Test (vitest) không cần trong image
+tests
+vitest.config.mts

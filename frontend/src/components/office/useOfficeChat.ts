@@ -52,9 +52,11 @@ export function useOfficeChat(mock: boolean, initialChatId: string | null = null
   const abortRef = useRef<AbortController | null>(null);
   const busyRef = useRef(false);
 
+  // Lịch sử chat chỉ cho người đã đăng nhập (server lấy uid từ ID token).
+  const chatOwner = user?.uid ?? null;
   useEffect(() => {
-    if (userId) void chatActions.setUserId(userId);
-  }, [userId]);
+    void chatActions.setUserId(chatOwner);
+  }, [chatOwner]);
 
   // Mở đúng hội thoại truyền qua ?chat=<id> sau khi danh sách đã tải.
   const appliedInitial = useRef(false);

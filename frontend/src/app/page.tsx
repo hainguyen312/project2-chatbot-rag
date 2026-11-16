@@ -212,10 +212,11 @@ export default function Home() {
     if (!input && inputRef.current) inputRef.current.style.height = "auto";
   }, [input]);
 
+  // Lịch sử chat (/api/chats) chỉ dành cho người đã đăng nhập: server lấy uid từ ID token.
+  const chatOwner = authUser?.uid ?? null;
   useEffect(() => {
-    if (!userId) return;
-    void chatActions.setUserId(userId);
-  }, [userId]);
+    void chatActions.setUserId(chatOwner);
+  }, [chatOwner]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

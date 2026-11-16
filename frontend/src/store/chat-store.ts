@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase";
 
 export type Passage = {
   mapc: string;
@@ -157,12 +158,22 @@ function getState() {
   return state;
 }
 
+/** Firebase ID token của người đang đăng nhập (server verify, không tin uid do client gửi). */
+async function authHeader(): Promise<Record<string, string>> {
+  if (!isFirebaseConfigured()) return {};
+  const user = getFirebaseAuth().currentUser;
+  if (!user) return {};
+  try {
+    return { Authorization: `Bearer ${await user.getIdToken()}` };
+  } catch {
+    return {};
+  }
+}
+
 async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
-  const uid = getState().userId;
-  const userHeader: HeadersInit = uid ? { "x-user-id": uid } : {};
   const merged: RequestInit = {
     ...init,
-    headers: { ...userHeader, ...(init?.headers ?? {}) },
+    headers: { ...(await authHeader()), ...(init?.headers ?? {}) },
   };
   const res = await fetch(input, merged);
   const data = (await res.json().catch(() => ({}))) as T & { error?: string; detail?: string };

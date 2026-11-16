@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createChat, listChats } from "@/lib/chats";
+import { requireUser } from "@/lib/server-auth";
 
-function requireUserId(req: NextRequest): string | NextResponse {
-  const uid = req.headers.get("x-user-id")?.trim();
-  if (!uid) {
-    return NextResponse.json(
-      { error: "Thiếu user_id (x-user-id header)" },
-      { status: 400 }
-    );
-  }
-  return uid;
+/**
+ * uid lấy từ Firebase ID token đã verify ở server (Authorization: Bearer …).
+ * Không tin header x-user-id / body do client gửi — trước đây đọc/xoá được chat người khác.
+ */
+async function requireUserId(req: NextRequest): Promise<string | NextResponse> {
+  const auth = await requireUser(req);
+  return auth instanceof NextResponse ? auth : auth.uid;
 }
 
 export async function GET(req: NextRequest) {
-  const uid = requireUserId(req);
+  const uid = await requireUserId(req);
   if (uid instanceof NextResponse) return uid;
   try {
     const chats = await listChats(uid);
@@ -27,7 +26,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const uid = requireUserId(req);
+  const uid = await requireUserId(req);
   if (uid instanceof NextResponse) return uid;
   try {
     const body = (await req.json().catch(() => ({}))) as { title?: string };

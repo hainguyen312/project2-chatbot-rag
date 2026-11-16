@@ -1,23 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { deleteChatById, getChatById, updateChat } from "@/lib/chats";
+import { requireUser } from "@/lib/server-auth";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-function requireUserId(req: NextRequest): string | NextResponse {
-  const uid = req.headers.get("x-user-id")?.trim();
-  if (!uid) {
-    return NextResponse.json(
-      { error: "Thiếu user_id (x-user-id header)" },
-      { status: 400 }
-    );
-  }
-  return uid;
+/**
+ * uid lấy từ Firebase ID token đã verify ở server (Authorization: Bearer …).
+ * Không tin header x-user-id / body do client gửi — trước đây đọc/xoá được chat người khác.
+ */
+async function requireUserId(req: NextRequest): Promise<string | NextResponse> {
+  const auth = await requireUser(req);
+  return auth instanceof NextResponse ? auth : auth.uid;
 }
 
 export async function GET(req: NextRequest, context: RouteContext) {
-  const uid = requireUserId(req);
+  const uid = await requireUserId(req);
   if (uid instanceof NextResponse) return uid;
   const { id } = await context.params;
   const chat = await getChatById(id, uid);
@@ -28,7 +27,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
 }
 
 export async function PATCH(req: NextRequest, context: RouteContext) {
-  const uid = requireUserId(req);
+  const uid = await requireUserId(req);
   if (uid instanceof NextResponse) return uid;
   const { id } = await context.params;
   const body = (await req.json().catch(() => ({}))) as {
@@ -61,7 +60,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
 }
 
 export async function DELETE(req: NextRequest, context: RouteContext) {
-  const uid = requireUserId(req);
+  const uid = await requireUserId(req);
   if (uid instanceof NextResponse) return uid;
   const { id } = await context.params;
   const ok = await deleteChatById(id, uid);
