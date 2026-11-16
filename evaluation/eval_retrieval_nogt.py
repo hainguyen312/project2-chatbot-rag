@@ -457,40 +457,8 @@ def print_table(title: str, summary: dict[str, dict[str, float]]):
         print(f"{n:<18}" + "".join(f"{summary[n][c]:>15.3f}" for c in cols))
 
 
-# ------------------------------------------------------------------ main
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--k", type=int, default=10)
-    ap.add_argument("--limit", type=int, default=None, help="giới hạn số câu hỏi (debug)")
-    ap.add_argument("--judge-model", default=os.getenv("JUDGE_MODEL", "claude-opus-5-5"),
-                    help="model Claude làm judge (cần ANTHROPIC_API_KEY)")
-    ap.add_argument("--judge-effort", default="medium", choices=["low", "medium", "high", "xhigh", "max"],
-                    help="effort cho judge Claude")
-    ap.add_argument("--budget", type=float, default=3.0,
-                    help="trần chi phí judge (USD); ước tính vượt trần thì dừng trước khi gọi API")
-    ap.add_argument("--no-batch", action="store_true",
-                    help="chấm realtime (giá đầy đủ) thay vì Batch API (-50%%, thường xong < 1 giờ)")
-    ap.add_argument("--dry-run", action="store_true",
-                    help="chỉ retrieve + ước tính chi phí judge (count_tokens miễn phí), không chấm")
-    ap.add_argument("--workers", type=int, default=8)
-    ap.add_argument("--baseline", default="bm25_only")
-    ap.add_argument("--synthetic", type=int, default=0, help="thêm đánh giá known-item với N câu sinh tự động")
-    ap.add_argument("--seed", type=int, default=7)
-    args = ap.parse_args()
-    k = args.k
-
-    from pymilvus import Collection, connections
-    from retrieve.build_graph import GraphRAGRetriever, get_neo4j
-    from retrieve.lexical_bm25 import get_bm25
-
-    connections.connect("default", host=os.getenv("MILVUS_HOST", "localhost"), port=os.getenv("MILVUS_PORT", "19530"))
-    col = Collection("phapdien_simple_tendieu")
-    col.load()
-    retriever = GraphRAGRetriever(get_neo4j(), col, client)
-    get_bm25()
-    pipelines = make_pipelines(retriever, k)
-
-    # ---------- (1) pooled LLM judge
+def pooled_judge(args, pipelines: dict, k: int) -> dict | None:
+    """(1) Pooled LLM-judge trên câu hỏi thật. None = dừng (dry-run / vượt ngân sách)."""
     queries = load_queries(args.limit)
     print(f"[eval] {len(queries)} câu hỏi × {len(pipelines)} pipelines")
     runs: dict[str, dict[str, list[str]]] = {n: {} for n in pipelines}
@@ -505,7 +473,7 @@ def main():
     judged = judge_all(pairs, args.judge_model, args.workers, effort=args.judge_effort,
                        batch=not args.no_batch, budget=args.budget, dry_run=args.dry_run)
     if judged is None:
-        return
+        return None
     rel_by_q: dict[str, dict[str, int]] = {}
     for (q, m), s in judged.items():
         rel_by_q.setdefault(q, {})[m] = s
@@ -534,8 +502,51 @@ def main():
         for m in runs[best_name][q][:3]:
             print(f"    [{rel_by_q.get(q, {}).get(m, '?')}] {(arts.get(m) or {}).get('ten', m)[:100]}")
 
-    out = {"config": vars(args), "summary": summary, "per_query": per_q,
-           "runs": runs, "judgments": {q: rel_by_q.get(q, {}) for q in queries}}
+    return {"summary": summary, "per_query": per_q, "runs": runs,
+            "judgments": {q: rel_by_q.get(q, {}) for q in queries}}
+
+
+# ------------------------------------------------------------------ main
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--k", type=int, default=10)
+    ap.add_argument("--limit", type=int, default=None, help="giới hạn số câu hỏi (debug)")
+    ap.add_argument("--judge-model", default=os.getenv("JUDGE_MODEL", "claude-opus-5-5"),
+                    help="model Claude làm judge (cần ANTHROPIC_API_KEY)")
+    ap.add_argument("--judge-effort", default="medium", choices=["low", "medium", "high", "xhigh", "max"],
+                    help="effort cho judge Claude")
+    ap.add_argument("--budget", type=float, default=3.0,
+                    help="trần chi phí judge (USD); ước tính vượt trần thì dừng trước khi gọi API")
+    ap.add_argument("--no-batch", action="store_true",
+                    help="chấm realtime (giá đầy đủ) thay vì Batch API (-50%%, thường xong < 1 giờ)")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="chỉ retrieve + ước tính chi phí judge (count_tokens miễn phí), không chấm")
+    ap.add_argument("--workers", type=int, default=8)
+    ap.add_argument("--baseline", default="bm25_only")
+    ap.add_argument("--synthetic", type=int, default=0, help="thêm đánh giá known-item với N câu sinh tự động")
+    ap.add_argument("--seed", type=int, default=7)
+    ap.add_argument("--skip-judge", action="store_true",
+                    help="bỏ qua pooled LLM-judge (không gọi Claude), chỉ chạy known-item --synthetic")
+    args = ap.parse_args()
+    k = args.k
+
+    from pymilvus import Collection, connections
+    from retrieve.build_graph import GraphRAGRetriever, get_neo4j
+    from retrieve.lexical_bm25 import get_bm25
+
+    connections.connect("default", host=os.getenv("MILVUS_HOST", "localhost"), port=os.getenv("MILVUS_PORT", "19530"))
+    col = Collection("phapdien_simple_tendieu")
+    col.load()
+    retriever = GraphRAGRetriever(get_neo4j(), col, client)
+    get_bm25()
+    pipelines = make_pipelines(retriever, k)
+
+    out: dict = {"config": vars(args)}
+    if not args.skip_judge:
+        res = pooled_judge(args, pipelines, k)
+        if res is None:
+            return
+        out.update(res)
 
     # ---------- (2) known-item synthetic
     if args.synthetic:
@@ -543,16 +554,19 @@ def main():
 
         synth = load_synthetic(args.synthetic)
         ki: dict[str, list[dict]] = {n: [] for n in pipelines}
+        ranks: dict[str, list] = {}
         for d in synth:
             for n, fn in pipelines.items():
                 ranked = fn(d["query"])
                 g = d["gold"][0]
                 rank = ranked.index(g) + 1 if g in ranked else None
+                ranks.setdefault(n, []).append(rank)
                 ki[n].append({"Hit@1": float(rank == 1), "Hit@5": float(bool(rank) and rank <= 5),
                               f"Hit@{k}": float(bool(rank)), f"MRR@{k}": 1 / rank if rank else 0.0})
         ki_sum = {n: {c: mean(x[c] for x in ki[n]) for c in ki[n][0]} for n in pipelines}
         print_table(f"Known-item synthetic ({len(synth)} câu, gold = điều sinh ra câu hỏi)", ki_sum)
         out["known_item"] = ki_sum
+        out["known_item_ranks"] = ranks
 
     path = os.path.join(BASE, "results", f"nogt_eval_{time.strftime('%Y%m%d_%H%M%S')}.json")
     json.dump(out, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
