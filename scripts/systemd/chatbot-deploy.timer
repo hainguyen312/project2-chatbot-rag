@@ -1,0 +1,13 @@
+# Cài (root): xem docs/deploy/CD.md
+[Unit]
+Description=Chatbot — kiểm tra deploy mỗi 5 phút
+
+[Timer]
+OnBootSec=3min
+# Tính từ lúc lần chạy trước KẾT THÚC → không chồng lần (thêm flock trong script).
+OnUnitInactiveSec=5min
+RandomizedDelaySec=20s
+Unit=chatbot-deploy.service
+
+[Install]
+WantedBy=timers.target

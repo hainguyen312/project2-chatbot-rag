@@ -212,7 +212,8 @@ services:
       - hf_cache:/data/hf
       - bm25_cache:/data/bm25
       - lawdata:/data/lawdata
-      - ./firebase-credentials.json:/run/secrets/firebase-credentials.json:ro
+      # deploy.sh đặt FIREBASE_CRED_FILE = đường dẫn tuyệt đối (repo deploy là bản clone riêng).
+      - ${FIREBASE_CRED_FILE:-./firebase-credentials.json}:/run/secrets/firebase-credentials.json:ro
     # firebase-credentials.json: chủ deploy, mode 640 → user app (uid 10001) đọc qua group.
     group_add:
       - "${FIREBASE_CRED_GID:-1001}"

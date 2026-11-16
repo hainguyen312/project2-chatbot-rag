@@ -1,16 +1,19 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+
+// Hỗ trợ ghi âm chỉ biết được ở trình duyệt; server render coi như không hỗ trợ.
+const noopSubscribe = () => () => {};
+const getSupported = () => !!navigator.mediaDevices?.getUserMedia;
+const getServerSupported = () => false;
 
 export function useSTT() {
   const [recording, setRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [duration,  setDuration]  = useState(0);
-  const [supported, setSupported] = useState(false);
+  const supported = useSyncExternalStore(noopSubscribe, getSupported, getServerSupported);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef        = useRef<BlobPart[]>([]);
   const timerRef         = useRef<ReturnType<typeof setInterval> | null>(null);
   const canceledRef      = useRef(false);
-
-  useEffect(() => { setSupported(!!navigator.mediaDevices?.getUserMedia); }, []);
 
   const startRecording = async () => {
     try {

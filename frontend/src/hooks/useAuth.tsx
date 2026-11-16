@@ -67,14 +67,12 @@ async function claimAnonymousIfNeeded(token: string) {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   const configured = isFirebaseConfigured();
+  // Chưa cấu hình Firebase → không có gì để chờ (giá trị dựng sẵn lúc build, server = client).
+  const [loading, setLoading] = useState(configured);
 
   useEffect(() => {
-    if (!configured) {
-      setLoading(false);
-      return;
-    }
+    if (!configured) return;
     const auth = getFirebaseAuth();
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);

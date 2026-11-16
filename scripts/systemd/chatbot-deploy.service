@@ -1,0 +1,21 @@
+# Cài (root): xem docs/deploy/CD.md
+[Unit]
+Description=Chatbot — deploy pull-based (origin/main → docker compose)
+Documentation=file:///home/deploy/deploy/repo/docs/deploy/CD.md
+Wants=network-online.target
+After=network-online.target docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+SupplementaryGroups=docker
+Environment=HOME=/home/deploy
+WorkingDirectory=/home/deploy/deploy
+# bin → repo/scripts (symlink); script tự cập nhật theo sha đã deploy.
+ExecStart=/home/deploy/deploy/bin/deploy.sh
+# Build GPU image khi đổi requirements có thể mất ~15 phút.
+TimeoutStartSec=3600
+Nice=10
+IOSchedulingClass=idle
