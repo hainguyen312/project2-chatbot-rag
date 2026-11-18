@@ -174,7 +174,9 @@ function SuiteCard({ suite, runs, onOpen, onRun, onOpenRun }: {
         <span>· {runs.length} lần chạy</span>
         <span className="ml-auto" />
         <Button onClick={onOpen}>Chi tiết</Button>
-        <Button variant="primary" onClick={onRun}><Play size={13} aria-hidden />Chạy</Button>
+        <Button variant="primary" onClick={onRun} disabled={!suite.runnable} title={suite.run_disabled_reason || undefined}>
+          <Play size={13} aria-hidden />Chạy
+        </Button>
       </div>
     </Card>
   );
@@ -218,8 +220,11 @@ function SuiteView({ suite, runs, onRun, onOpenRun, onCompare }: {
             <p className="mt-0.5 text-sm" style={{ color: "var(--text-secondary)" }}>{suite.description}</p>
             {suite.requires.length > 0 && <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>Cần: {suite.requires.join(", ")}</p>}
           </div>
-          <Button variant="primary" onClick={onRun}><Play size={14} aria-hidden />Chạy</Button>
+          <Button variant="primary" onClick={onRun} disabled={!suite.runnable} title={suite.run_disabled_reason || undefined}>
+            <Play size={14} aria-hidden />Chạy
+          </Button>
         </div>
+        {!suite.runnable && suite.run_disabled_reason && <Notice tone="muted">{suite.run_disabled_reason}</Notice>}
       </Card>
 
       <Card className="space-y-3">

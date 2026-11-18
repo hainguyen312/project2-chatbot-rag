@@ -11,6 +11,10 @@
 !retrieve/
 !chat_history/*.py
 !scripts/*.py
+# Tab "Đánh giá" (admin): chỉ kết quả eval để XEM; script eval không vào image → không chạy được
+# (không tiêu key production). Lần chạy mới / bảng giá ghi vào volume /data/eval.
+!evaluation/results/*.json
+!evaluation/synthetic_queries.json
 
 # Dù nằm trong thư mục được mở vẫn loại:
 **/__pycache__
@@ -18,3 +22,4 @@
 **/.env*
 **/*credentials*.json
 **/.DS_Store
+evaluation/results/judgments_cache.json

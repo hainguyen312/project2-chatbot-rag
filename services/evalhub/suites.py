@@ -30,6 +30,14 @@ from typing import Any, Callable, Optional
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 EVAL_DIR = os.path.join(ROOT, "evaluation")
+# Nơi GHI (lần chạy mới, log, bảng giá). Mặc định = evaluation/; image production đặt /data/eval
+# (volume) vì mã nguồn trong image chỉ đọc. Kết quả cũ trong evaluation/results/ vẫn được đọc.
+DATA_DIR = os.getenv("EVAL_DATA_DIR") or EVAL_DIR
+
+
+def runs_enabled() -> bool:
+    """EVAL_RUNS_ENABLED=0 tắt hẳn việc chạy từ UI (vd. production: không tiêu key thật)."""
+    return os.getenv("EVAL_RUNS_ENABLED", "1").strip().lower() not in ("0", "false", "no", "off")
 
 
 @dataclass
@@ -98,10 +106,21 @@ class Suite:
     def out_args(self, path: str) -> list[str]:
         return ["--out", path]
 
+    def availability(self) -> tuple[bool, str]:
+        """Chạy được trên máy này không (script có trong image / bật cờ)."""
+        if not runs_enabled():
+            return False, "Chạy từ trang admin đang tắt (EVAL_RUNS_ENABLED=0)."
+        target = next((a for a in self.script if a.endswith(".py") or a == "tests"), "")
+        if target and not os.path.exists(os.path.join(ROOT, target)):
+            return False, (f"Máy chủ này không có {target} (image production không chứa script eval). "
+                           "Chạy trên máy dev — kết quả commit vào evaluation/results/ sẽ hiện ở đây.")
+        return True, ""
+
     def public(self) -> dict:
         d = asdict(self)
         for k in ("normalize", "postprocess", "script", "out_ext"):
             d.pop(k, None)
+        d["runnable"], d["run_disabled_reason"] = self.availability()
         return d
 
 

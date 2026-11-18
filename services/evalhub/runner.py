@@ -39,6 +39,9 @@ class LocalRunner:
         suite = SUITES_BY_ID.get(suite_id)
         if not suite:
             raise ValueError("Bộ đánh giá không tồn tại")
+        ok, reason = suite.availability()
+        if not ok:
+            raise ValueError(reason)
         clean = coerce_params(suite, params)
         with self._lock:
             run_id = self._new_id(suite.file_prefix, clean)
@@ -99,7 +102,7 @@ class LocalRunner:
     def _run(self, run_id: str) -> None:
         meta = store.load_meta(run_id) or {}
         suite = SUITES_BY_ID[meta["suite"]]
-        out = store.result_path(run_id)
+        out = store.new_result_path(run_id)
         os.makedirs(os.path.dirname(out), exist_ok=True)
         argv = suite.build_argv(meta.get("params") or {}, out)
         env = {**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUNBUFFERED": "1"}

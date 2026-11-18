@@ -20,6 +20,7 @@ def dirs(tmp_path, monkeypatch):
     res, runs = tmp_path / "results", tmp_path / "runs"
     res.mkdir()
     monkeypatch.setattr(store, "RESULTS_DIR", str(res))
+    monkeypatch.setattr(store, "BUNDLED_RESULTS_DIR", str(res))
     monkeypatch.setattr(store, "RUNS_DIR", str(runs))
     store._cache.clear()
     return res, runs
@@ -272,3 +273,30 @@ def test_estimate_prefers_same_model_and_scales(dirs, prices):
     assert not e["same_model"] and e["usd"] == pytest.approx(0.09 * 0.40 / 0.15)
     assert estimate_mod.estimate("unit_tests", {})["usd"] == 0.0
     assert estimate_mod.estimate("memory", {})["usd"] is None                 # chưa có mốc
+
+
+def test_bundled_results_are_read_and_new_results_go_to_data_dir(dirs, tmp_path, monkeypatch):
+    res, _ = dirs
+    bundled = tmp_path / "bundled"
+    bundled.mkdir()
+    monkeypatch.setattr(store, "BUNDLED_RESULTS_DIR", str(bundled))
+    (bundled / "memory_eval_20250101_000000.json").write_text(json.dumps({"summary": {"case_pass": 0.5}, "rows": []}),
+                                                              encoding="utf-8")
+    assert [r["id"] for r in store.list_runs("memory")] == ["memory_eval_20250101_000000"]
+    assert store.get_run("memory_eval_20250101_000000")["metrics"]["case_pass"] == 0.5
+    assert store.new_result_path("x").startswith(str(res))
+
+
+def test_runs_disabled_on_production(monkeypatch):
+    s = SUITES_BY_ID["tool_calls"]
+    assert s.availability()[0]                                   # dev: script có
+    monkeypatch.setenv("EVAL_RUNS_ENABLED", "0")
+    ok, reason = s.availability()
+    assert not ok and "EVAL_RUNS_ENABLED" in reason and s.public()["runnable"] is False
+    with pytest.raises(ValueError, match="EVAL_RUNS_ENABLED"):
+        runner_mod.LocalRunner().submit("tool_calls", {}, "a@b")
+    monkeypatch.delenv("EVAL_RUNS_ENABLED")
+    missing = Suite(id="m", name="M", description="", kind="eval", file_prefix="m_", script=["evaluation/khong_co.py"],
+                    params=[], metrics=[], normalize=lambda r: r)
+    ok, reason = missing.availability()
+    assert not ok and "không có evaluation/khong_co.py" in reason

@@ -224,6 +224,7 @@ services:
       - hf_cache:/data/hf
       - bm25_cache:/data/bm25
       - lawdata:/data/lawdata
+      - eval_data:/data/eval        # tab "Đánh giá": bảng giá model, lần chạy mới
       # deploy.sh đặt FIREBASE_CRED_FILE = đường dẫn tuyệt đối (repo deploy là bản clone riêng).
       - ${FIREBASE_CRED_FILE:-./firebase-credentials.json}:/run/secrets/firebase-credentials.json:ro
     # firebase-credentials.json: chủ deploy, mode 640 → user app (uid 10001) đọc qua group.
@@ -294,3 +295,4 @@ volumes:
   hf_cache:
   bm25_cache:
   lawdata:
+  eval_data:

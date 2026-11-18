@@ -21,10 +21,11 @@ from datetime import datetime
 from typing import Any, Optional
 
 from . import pricing
-from .suites import EVAL_DIR, SUITES_BY_ID, suite_for_file
+from .suites import DATA_DIR, EVAL_DIR, SUITES_BY_ID, suite_for_file
 
-RESULTS_DIR = os.path.join(EVAL_DIR, "results")
-RUNS_DIR = os.path.join(EVAL_DIR, "runs")
+RESULTS_DIR = os.path.join(DATA_DIR, "results")          # ghi kết quả mới
+BUNDLED_RESULTS_DIR = os.path.join(EVAL_DIR, "results")  # kết quả đi kèm mã nguồn (chỉ đọc trên production)
+RUNS_DIR = os.path.join(DATA_DIR, "runs")
 _ID_RE = re.compile(r"^[A-Za-z0-9_.\-]{1,160}$")
 _TS_RE = re.compile(r"(\d{8}_\d{6})$")
 
@@ -36,7 +37,20 @@ def valid_id(run_id: str) -> bool:
     return bool(_ID_RE.match(run_id or "")) and ".." not in run_id
 
 
+def _result_dirs() -> list[str]:
+    return [RESULTS_DIR] + ([BUNDLED_RESULTS_DIR] if os.path.abspath(BUNDLED_RESULTS_DIR) != os.path.abspath(RESULTS_DIR) else [])
+
+
 def result_path(run_id: str) -> str:
+    """File kết quả đang có (ưu tiên nơi ghi); chưa có thì trả đường dẫn để ghi mới."""
+    for d in _result_dirs():
+        p = os.path.join(d, run_id + ".json")
+        if os.path.exists(p):
+            return p
+    return new_result_path(run_id)
+
+
+def new_result_path(run_id: str) -> str:
     return os.path.join(RESULTS_DIR, run_id + ".json")
 
 
@@ -142,11 +156,13 @@ def _summary(run_id: str, suite_id: str, meta: Optional[dict]) -> dict:
 def list_runs(suite: str = "", limit: int = 200) -> list[dict]:
     metas = all_metas()
     ids: dict[str, str] = {}
-    if os.path.isdir(RESULTS_DIR):
-        for name in os.listdir(RESULTS_DIR):
+    for d in _result_dirs():
+        if not os.path.isdir(d):
+            continue
+        for name in os.listdir(d):
             s = suite_for_file(name)
             if s:
-                ids[name[:-5]] = s.id
+                ids.setdefault(name[:-5], s.id)
     for rid, m in metas.items():
         if m.get("suite") in SUITES_BY_ID:
             ids[rid] = m["suite"]

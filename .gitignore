@@ -29,3 +29,4 @@ firebase-credentials.json
 
 # Lần chạy eval từ trang admin (trạng thái + log; kết quả vẫn ghi vào evaluation/results/)
 evaluation/runs/
+evaluation/pricing.json

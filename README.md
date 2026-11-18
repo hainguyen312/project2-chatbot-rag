@@ -359,6 +359,10 @@ python evaluation/eval_exceptions.py --n 30 [--answers]       # 30 case "cho ph�
 - Từ nay các script ghi số token thật (`usage` / `tokens_in` / `tokens_out`) vào file kết quả. Thêm cờ chọn model:
   `eval_memory.py --model`, `eval_exceptions.py --gen-model` (đã có: `eval_tool_calls.py --model`, `eval_retrieval_nogt.py --judge-model`).
 
+**Trên production (Docker):** image chỉ mang kết quả eval (`evaluation/results/*.json`) để xem, không mang script → nút Chạy tắt,
+không tiêu key thật. Bảng giá + lần chạy mới ghi vào volume `eval_data` (`EVAL_DATA_DIR=/data/eval`). Chạy eval trên máy dev,
+commit kết quả rồi deploy để hiện trên production. `EVAL_RUNS_ENABLED=0` tắt chạy từ UI ở bất kỳ máy nào.
+
 Lần chạy từ CLI và từ UI dùng chung `evaluation/results/`; UI ghi thêm trạng thái + log vào `evaluation/runs/` (không commit).
 
 **Thêm một bộ đánh giá mới:** script ghi JSON và nhận `--out <path>`, rồi thêm một `Suite` vào `services/evalhub/suites.py`

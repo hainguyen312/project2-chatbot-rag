@@ -13,6 +13,7 @@ export type Suite = {
   id: string; name: string; description: string; kind: "eval" | "benchmark" | "test";
   file_prefix: string; params: Param[]; metrics: MetricSpec[]; cost_hint: string; requires: string[];
   variant_label: string; variant_param: string; model_params: Record<string, string>; scale_params: string[];
+  runnable: boolean; run_disabled_reason: string;
 };
 
 export type RunStatus = "queued" | "running" | "done" | "failed" | "cancelled" | "interrupted" | "cancelling";

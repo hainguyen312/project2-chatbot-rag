@@ -28,6 +28,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     HF_HUB_DISABLE_TELEMETRY=1 \
     BM25_CACHE_DIR=/data/bm25 \
     LAWDATA_DIR=/data/lawdata \
+    EVAL_DATA_DIR=/data/eval \
     SENTIMENT_DEVICE=auto
 
 RUN groupadd --gid ${APP_UID} app \
@@ -50,7 +51,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 # Code thuộc root, user app chỉ đọc. Thư mục dữ liệu ghi được → mount volume vào đây.
 COPY . .
-RUN mkdir -p /data/hf /data/bm25 /data/lawdata \
+RUN mkdir -p /data/hf /data/bm25 /data/lawdata /data/eval \
  && chown -R app:app /data
 
 USER app

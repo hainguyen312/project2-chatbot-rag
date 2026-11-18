@@ -16,9 +16,9 @@ import os
 import threading
 from typing import Any, Optional
 
-from .suites import EVAL_DIR
+from .suites import DATA_DIR
 
-PRICING_PATH = os.path.join(EVAL_DIR, "pricing.json")
+PRICING_PATH = os.path.join(DATA_DIR, "pricing.json")
 BATCH_DISCOUNT = 0.5  # Anthropic Message Batches API: -50%
 
 # provider, input $/1M, output $/1M, nguồn
@@ -72,6 +72,7 @@ def save_prices(models: dict[str, Optional[dict]]) -> dict[str, dict[str, Any]]:
         provider = str(p.get("provider") or "").strip()[:30] or "other"
         clean[model] = {"provider": provider, "in": pin, "out": pout, "source": str(p.get("source") or "admin")[:60]}
     with _lock:
+        os.makedirs(os.path.dirname(PRICING_PATH), exist_ok=True)
         tmp = PRICING_PATH + ".tmp"
         with open(tmp, "w", encoding="utf-8") as f:
             json.dump({"models": clean}, f, ensure_ascii=False, indent=1)
