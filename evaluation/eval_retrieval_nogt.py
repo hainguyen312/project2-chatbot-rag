@@ -344,6 +344,10 @@ def _run_batch(todo, arts, model: str, effort: str) -> tuple[dict, float, float]
     return out, in_tok, out_tok
 
 
+# Token judge của lần chạy (chỉ lượt chấm mới, không tính cache) → ghi vào file kết quả.
+JUDGE_USAGE: dict = {}
+
+
 def judge_all(pairs: list[tuple[str, str]], model: str, workers: int, effort: str = "medium",
               batch: bool = True, budget: float = 3.0, dry_run: bool = False) -> dict[tuple[str, str], int] | None:
     cache = json.load(open(CACHE_PATH, encoding="utf-8")) if os.path.exists(CACHE_PATH) else {}
@@ -403,6 +407,8 @@ def judge_all(pairs: list[tuple[str, str]], model: str, workers: int, effort: st
                     ex.shutdown(wait=True, cancel_futures=True)
                     break
     json.dump(cache, open(CACHE_PATH, "w", encoding="utf-8"))
+    JUDGE_USAGE.update(model=model, effort=effort, batch=bool(todo and batch), **{"in": in_tok, "out": out_tok},
+                       usd=_cost(model, in_tok, out_tok, bool(todo and batch)))
     if in_tok:
         print(f"[judge] chi phí thực: input {in_tok:,} + output {out_tok:,} token "
               f"→ ${_cost(model, in_tok, out_tok, batch):.2f}")
@@ -525,6 +531,7 @@ def main():
     ap.add_argument("--baseline", default="bm25_only")
     ap.add_argument("--synthetic", type=int, default=0, help="thêm đánh giá known-item với N câu sinh tự động")
     ap.add_argument("--seed", type=int, default=7)
+    ap.add_argument("--out", default=None, help="đường dẫn file kết quả (mặc định evaluation/results/<tên>_<thời gian>.json)")
     ap.add_argument("--skip-judge", action="store_true",
                     help="bỏ qua pooled LLM-judge (không gọi Claude), chỉ chạy known-item --synthetic")
     args = ap.parse_args()
@@ -547,6 +554,8 @@ def main():
         if res is None:
             return
         out.update(res)
+        if JUDGE_USAGE:
+            out["usage"] = {"judge": dict(JUDGE_USAGE)}
 
     # ---------- (2) known-item synthetic
     if args.synthetic:
@@ -568,7 +577,8 @@ def main():
         out["known_item"] = ki_sum
         out["known_item_ranks"] = ranks
 
-    path = os.path.join(BASE, "results", f"nogt_eval_{time.strftime('%Y%m%d_%H%M%S')}.json")
+    path = args.out or os.path.join(BASE, "results", f"nogt_eval_{time.strftime('%Y%m%d_%H%M%S')}.json")
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     json.dump(out, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(f"\n✓ Lưu chi tiết: {path}")
 

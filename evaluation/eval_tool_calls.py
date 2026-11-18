@@ -153,6 +153,7 @@ def score_case(case: dict, trace: dict) -> dict:
         "empty_args": empty_args, "redundant": redundant,
         "hit_max_iter": trace.get("iterations", 0) >= trace.get("max_iterations", 99),
         "latency_s": trace.get("latency_s"), "cost_usd": trace.get("cost_usd"),
+        "tokens_in": trace.get("tokens_in"), "tokens_out": trace.get("tokens_out"),
     }
 
 
@@ -181,6 +182,9 @@ def aggregate(rows: list[dict]) -> dict:
         "avg_calls": n_calls / len(rows) if rows else None,
         "avg_latency_s": _ratio([r["latency_s"] for r in rows]),
         "cost_usd": sum(r["cost_usd"] or 0 for r in rows),
+        # token thật → trang admin tính lại chi phí chính xác khi đổi model / đổi bảng giá
+        "tokens_in": sum(r.get("tokens_in") or 0 for r in rows),
+        "tokens_out": sum(r.get("tokens_out") or 0 for r in rows),
     }
 
 
@@ -234,6 +238,7 @@ def run_case(case: dict, *, agent_module, openai_client, retriever, neo4j_driver
     trace["latency_s"] = time.time() - t0
     pin, pout = PRICES.get(model, (0.0, 0.0))
     trace["cost_usd"] = (usage.prompt_tokens * pin + usage.completion_tokens * pout) / 1e6
+    trace["tokens_in"], trace["tokens_out"] = usage.prompt_tokens, usage.completion_tokens
     return trace
 
 
@@ -267,6 +272,7 @@ def main():
     ap.add_argument("--ids", default=None, help="chỉ chạy các case có id này (phân cách bằng dấu phẩy)")
     ap.add_argument("--repeat", type=int, default=1, help="chạy mỗi case N lần (agent không tất định)")
     ap.add_argument("--max-iterations", type=int, default=6)
+    ap.add_argument("--out", default=None, help="đường dẫn file kết quả (mặc định evaluation/results/<tên>_<thời gian>.json)")
     ap.add_argument("--dry-run", action="store_true", help="chỉ kiểm tra file case")
     args = ap.parse_args()
 
@@ -315,7 +321,8 @@ def main():
             print(f"  {'✓' if r['pass'] else '✗'} {c['id']:<22} {r['tools']}{' [buộc web]' if r['forced_web'] else ''}")
 
     print_report(args.model, rows)
-    path = os.path.join(BASE, "results", f"tool_eval_{args.model}_{time.strftime('%Y%m%d_%H%M%S')}.json")
+    path = args.out or os.path.join(BASE, "results", f"tool_eval_{args.model}_{time.strftime('%Y%m%d_%H%M%S')}.json")
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     json.dump({"model": args.model, "summary": aggregate(rows), "rows": rows, "traces": traces},
               open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(f"\n✓ Lưu: {path}")

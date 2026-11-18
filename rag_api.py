@@ -944,6 +944,15 @@ _resumed = _resume_lawdata()
 if _resumed:
     print(f"[Lawdata] Tiếp tục {_resumed} mục đang dở trong hàng đợi")
 
+# Đánh giá / benchmark / test (/admin/eval/*) — xem services/evalhub
+from services.evalhub.api import build_router as _build_eval_router  # noqa: E402
+from services.evalhub.runner import runner as _eval_runner  # noqa: E402
+
+app.include_router(_build_eval_router(require_admin))
+_eval_interrupted = _eval_runner.recover()
+if _eval_interrupted:
+    print(f"[Eval] {_eval_interrupted} lần chạy dở bị đánh dấu interrupted")
+
 
 # ── Memory CRUD endpoints ────────────────────────────────────────────────────
 def _enforce_user_match(path_user_id: str, authorization: Optional[str]) -> str:

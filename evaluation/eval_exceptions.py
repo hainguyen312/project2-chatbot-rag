@@ -252,8 +252,14 @@ def main():
     ap.add_argument("--seed", type=int, default=11)
     ap.add_argument("--answers", action="store_true", help="đo cả câu trả lời (chạy agent + judge)")
     ap.add_argument("--budget", type=float, default=1.5, help="trần chi phí Claude (sinh case + judge), USD")
+    ap.add_argument("--out", default=None, help="đường dẫn file kết quả (mặc định evaluation/results/<tên>_<thời gian>.json)")
     ap.add_argument("--workers", type=int, default=2)
+    ap.add_argument("--gen-model", default=None, help="model Claude sinh case + chấm (mặc định EXC_GEN_MODEL)")
     args = ap.parse_args()
+    global GEN_MODEL, JUDGE_MODEL
+    if args.gen_model:
+        GEN_MODEL = JUDGE_MODEL = args.gen_model
+    args.gen_model = GEN_MODEL
 
     from pymilvus import Collection, connections
     from retrieve.build_graph import GraphRAGRetriever, get_neo4j
@@ -280,8 +286,10 @@ def main():
         for k, v in out["answers"]["summary"].items():
             print(f"  {k:<42} {v:.3f}" if isinstance(v, float) else f"  {k:<42} {v}")
     out["claude_cost_usd"] = round(cost(), 3)
+    out["usage"] = {"model": GEN_MODEL, "in": _usage["in"], "out": _usage["out"]}
     print(f"\nChi phí Claude (sinh case + judge): ${cost():.2f}")
-    path = os.path.join(BASE, "results", f"exception_eval_{time.strftime('%Y%m%d_%H%M%S')}.json")
+    path = args.out or os.path.join(BASE, "results", f"exception_eval_{time.strftime('%Y%m%d_%H%M%S')}.json")
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     json.dump(out, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(f"✓ Lưu chi tiết: {path}")
 

@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowLeft, BookMarked, ClipboardCheck, FileUp, Library, Lock, Moon, ShieldCheck, Sun } from "lucide-react";
+import { ArrowLeft, BookMarked, ClipboardCheck, FileUp, FlaskConical, Library, Lock, Moon, ShieldCheck, Sun } from "lucide-react";
 import { IngestTab } from "@/components/admin/IngestTab";
 import { PhapdienTab } from "@/components/admin/PhapdienTab";
 import { ReviewTab } from "@/components/admin/ReviewTab";
 import { VanbanTab } from "@/components/admin/VanbanTab";
+import { EvalTab } from "@/components/admin/eval/EvalTab";
 import { useAuth } from "@/hooks/useAuth";
 import { useThemeMode } from "@/hooks/useThemeMode";
 
@@ -16,7 +17,7 @@ type Gate =
   | { state: "error"; reason: string }
   | { state: "ok"; email: string };
 
-type TabId = "upload" | "review" | "vanban" | "phapdien";
+type TabId = "upload" | "review" | "vanban" | "phapdien" | "eval";
 
 const TABS: { id: TabId; label: string; icon: typeof FileUp; desc: string }[] = [
   { id: "upload", label: "Thêm văn bản", icon: FileUp,
@@ -27,6 +28,8 @@ const TABS: { id: TabId; label: string; icon: typeof FileUp; desc: string }[] = 
     desc: "Sổ cái văn bản và tình trạng hiệu lực — đánh dấu văn bản đã hết hiệu lực, kể cả văn bản có sẵn trong pháp điển." },
   { id: "phapdien", label: "Cập nhật pháp điển", icon: Library,
     desc: "Khi tải được bản pháp điển mới: so sánh theo mapc với dữ liệu hiện có rồi duyệt." },
+  { id: "eval", label: "Đánh giá & test", icon: FlaskConical,
+    desc: "Chạy và theo dõi eval, benchmark, unit test: xu hướng chỉ số qua các lần chạy, chi tiết từng case, so sánh hai lần chạy." },
 ];
 
 export default function AdminPage() {
@@ -111,14 +114,15 @@ export default function AdminPage() {
             ))}
           </nav>
 
-          <main className="flex-1 p-4 md:p-8">
-            <div className="mx-auto max-w-4xl">
+          <main className="min-w-0 flex-1 p-4 md:p-8">
+            <div className={`mx-auto ${tab === "eval" ? "max-w-6xl" : "max-w-4xl"}`}>
               <h2 className="mb-1 text-lg font-semibold">{active.label}</h2>
               <p className="mb-6 text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>{active.desc}</p>
               {tab === "upload" && <IngestTab onQueued={() => setTab("review")} />}
               {tab === "review" && <ReviewTab />}
               {tab === "vanban" && <VanbanTab />}
               {tab === "phapdien" && <PhapdienTab onQueued={() => setTab("review")} />}
+              {tab === "eval" && <EvalTab />}
             </div>
           </main>
         </div>

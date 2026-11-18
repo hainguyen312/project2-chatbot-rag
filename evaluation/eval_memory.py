@@ -119,6 +119,42 @@ def run_case(case: dict, mm, user_id: str | None = None) -> dict:
         mm.delete_all_for_user(uid)
 
 
+class _UsageCounter:
+    """Bọc OpenAI client: cộng token theo model (chat + embedding) để trang admin tính chi phí."""
+
+    def __init__(self, client):
+        from types import SimpleNamespace
+        self._c = client
+        self.by_model: dict[str, dict] = {}
+        self.chat = SimpleNamespace(completions=SimpleNamespace(create=self._chat))
+        self.embeddings = SimpleNamespace(create=self._embed)
+
+    def _add(self, model: str, role: str, tin: int, tout: int):
+        u = self.by_model.setdefault(model, {"role": role, "in": 0, "out": 0})
+        u["in"] += tin or 0
+        u["out"] += tout or 0
+
+    def _chat(self, **kw):
+        r = self._c.chat.completions.create(**kw)
+        u = getattr(r, "usage", None)
+        if u:
+            self._add(kw.get("model", "?"), "memory", u.prompt_tokens, u.completion_tokens)
+        return r
+
+    def _embed(self, **kw):
+        r = self._c.embeddings.create(**kw)
+        u = getattr(r, "usage", None)
+        if u:
+            self._add(kw.get("model", "?"), "embedding", u.prompt_tokens, 0)
+        return r
+
+    def __getattr__(self, name):  # các API khác đi thẳng
+        return getattr(self._c, name)
+
+    def report(self) -> dict:
+        return self.by_model
+
+
 def summarize(rows: list[dict]) -> dict:
     by_kind: dict[str, list[bool]] = defaultdict(list)
     for r in rows:
@@ -141,6 +177,9 @@ def main():
     ap.add_argument("--cases", default=os.path.join(BASE, "memory_cases.json"))
     ap.add_argument("--only", default=None, help="chỉ chạy category này")
     ap.add_argument("--repeat", type=int, default=1)
+    ap.add_argument("--model", default=None,
+                    help="model trích xuất + cập nhật ký ức (mặc định MEMORY_EXTRACT_MODEL / gpt-4o-mini)")
+    ap.add_argument("--out", default=None, help="đường dẫn file kết quả (mặc định evaluation/results/<tên>_<thời gian>.json)")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
@@ -153,10 +192,13 @@ def main():
 
     from dotenv import load_dotenv
     load_dotenv(os.path.join(ROOT, ".env"))
+    if args.model:  # memory_manager đọc model từ env lúc import
+        os.environ["MEMORY_EXTRACT_MODEL"] = os.environ["MEMORY_UPDATE_MODEL"] = args.model
     from openai import OpenAI
-    from services.memory_manager import MemoryManager
+    from services.memory_manager import MEMORY_EXTRACT_MODEL, MemoryManager
 
-    mm = MemoryManager(openai_client=OpenAI(), mongo_uri=os.getenv("MONGODB_URI", ""))
+    usage = _UsageCounter(OpenAI())
+    mm = MemoryManager(openai_client=usage, mongo_uri=os.getenv("MONGODB_URI", ""))
     if not mm._ready():
         raise SystemExit("MemoryManager chưa sẵn sàng (Milvus/MongoDB)")
 
@@ -169,8 +211,10 @@ def main():
             print(f"  {'✓' if r['pass'] else '✗'} {c['id']:<28} {r['actions']} {('→ trượt ' + str(bad)) if bad else ''}")
     s = summarize(rows)
     print("\n" + json.dumps(s, ensure_ascii=False, indent=2))
-    path = os.path.join(BASE, "results", f"memory_eval_{time.strftime('%Y%m%d_%H%M%S')}.json")
-    json.dump({"summary": s, "rows": rows}, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    path = args.out or os.path.join(BASE, "results", f"memory_eval_{time.strftime('%Y%m%d_%H%M%S')}.json")
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+    json.dump({"model": MEMORY_EXTRACT_MODEL, "summary": s, "rows": rows, "usage": usage.report()},
+              open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(f"✓ Lưu: {path}")
 
 

@@ -339,6 +339,32 @@ python evaluation/eval_memory.py                              # 14 case
 python evaluation/eval_exceptions.py --n 30 [--answers]       # 30 case "cho phép nhưng có ngoại lệ"
 ```
 
+### Trang admin: tab "Đánh giá & test"
+
+`/admin` → **Đánh giá & test** (backend `services/evalhub`, API `/admin/eval/*`, cần quyền admin):
+
+- **Tổng quan**: mỗi bộ (retrieval, tool-call, bộ nhớ, ngoại lệ, unit test) hiển thị chỉ số chính của lần chạy gần nhất, chênh lệch so với lần trước và sparkline.
+- **Một bộ**: biểu đồ xu hướng theo chỉ số tuỳ chọn (lọc theo biến thể, vd. model), bảng các lần chạy; tick 2 lần chạy → **So sánh** (chỉ số A/B, case mới trượt / mới đạt).
+- **Chi tiết lần chạy**: thẻ chỉ số, bảng pipeline × chỉ số, bảng từng case (lọc đạt/trượt, nhóm, tìm), bấm case để xem câu trả lời / tool call / lỗi; ghi chú cho lần chạy.
+- **Chạy**: form sinh từ khai báo tham số; chạy dưới dạng tiến trình con, có hàng đợi (`EVAL_MAX_CONCURRENT`, mặc định 1), log trực tiếp, huỷ được.
+
+**Chi phí** (không gọi API có phí khi xem / ước tính):
+
+- Tổng quan: chi phí từng bộ (lần gần nhất, mỗi case, 30 ngày, tổng); chỉ số `Chi phí lần chạy`, `Chi phí / case`, token vào/ra có trong biểu đồ xu hướng và màn so sánh.
+- Chi tiết lần chạy: bảng **"Nếu đổi model"** — tính lại chi phí với mọi model cùng nhà cung cấp từ số token đã dùng
+  (lần chạy cũ chỉ có số tiền: quy đổi theo tỉ lệ giá, chính xác khi hai model cùng tỉ lệ giá output/input).
+- Hộp thoại Chạy: **ước tính chi phí** theo model + số lần lặp đã chọn, lấy mốc là lần chạy gần nhất cùng model (không có thì quy đổi từ model khác và ghi chú).
+- **Bảng giá** ($/1M token) sửa được trên trang, lưu ở `evaluation/pricing.json` (đè giá mặc định trong `services/evalhub/pricing.py`).
+  Giá Claude đã đối chiếu tài liệu Anthropic (2026-11); giá OpenAI lấy từ repo — kiểm tra lại trước khi dựa vào.
+- Từ nay các script ghi số token thật (`usage` / `tokens_in` / `tokens_out`) vào file kết quả. Thêm cờ chọn model:
+  `eval_memory.py --model`, `eval_exceptions.py --gen-model` (đã có: `eval_tool_calls.py --model`, `eval_retrieval_nogt.py --judge-model`).
+
+Lần chạy từ CLI và từ UI dùng chung `evaluation/results/`; UI ghi thêm trạng thái + log vào `evaluation/runs/` (không commit).
+
+**Thêm một bộ đánh giá mới:** script ghi JSON và nhận `--out <path>`, rồi thêm một `Suite` vào `services/evalhub/suites.py`
+(tham số, danh sách chỉ số + chiều tốt hơn, adapter `normalize` về định dạng chung). Frontend không cần sửa.
+Khi scale: thay `store.py` (file → DB) và `LocalRunner` (thread → worker/queue riêng) mà giữ nguyên API.
+
 `eval_retrieval_nogt.py` chỉ còn 2 pipeline: `hybrid_new` (đúng pipeline chatbot) và `bm25_only` (mốc tham chiếu).
 Kết quả lưu ở `evaluation/results/` (các file cũ có cả pipeline đã lược bỏ — giữ làm số liệu lịch sử).
 
